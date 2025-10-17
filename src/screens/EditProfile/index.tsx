@@ -26,8 +26,6 @@ const EditProfile = () => {
         values: {
             initial,
             isLoading,
-            user_image,
-            image,
             states,
 
         },
@@ -52,7 +50,7 @@ const EditProfile = () => {
                         <>
                             <View style={styles.icon_container}>
                                 <View>
-                                    <Icon source={image ? image : { uri: user_image }} size={100} rounded no_padding border={colors.white} resize="cover" />
+                                    <Icon source={{ uri: typeof data?.photo === "object" ? data?.photo?.uri : data?.photo }} size={100} rounded no_padding border={colors.white} resize="cover" />
                                     <View style={styles.upload_container}>
                                         <Icon color={colors.primary} source={images.camera} rounded size={29} less_padding border={colors.white} onPress={onPressUpload} />
                                     </View>

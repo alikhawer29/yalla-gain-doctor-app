@@ -76,6 +76,12 @@ export const userApi = createApi({
                 body: payload?.body
             }),
         }),
+        deleteProfile: builder.mutation({
+            query: () => ({
+                url: `delete-account`,
+                method: "POST",
+            }),
+        }),
         getSubscriptionPlans: builder.query({
             query: () => ({
                 url: `plans`,
@@ -241,6 +247,7 @@ export const {
     useDeleteMyServiceMutation,
     useGetServiceSlotsQuery,
     useUpdateServiceSlotsMutation,
+    useDeleteProfileMutation,
     useGetSubscriptionPlansQuery,
     useGetSubscriptionLogsQuery,
     useSubscribeMutation,

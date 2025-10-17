@@ -25,6 +25,8 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     dialing_code: Yup.string(),
     country_code: Yup.string(),
     phone: Yup.string().required('Mobile Number is required'),
+    photo: Yup.mixed()
+        .nullable(),
     experience: Yup.array()
         .of(
             Yup.object().shape({
@@ -53,7 +55,32 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     dialing_code: Yup.string(),
     country_code: Yup.string(),
     phone: Yup.string().required('Mobile Number is required'),
-    dob: Yup.string(),
+    gender: Yup.string().required('Gender is required'),
+    state: Yup.string().required('State is required'),
+    city: Yup.string().required('City is required'),
+    bio: Yup.string().required('Bio is required'),
+    language: Yup.string().required('Language is required'),
+    photo: Yup.mixed()
+        .nullable(),
+        experience: Yup.array()
+        .of(
+            Yup.object().shape({
+                experience: Yup.string().required('Experience is required'),
+                specialization: Yup.string().required('Specialization is required'),
+            })
+        )
+        .min(1, 'At least one experience entry is required'),
+    certificates: Yup.array()
+        .of(
+            Yup.object().shape({
+                institute_name: Yup.string().required('Institute name is required'),
+                certificate_title: Yup.string().required('Certificate title is required'),
+                certificate_picture: Yup.mixed()
+                    .nullable()
+                    .required('Certificate picture is required'),
+            })
+        )
+        .min(1, 'At least one certificate entry is required')
 })
 
 export const FORGOT_PASSWORD_SCHEMA = Yup.object().shape({
@@ -103,7 +130,14 @@ export const ADD_SERVICE_SCHEMA = Yup.object().shape({
     title: Yup.string().required('Title is required'),
     description: Yup.string().required('Description is required'),
     charges: Yup.string().required('Charges are required'),
-    image: Yup.object().required('Image is required'),
+    image: Yup.mixed()
+        .test('file-or-url', 'Image is required', value => {
+            return (
+                (value instanceof File) ||
+                (typeof value === 'string' && value.startsWith('http'))
+            );
+        })
+        .required('Image is required')
 })
 
 export const EXERCISE_SCHEMA = Yup.object().shape({

@@ -35,7 +35,7 @@ const useAddServiceController = () => {
             formik_ref?.current?.setFieldValue("title", data?.data?.title)
             formik_ref?.current?.setFieldValue("charges", data?.data?.charges)
             formik_ref?.current?.setFieldValue("description", data?.data?.description)
-            formik_ref?.current?.setFieldValue('image', { uri: data?.data?.image, name: "" })
+            formik_ref?.current?.setFieldValue('image', data?.data?.image)
         }
     }, [isServiceSuccess, data])
 

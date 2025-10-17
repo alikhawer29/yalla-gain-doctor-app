@@ -12,12 +12,20 @@ import { ROUTES } from "../../utils/routes"
 import styles from "./styles"
 import Image from "../../components/Image"
 import { heightPixel } from "../../utils/helper"
+import useMyProfileController from "./useMyProfileController"
 
 const MyProfile = () => {
 
     const user = useAppSelector(selectUser)
 
-    console.log("user?.city", user)
+    const {
+        values:{ 
+            isProfileDeleteLoading
+        },
+        functions: {
+            onPressDeleteAccount
+        }
+    } = useMyProfileController()
 
     return (
         <Wrapper bottom_bar scrollable>
@@ -66,7 +74,7 @@ const MyProfile = () => {
                             </View>
                             <View style={[styles.item, styles.item_width]}>
                                 <Text color={colors.icon_gray} lines={1}>Experience</Text>
-                                <Text weight="bold">{item?.experience}</Text>
+                                <Text weight="bold">{item?.experience || "0"} years</Text>
                             </View>
                         </>
                     ))
@@ -104,7 +112,7 @@ const MyProfile = () => {
             <Button text="Edit Profile" style={styles.item} onPress={() => navigate(ROUTES.EDIT_PROFILE)} />
             <Row justify="space-between">
                 <Button font_size={14} text="Change Password" type="outlined" style={styles.button} onPress={() => navigate(ROUTES.CHANGE_PASSWORD)} />
-                <Button font_size={14} text="Delete Account" type="custom" style={[styles.button, styles.danger_button]} onPress={() => navigate(ROUTES.CHANGE_PASSWORD)} />
+                <Button font_size={14} loading={isProfileDeleteLoading} text="Delete Account" type="custom" style={[styles.button, styles.danger_button]} onPress={onPressDeleteAccount} />
             </Row>
         </Wrapper>
     )

@@ -13,11 +13,11 @@ const useEditProfileController = () => {
     const user = useAppSelector(selectUser)
     const formik_ref = useRef(null)
     const { showOkModal } = useModal()
-    const { image, openGallery } = usePicker()
+    const { openGallery } = usePicker()
 
     const [submit, { isLoading, isSuccess }] = useUpdateProfileMutation()
 
-    console.log("getStates().find(item => item.label === user?.state)", getStates().find(item => item.label === user?.state));
+    console.log("getStates().find(item => item.label === user?.state)", user?.certifications);
 
     const initial = {
         first_name: user?.first_name || "",
@@ -32,6 +32,7 @@ const useEditProfileController = () => {
         certificates: user?.certifications || [],
         state: user?.state || null,
         city: user?.city || null,
+        photo: user?.photo || null
     }
 
     useEffect(() => {
@@ -48,18 +49,17 @@ const useEditProfileController = () => {
 
         let payload = { ...data }
 
-        if (image) {
-            payload.photo = image
-        }
-
         payload = formHandler(payload)
+
+        console.log("Hellooooooooooooooo", payload);
 
         submit(payload)
 
-    }, [image])
+    }, [])
 
-    const onPressUpload = useCallback(() => {
-        openGallery()
+    const onPressUpload = useCallback(async () => {
+        let photo = await openGallery()
+        formik_ref?.current?.setFieldValue("photo", photo)
     }, [])
 
     return {
@@ -70,8 +70,6 @@ const useEditProfileController = () => {
         values: {
             initial,
             isLoading,
-            user_image: user?.photo,
-            image,
             states: getStates(),
         },
         functions: {

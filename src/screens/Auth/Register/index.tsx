@@ -149,7 +149,12 @@ const Register = () => {
                         <Input label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />
                         <Input label="Password" placeholder="Enter Password" type="password" required value={data?.password} onChangeText={handleChange("password")} error={touched?.password ? errors?.password : ""} />
                         <Input label="Confirm Password" placeholder="Confirm Password" type="password" required value={data?.password_confirmation} onChangeText={handleChange("password_confirmation")} error={touched?.password_confirmation ? errors?.password_confirmation : ""} />
-                        <Upload text="Upload Profile Picture" style={styles.upload_margin} />
+                        <Upload text={data?.photo ? data?.photo?.name : "Upload Profile Picture"} style={styles.upload_margin} onPress={async () => {
+                            const img = await openGallery()
+                            if (img) {
+                                setFieldValue(`photo`, img)
+                            }
+                        }} />
                         <Button text={"Register"} style={auth_styles.button} onPress={handleSubmit} loading={isLoading} />
                     </>
                 )}

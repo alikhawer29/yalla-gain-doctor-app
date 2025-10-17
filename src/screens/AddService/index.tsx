@@ -68,9 +68,9 @@ const AddService = () => {
                             error={touched.description ? errors.description : undefined}
                         />
                         {
-                            (data?.image) &&
+                            data?.image &&
                             <View style={{ position: 'relative', alignItems: 'center', justifyContent: 'center' }}>
-                                <Image source={{ uri: data?.image?.uri }} style={{ height: heightPixel(180), borderRadius: heightPixel(10), marginVertical: heightPixel(7.5) }} resize="cover" />
+                                <Image source={{ uri: typeof data?.image === "object" ? data?.image?.uri : data?.image }} style={{ height: heightPixel(180), borderRadius: heightPixel(10), marginVertical: heightPixel(7.5) }} resize="cover" />
                                 <View style={{ position: 'absolute', top: heightPixel(20), right: heightPixel(20) }} >
                                     <Icon source={images.cross} tint_color={colors.danger} size={10} onPress={() => setFieldValue("image", null)} />
                                 </View>
