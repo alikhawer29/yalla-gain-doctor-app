@@ -11,6 +11,10 @@
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		550735A5B30444EC8F64B079 /* SF-Pro-Display-Bold.otf in Resources */ = {isa = PBXBuildFile; fileRef = 9DEF39F2E99B4309966A310C /* SF-Pro-Display-Bold.otf */; };
+		33B3BAD993A941F98D620988 /* SF-Pro-Display-Regular.otf in Resources */ = {isa = PBXBuildFile; fileRef = 33EB8FA2C8B5429A8890B75B /* SF-Pro-Display-Regular.otf */; };
+		C80C74F18F294913A9A1FFF6 /* SF-Pro-Display-Semibold.otf in Resources */ = {isa = PBXBuildFile; fileRef = C47050CD431E4A63842A5ADC /* SF-Pro-Display-Semibold.otf */; };
+		67A6796FF37A4C7796D11F72 /* index.ts in Resources */ = {isa = PBXBuildFile; fileRef = E31D6395A2F4496D98A78BA8 /* index.ts */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -24,6 +28,10 @@
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = YallaGainDoctor/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = YallaGainDoctor/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		9DEF39F2E99B4309966A310C /* SF-Pro-Display-Bold.otf */ = {isa = PBXFileReference; name = "SF-Pro-Display-Bold.otf"; path = "../src/assets/fonts/SF-Pro-Display-Bold.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		33EB8FA2C8B5429A8890B75B /* SF-Pro-Display-Regular.otf */ = {isa = PBXFileReference; name = "SF-Pro-Display-Regular.otf"; path = "../src/assets/fonts/SF-Pro-Display-Regular.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		C47050CD431E4A63842A5ADC /* SF-Pro-Display-Semibold.otf */ = {isa = PBXFileReference; name = "SF-Pro-Display-Semibold.otf"; path = "../src/assets/fonts/SF-Pro-Display-Semibold.otf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
+		E31D6395A2F4496D98A78BA8 /* index.ts */ = {isa = PBXFileReference; name = "index.ts"; path = "../src/assets/fonts/index.ts"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -74,6 +82,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				9C14A020805A4A5EBD3D217A /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -96,6 +105,18 @@
 			);
 			path = Pods;
 			sourceTree = "<group>";
+		};
+		9C14A020805A4A5EBD3D217A /* Resources */ = {
+			isa = "PBXGroup";
+			children = (
+				9DEF39F2E99B4309966A310C /* SF-Pro-Display-Bold.otf */,
+				33EB8FA2C8B5429A8890B75B /* SF-Pro-Display-Regular.otf */,
+				C47050CD431E4A63842A5ADC /* SF-Pro-Display-Semibold.otf */,
+				E31D6395A2F4496D98A78BA8 /* index.ts */,
+			);
+			name = Resources;
+			sourceTree = "<group>";
+			path = "";
 		};
 /* End PBXGroup section */
 
@@ -159,6 +180,10 @@
 			files = (
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
+				550735A5B30444EC8F64B079 /* SF-Pro-Display-Bold.otf in Resources */,
+				33B3BAD993A941F98D620988 /* SF-Pro-Display-Regular.otf in Resources */,
+				C80C74F18F294913A9A1FFF6 /* SF-Pro-Display-Semibold.otf in Resources */,
+				67A6796FF37A4C7796D11F72 /* index.ts in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

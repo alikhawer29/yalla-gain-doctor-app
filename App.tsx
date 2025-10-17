@@ -1,38 +1,54 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import { DefaultTheme, NavigationContainer } from '@react-navigation/native';
+import { useEffect } from 'react';
+import { Platform, StatusBar, StyleSheet, UIManager } from 'react-native';
+import BootSplash from "react-native-bootsplash";
+import { MenuProvider } from 'react-native-popup-menu';
+import Toast from "react-native-toast-message";
+import { Provider } from 'react-redux';
+import { PersistGate } from 'redux-persist/integration/react';
+import AppWrapper from './src/components/AppWrapper';
+import { ModalProvider } from './src/contexts/ModalContext';
+import AppStackNavigator from './src/navigation/AppStackNavigator';
+import { persistor, store } from './src/redux/Store';
+import colors from './src/utils/colors';
+import { navigationRef } from './src/utils/navigation';
 
-import { NewAppScreen } from '@react-native/new-app-screen';
-import { StatusBar, StyleSheet, useColorScheme, View } from 'react-native';
-import {
-  SafeAreaProvider,
-  useSafeAreaInsets,
-} from 'react-native-safe-area-context';
-
-function App() {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  return (
-    <SafeAreaProvider>
-      <StatusBar barStyle={isDarkMode ? 'light-content' : 'dark-content'} />
-      <AppContent />
-    </SafeAreaProvider>
-  );
+if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
+  UIManager.setLayoutAnimationEnabledExperimental(true);
 }
 
-function AppContent() {
-  const safeAreaInsets = useSafeAreaInsets();
+function App() {
+
+  useEffect(() => {
+    setTimeout(() => {
+      BootSplash.hide();
+    }, 1000)
+  }, [])
+
+  const navTheme = {
+    ...DefaultTheme,
+    colors: {
+      ...DefaultTheme.colors,
+      background: colors.transparent,
+    },
+  };
 
   return (
-    <View style={styles.container}>
-      <NewAppScreen
-        templateFileName="App.tsx"
-        safeAreaInsets={safeAreaInsets}
-      />
-    </View>
+    <Provider store={store}>
+      <PersistGate loading={null} persistor={persistor}>
+        <AppWrapper>
+          <StatusBar barStyle={'light-content'} />
+          <MenuProvider>
+            <ModalProvider>
+              <NavigationContainer ref={navigationRef} theme={navTheme}>
+                <AppStackNavigator />
+                <Toast />
+              </NavigationContainer>
+            </ModalProvider>
+          </MenuProvider>
+        </AppWrapper>
+      </PersistGate>
+    </Provider>
   );
 }
 
@@ -42,4 +58,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default App;
+export default App
