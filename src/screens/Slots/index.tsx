@@ -134,8 +134,6 @@ const Slots = () => {
         const startMin = parseTimeToMinutes(start);
         const endMin = parseTimeToMinutes(end);
 
-        console.log("Start", startMin, "End", endMin);
-
         if (!start || !end) return null;
         if (endMin <= startMin)
             return "End time must be after start time.";
@@ -292,6 +290,8 @@ const Slots = () => {
                 body: formData
             });
         }
+
+        setSlotsData(INITIAL_SLOTS)
 
     };
 

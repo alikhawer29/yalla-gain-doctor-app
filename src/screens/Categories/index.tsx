@@ -34,7 +34,7 @@ const Categories = () => {
 
     const onPressNext = () => {
         if (selected) {
-            navigate(ROUTES.ADD_SERVICE, { id: selected })
+            navigate(ROUTES.ADD_SERVICE, { id: selected, title: data?.find(item => item.id == selected)?.title })
         }
     }
 

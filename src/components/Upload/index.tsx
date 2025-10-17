@@ -7,12 +7,12 @@ import Text from "../Text";
 import colors from "../../utils/colors";
 import styles from "./styles";
 
-const Upload: FC<IUpload> = ({ text = "Upload", style, onPress, error }) => {
+const Upload: FC<IUpload> = ({ text = "Upload", style, onPress, error, required = false }) => {
     return (
         <>
             <Row align="center" gap={10} style={style} onPress={onPress}>
                 <Icon source={images.upload} size={24} />
-                <Text size={16} weight="semibold">{text}</Text>
+                <Text size={16} weight="semibold">{text} {required && <Text size={12} weight="semibold" color={colors.danger}>*</Text>}</Text>
             </Row>
             {error && (
                 <Text size={12} color={colors.danger} style={styles.error}>

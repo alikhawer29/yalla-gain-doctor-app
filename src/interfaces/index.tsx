@@ -259,6 +259,9 @@ export interface ITabs {
 export interface IUpload {
     text?: string
     style?: StyleProp<ViewStyle>
+    required?: boolean
+    error?: string
+    onPress: () => void
 }
 
 export interface ICheckbox {
@@ -287,7 +290,8 @@ export interface ISongCard {
 
 export interface ILoader {
     color?: string
-    type?: IndicatorName
+    type?: IndicatorName,
+    mode?: "primary" | "secondary"
 }
 
 export interface IHelpDeskCard {

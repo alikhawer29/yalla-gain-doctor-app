@@ -87,7 +87,7 @@ const Input: FC<IInput> = props => {
                             allowFontScaling={false}
                             style={[styles.input, type === "textarea" ? styles.multiline_input : {}, height ? { height: heightPixel(height) } : {}]}
                             placeholder={placeholder}
-                            placeholderTextColor={colors.white}
+                            placeholderTextColor={colors.icon_gray}
                             secureTextEntry={isPasswordVisible}
                             selectionColor={colors.primary}
                             onFocus={() => setIsFocused(true)}
@@ -98,6 +98,7 @@ const Input: FC<IInput> = props => {
                             multiline={type === "textarea"}
                             textAlignVertical={type == "textarea" ? "top" : "center"}
                             editable={(type !== "date" && type !== "time") && !disabled}
+                            pointerEvents={(type === "date" || type === "time") ? 'none' : 'auto'}
                             {...keyboardProps}
                         />
                         {

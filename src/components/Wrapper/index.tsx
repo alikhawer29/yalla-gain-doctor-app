@@ -6,6 +6,7 @@ import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
 import FloatingButton from "../FloatingButton"
 import styles from "./styles"
+import Loader from "../Loader"
 
 const Wrapper: FC<IWrapper> = ({
     children,
@@ -38,7 +39,7 @@ const Wrapper: FC<IWrapper> = ({
 
     const renderBody = () =>
         loading ? (
-            <ActivityIndicator size="small" color={colors.primary} />
+            <Loader mode="secondary" />
         ) : (
             children
         )

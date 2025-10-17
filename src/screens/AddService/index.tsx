@@ -76,7 +76,7 @@ const AddService = () => {
                                 </View>
                             </View>
                         }
-                        <Upload text={data?.image?.name || "Upload Service Image"} onPress={openGallery} style={{ marginVertical: heightPixel(7.5) }} error={touched.image ? errors.image : undefined} />
+                        <Upload required text={data?.image?.name || "Upload Service Image"} onPress={openGallery} style={{ marginVertical: heightPixel(7.5) }} error={touched.image ? errors.image : undefined} />
                         <View style={{ gap: heightPixel(10), marginTop: heightPixel(15) }}>
                             {
                                 !is_edit &&
