@@ -62,7 +62,7 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     language: Yup.string().required('Language is required'),
     photo: Yup.mixed()
         .nullable(),
-        experience: Yup.array()
+    experience: Yup.array()
         .of(
             Yup.object().shape({
                 experience: Yup.string().required('Experience is required'),
@@ -142,4 +142,14 @@ export const ADD_SERVICE_SCHEMA = Yup.object().shape({
 
 export const EXERCISE_SCHEMA = Yup.object().shape({
     exercise: Yup.string().required('Exercise is required')
+})
+
+export const RESCHEDULE_BOOOKING_SCHEMA = Yup.object().shape({
+    rescheduled_appointment_date: Yup.string().required('Date is required'),
+    rescheduled_appointment_start_time: Yup.string().required('From Time is required'),
+    rescheduled_appointment_end_time: Yup.string().required('To Time is required'),
+})
+
+export const REPORT_BOOOKING_SCHEMA = Yup.object().shape({
+    reason: Yup.string().required('Reason is required'),
 })
