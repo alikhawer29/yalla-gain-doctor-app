@@ -1,0 +1,51 @@
+import { useIsFocused } from "@react-navigation/native"
+import { useEffect, useState } from "react"
+import useSearch from "../../hooks/useSearch"
+import { useGetBookingsQuery } from "../../redux/Apis/User"
+import { STATUSES } from "../../utils/data"
+import { navigate } from "../../utils/navigation"
+import { ROUTES } from "../../utils/routes"
+
+const useServiceLogsController = () => {
+
+    const isFocused = useIsFocused()
+    const [selected, setSelected] = useState(STATUSES[0]?.value)
+
+    const { search, debouncedSearch, onChange: onSearch } = useSearch()
+
+    const { data, isFetching: isLoading, refetch } = useGetBookingsQuery({ type: selected === "all" ? "" : selected, search: debouncedSearch })
+
+    useEffect(() => {
+        if (isFocused) {
+            refetch()
+        }
+    }, [isFocused])
+
+    const onPressCard = (id: number) => {
+        navigate(ROUTES.BOOKING_DETAILS, { id })
+    }
+
+    const onRequests = () => {
+        navigate(ROUTES.APPOINTMENT_REQUESTS)
+    }
+
+    const onChangeStatus = (status: string) => setSelected(status)
+
+    return {
+        values: {
+            data: data?.data || [],
+            isLoading,
+            selected,
+            search
+        },
+        functions: {
+            onReload: refetch,
+            onPressCard,
+            onRequests,
+            onChangeStatus,
+            onSearch
+        }
+    }
+}
+
+export default useServiceLogsController

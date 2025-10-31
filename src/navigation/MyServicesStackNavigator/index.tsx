@@ -3,7 +3,6 @@ import { RootStackParamList } from '../../interfaces';
 import MyServices from '../../screens/MyServices';
 import { ROUTES } from '../../utils/routes';
 import Options from '../Options';
-import ServiceDetails from '../../screens/ServiceDetails';
 
 const Stack = createStackNavigator<RootStackParamList>();
 

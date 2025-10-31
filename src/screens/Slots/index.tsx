@@ -145,7 +145,6 @@ const Slots = () => {
     const formatTime = (time: string) => {
         if (!time) return "";
 
-        // If ISO string, extract hours & minutes
         if (time.includes("T")) {
             const date = new Date(time);
             const hh = String(date.getHours()).padStart(2, "0");
@@ -153,7 +152,6 @@ const Slots = () => {
             return `${hh}:${mm}:00`;
         }
 
-        // If already "HH:mm" format
         const [hh, mm] = time.split(":");
         return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00`;
     };
