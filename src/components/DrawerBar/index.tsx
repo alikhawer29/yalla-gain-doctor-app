@@ -30,11 +30,15 @@ const DRAWER_ROUTES = [
     },
     {
         title: "Service Logs",
-        route: NAVIGATORS.BOTTOM
+        route: NAVIGATORS.BOOKING_STACK
     },
     {
         title: "Payment Logs",
         route: NAVIGATORS.BOTTOM
+    },
+    {
+        title: "Reviews & Ratings",
+        route: NAVIGATORS.REVIEWS_STACK
     },
     {
         title: "Help Desk",
