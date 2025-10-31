@@ -109,6 +109,59 @@ export const userApi = createApi({
                 method: "POST",
             }),
         }),
+        getAppointmentRequests: builder.query({
+            query: (params) => ({
+                url: `my-bookings/requests`,
+                method: "GET",
+                params
+            }),
+            keepUnusedDataFor: 0
+        }),
+        getBookingById: builder.query({
+            query: (id) => ({
+                url: `my-booking/${id}`,
+                method: "GET",
+            }),
+            keepUnusedDataFor: 0
+        }),
+        updateAppointmentStatus: builder.mutation({
+            query: (payload) => ({
+                url: `my-booking/${payload.id}/${payload.type}`,
+                method: "POST",
+                body: payload.body
+            }),
+        }),
+        updatePrescription: builder.mutation({
+            query: (payload) => ({
+                url: `my-booking/${payload.id}/prescription`,
+                method: "POST",
+                body: payload.body
+            }),
+        }),
+        getBookings: builder.query({
+            query: (params) => ({
+                url: `my-bookings`,
+                method: "GET",
+                params
+            }),
+            keepUnusedDataFor: 0
+        }),
+        getBookingHistory: builder.query({
+            query: (params) => ({
+                url: `appointments/${params?.id}/history`,
+                method: "GET",
+                params
+            }),
+            keepUnusedDataFor: 0
+        }),
+        getReviews: builder.query({
+            query: (params) => ({
+                url: `my-ratings`,
+                method: "GET",
+                params
+            }),
+            keepUnusedDataFor: 0
+        }),
         // Newsfeed
         createFeed: builder.mutation({
             query: (body) => ({
@@ -248,6 +301,14 @@ export const {
     useGetServiceSlotsQuery,
     useUpdateServiceSlotsMutation,
     useDeleteProfileMutation,
+    useGetAppointmentRequestsQuery,
+    useGetBookingByIdQuery,
+    useUpdateAppointmentStatusMutation,
+    useGetBookingsQuery,
+    useUpdatePrescriptionMutation,
+    useGetBookingHistoryQuery,
+    useGetReviewsQuery,
+    // old
     useGetSubscriptionPlansQuery,
     useGetSubscriptionLogsQuery,
     useSubscribeMutation,
