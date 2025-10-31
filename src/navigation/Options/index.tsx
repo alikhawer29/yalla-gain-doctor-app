@@ -72,7 +72,7 @@ const Options = (props) => {
         size={22}
         position="center"
       >
-        {props?.route?.params?.title || route?.title }
+        {props?.route?.params?.title || route?.title}
       </Text>
     )
   }
