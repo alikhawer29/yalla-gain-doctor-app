@@ -43,6 +43,71 @@ export const USER = {
     role: "User"
 }
 
+export const STATUSES = [
+    {
+        label: "All",
+        value: "all"
+    },
+    {
+        label: "Upcoming",
+        value: "upcoming"
+    },
+    {
+        label: "In-Progress",
+        value: "in-progress"
+    },
+    {
+        label: "Past",
+        value: "past"
+    }
+]
+
+export const REQUEST_STATUSES = [
+    {
+        label: "All",
+        value: "all"
+    },
+    {
+        label: "Pending",
+        value: "pending"
+    },
+    {
+        label: "Rejected",
+        value: "rejected"
+    },
+    {
+        label: "Rescheduled",
+        value: "rescheduled"
+    }
+]
+
+export const RATINGS = [
+    {
+        label: "All",
+        value: "all"
+    },
+    {
+        label: "5",
+        value: "5"
+    },
+    {
+        label: "4",
+        value: "4"
+    },
+    {
+        label: "3",
+        value: "3"
+    },
+    {
+        label: "2",
+        value: "2"
+    },
+    {
+        label: "1",
+        value: "1"
+    },
+]
+
 export const PROGRESS_TRACKING = [
     {
         title: "Running Progress",

@@ -19,6 +19,15 @@ const colors = {
     transparent_primary: "rgba(17, 128, 118, 0.7)",
     light_transparent_primary: "rgba(17, 128, 118, 0.1)",
     light_transparent_danger: "rgba(255, 0, 0, 0.1)",
+    yellow: "#FEDB16",
+
+    // status colors
+    pending: "#D59C00",
+    rejected: "#F20000",
+    upcoming: "#FF4F25",
+    "in-progress": "#118076",
+    past: "#666666",
+    rescheduled: "#9747FF",
 };
 
 export default colors;

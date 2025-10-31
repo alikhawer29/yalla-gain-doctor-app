@@ -2,6 +2,7 @@ import { City, State } from 'country-state-city';
 import dayjs from 'dayjs';
 import { Dimensions, Insets, PixelRatio, Platform, StatusBar } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
+import colors from './colors';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -144,3 +145,36 @@ export const timeToISOString = (time: string, date: Date = new Date()) => {
     return isoDate.toISOString()
 
 }
+
+export const getStatusColor = (status: string) => {
+
+    const key = status?.toLowerCase()
+
+    return (
+        colors[key] ||
+        {
+            pending: colors.pending,
+            upcoming: colors.upcoming,
+            rejected: colors.rejected,
+            completed: colors.primary,
+            cancelled: colors.icon_gray,
+            rescheduled: colors.rescheduled
+        }[key] ||
+        colors.black
+    )
+
+}
+
+export const formatTime = (time: string) => {
+    if (!time) return "";
+
+    if (time.includes("T")) {
+        const date = new Date(time);
+        const hh = String(date.getHours()).padStart(2, "0");
+        const mm = String(date.getMinutes()).padStart(2, "0");
+        return `${hh}:${mm}:00`;
+    }
+
+    const [hh, mm] = time.split(":");
+    return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00`;
+};
