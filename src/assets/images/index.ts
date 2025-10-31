@@ -66,6 +66,7 @@ const images = {
     home: require('./home.png'),
     trash: require('./trash.png'),
     plus_green: require('./plus_green.png'),
+    star: require('./star.png'),
     recommended_videos: {
         exercise_one: require('./exercise_one.png'),
         exercise_two: require('./exercise_two.png'),
