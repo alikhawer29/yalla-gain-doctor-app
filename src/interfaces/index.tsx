@@ -61,6 +61,13 @@ export type RootStackParamList = {
     MyServices: undefined,
     ServiceDetails: { id: number, title: string }
     Slots: undefined,
+    BookingRequests: undefined,
+    BookingDetails: { id: string | number },
+    Bookings: undefined,
+    RescheduleBooking: { id: string | number },
+    ReportBooking: { id: string | number },
+    UserHistory: { id: string | number },
+    Reviews: undefined,
 }
 
 export interface IWrapper {
