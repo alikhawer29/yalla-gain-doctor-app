@@ -164,7 +164,7 @@ const Slots = () => {
         );
     };
 
-    const handleChangeSlot = (dayIndex, slotIndex, key, value) => {
+    const handleChangeSlot = (dayIndex: number, slotIndex: number, key: 'start_time' | 'end_time', value: string) => {
         setSlotsData((prev) => {
             const updated = [...prev];
             updated[dayIndex].slots[slotIndex][key] = value;
