@@ -2,10 +2,22 @@ import { Pressable, View } from "react-native"
 import images from "../../assets/images"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
+import { ROUTES } from "../../utils/routes"
 import Icon from "../Icon"
 import Row from "../Row"
 
+// Routes where bottom bar should be hidden
+const HIDDEN_ROUTES = [ROUTES.CHAT_DETAIL]
+
 const BottomBar = ({ state, descriptors, navigation }) => {
+    // Get the current nested route name
+    const currentTabState = state.routes[state.index]?.state
+    const currentNestedRoute = currentTabState?.routes?.[currentTabState?.index]?.name
+
+    // Hide bottom bar on specific screens
+    if (currentNestedRoute && HIDDEN_ROUTES.includes(currentNestedRoute)) {
+        return null
+    }
 
     return (
         <View style={{ paddingHorizontal: widthPixel(10), backgroundColor: colors.transparent, paddingVertical: heightPixel(15), position: "absolute", bottom: BOTTOMBAR_HEIGHT, left: widthPixel(10), right: widthPixel(10) }}>

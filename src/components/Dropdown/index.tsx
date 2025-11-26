@@ -24,6 +24,7 @@ const Dropdown = props => {
     height = 54,
     required = false,
     isLoading = false,
+    listMode = 'SCROLLVIEW',
   } = props;
 
   useEffect(() => {
@@ -68,7 +69,7 @@ const Dropdown = props => {
         onSelectItem={onChangeText}
         dropDownContainerStyle={styles.dropdown}
         textStyle={styles.text}
-        listMode="SCROLLVIEW"
+        listMode={listMode}
         multiple={multiple}
         mode="BADGE"
         dropDownDirection={direction}
@@ -76,9 +77,10 @@ const Dropdown = props => {
         zIndex={zIndex}
         zIndexInverse={zIndexInverse}
         labelProps={{ allowFontScaling: false }}
-        itemProps={{ allowFontScaling: false }}
         arrowIconStyle={{ tintColor: colors.white }}
         loading={isLoading}
+        listItemLabelStyle={styles.listItemLabel}
+        tickIconStyle={{ tintColor: colors.white }}
       />
       {error && (
         <Text size={12} color={colors.danger} style={styles.error}>

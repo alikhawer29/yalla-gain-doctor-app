@@ -5,40 +5,43 @@ import errorLogger from '../../middlewares/apierror.middleware';
 import successLogger from '../../middlewares/apisuccess.middleware';
 import { authApi } from '../Apis/Auth';
 import { userApi } from '../Apis/User';
+import { chatApi } from '../Apis/Chat';
 import authReducer from '../Slices/AuthSlice';
 import spotifyReducer from '../Slices/SpotifySlice';
 import { chatbotApi } from '../Apis/Chatbot';
 import { movementCorrectionApi } from '../Apis/MovementCorrection';
 
 const persistConfig = {
-    key: 'yallagain',
-    storage: AsyncStorage,
-    whitelist: ['auth'],
-}
+  key: 'yallagain',
+  storage: AsyncStorage,
+  whitelist: ['auth'],
+};
 
 const rootReducer = combineReducers({
-    auth: authReducer,
-    spotify: spotifyReducer,
-    [authApi.reducerPath]: authApi.reducer,
-    [userApi.reducerPath]: userApi.reducer,
-    [chatbotApi.reducerPath]: chatbotApi.reducer,
-    [movementCorrectionApi.reducerPath]: movementCorrectionApi.reducer,
-})
+  auth: authReducer,
+  spotify: spotifyReducer,
+  [authApi.reducerPath]: authApi.reducer,
+  [userApi.reducerPath]: userApi.reducer,
+  [chatApi.reducerPath]: chatApi.reducer,
+  [chatbotApi.reducerPath]: chatbotApi.reducer,
+  [movementCorrectionApi.reducerPath]: movementCorrectionApi.reducer,
+});
 
-const persistedReducer = persistReducer(persistConfig, rootReducer)
+const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({
-    reducer: persistedReducer,
-    middleware: (getDefaultMiddleware) =>
-        getDefaultMiddleware({
-            serializableCheck: false,
-        })
-            .concat(authApi.middleware)
-            .concat(userApi.middleware)
-            .concat(chatbotApi.middleware)
-            .concat(movementCorrectionApi.middleware)
-            .concat(errorLogger)
-            .concat(successLogger)
+  reducer: persistedReducer,
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    })
+      .concat(authApi.middleware)
+      .concat(userApi.middleware)
+      .concat(chatApi.middleware)
+      .concat(chatbotApi.middleware)
+      .concat(movementCorrectionApi.middleware)
+      .concat(errorLogger)
+      .concat(successLogger),
 });
 
 export const persistor = persistStore(store);

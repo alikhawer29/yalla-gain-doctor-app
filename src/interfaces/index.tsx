@@ -38,6 +38,7 @@ export type RootStackParamList = {
     EditProfile: undefined
     ChangePassword: undefined
     Chat: undefined
+    ChatDetail: { chatId: number; name: string; image: string; user_role: 'admin' | 'user' }
     NewsFeed: undefined
     ProgressTracking: undefined
     MusicAuth: undefined
@@ -77,6 +78,7 @@ export interface IWrapper {
     no_padding?: boolean
     loading?: boolean
     floating?: boolean
+    hide_bottom_bar?: boolean
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -237,10 +239,36 @@ export interface INewsFeedCard {
 }
 
 export interface IChatCard {
+    id: number
+    type: string
+    name: string
+    image: string
+    user_id: number
+    user_role: 'admin' | 'user'
+    unread: number
+    last_message: IChatMessage | null
+    onPress?: () => void
+}
+
+export interface IChatMessage {
+    id: number
+    chat_id: number
+    user_id: number
+    user_name: string
+    image: string
     message: string
-    user?: any
-    created_at: string
-    system?: boolean
+    read_at: string | null
+    date: string
+    time: string
+    file: string[]
+    is_mine: boolean
+}
+
+export interface IChatDetailHeader {
+    name: string
+    image: string
+    user_role: 'admin' | 'user'
+    onBack: () => void
 }
 
 export interface IBadge {

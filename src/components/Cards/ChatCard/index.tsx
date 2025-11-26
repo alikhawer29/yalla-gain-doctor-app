@@ -10,32 +10,47 @@ import Row from "../../Row";
 import Text from "../../Text";
 import styles from "./styles";
 
-const ChatCard: FC<IChatCard> = ({ user, message, created_at, system }) => {
+const ChatCard: FC<IChatCard> = ({
+    id,
+    name,
+    image,
+    user_role,
+    unread,
+    last_message,
+    onPress
+}) => {
+    const isAdmin = user_role === 'admin';
+    const badgeColor = isAdmin ? colors.primary : colors.grayish_black;
+    const badgeTitle = isAdmin ? 'Admin' : 'User';
+
     return (
-        <CardWrapper border_radius={5} padding={8} height={110}>
+        <CardWrapper border_radius={5} padding={8} height={110} onPress={onPress}>
             <Row gap={12} style={styles.container}>
                 <View style={styles.icon_container}>
-                    {
-                        system ?
-                            <Icon source={images.announcement} size={38} border={colors.white} rounded less_padding />
-                            :
-                            <Icon source={user?.image} size={38} />
-                    }
+                    <Icon source={{ uri: image }} size={38} rounded no_padding />
                 </View>
                 <View style={styles.content_container}>
                     <View>
-                        <Text weight="semibold">{system ? "System Notification " : `${user?.first_name} ${user?.last_name}`} </Text>
-                        <Text lines={2} line_height={19}>{message}</Text>
-                    </View>
-                    <Row justify={user ? "space-between" : "flex-end"} align="center">
-                        {
-                            user &&
-                            <Badge title={user?.role} color={colors.icon_gray} style={styles.badge} />
-                        }
-                        <Row align="center" gap={6}>
-                            <Icon source={images.clock} size={11} />
-                            <Text lines={2} size={10}>{created_at}</Text>
+                        <Row justify="space-between" align="center">
+                            <Text weight="semibold">{name}</Text>
+                            {unread > 0 && (
+                                <View style={styles.unread_badge}>
+                                    <Text size={10} weight="semibold">{unread}</Text>
+                                </View>
+                            )}
                         </Row>
+                        <Text lines={2} line_height={19} color={colors.icon_gray}>
+                            {last_message?.message || 'No messages yet'}
+                        </Text>
+                    </View>
+                    <Row justify="space-between" align="center">
+                        <Badge title={badgeTitle} color={badgeColor} style={styles.badge} />
+                        {last_message?.time && (
+                            <Row align="center" gap={6}>
+                                <Icon source={images.clock} size={11} tint_color={colors.icon_gray} />
+                                <Text lines={2} size={10} color={colors.icon_gray}>{last_message.time}</Text>
+                            </Row>
+                        )}
                     </Row>
                 </View>
             </Row>

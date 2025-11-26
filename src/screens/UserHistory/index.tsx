@@ -123,7 +123,7 @@ const UserHistory = () => {
                                 <View style={{ marginTop: heightPixel(15) }}>
                                     <Input
                                         label="To"
-                                        placeholder="Mm/Dd/Yyyy"
+                                        placeholder="MM/DD/YYYY"
                                         type="date"
                                         value={toDate}
                                         onChangeText={setToDate}
