@@ -1,4 +1,5 @@
 import { Pressable, View } from "react-native"
+import { NavigationState, ParamListBase, TabNavigationState } from "@react-navigation/native"
 import images from "../../assets/images"
 import colors from "../../utils/colors"
 import { BOTTOMBAR_HEIGHT, heightPixel, widthPixel } from "../../utils/helper"
@@ -9,20 +10,27 @@ import Row from "../Row"
 // Routes where bottom bar should be hidden
 const HIDDEN_ROUTES = [ROUTES.CHAT_DETAIL]
 
-const BottomBar = ({ state, descriptors, navigation }) => {
+interface BottomBarProps {
+    state: TabNavigationState<ParamListBase>
+    descriptors: any
+    navigation: any
+}
+
+const BottomBar = ({ state, descriptors, navigation }: BottomBarProps) => {
     // Get the current nested route name
     const currentTabState = state.routes[state.index]?.state
-    const currentNestedRoute = currentTabState?.routes?.[currentTabState?.index]?.name
+    const currentIndex = currentTabState?.index ?? 0
+    const currentNestedRoute = currentTabState?.routes?.[currentIndex]?.name
 
     // Hide bottom bar on specific screens
-    if (currentNestedRoute && HIDDEN_ROUTES.includes(currentNestedRoute)) {
+    if (currentNestedRoute && HIDDEN_ROUTES.includes(currentNestedRoute as any)) {
         return null
     }
 
     return (
         <View style={{ paddingHorizontal: widthPixel(10), backgroundColor: colors.transparent, paddingVertical: heightPixel(15), position: "absolute", bottom: BOTTOMBAR_HEIGHT, left: widthPixel(10), right: widthPixel(10) }}>
             <Row align="center" justify="space-between" style={{ backgroundColor: colors.blackish_gray, height: heightPixel(70), borderRadius: BOTTOMBAR_HEIGHT, paddingHorizontal: widthPixel(10) }}>
-                {state.routes.map((route, index) => {
+                {state.routes.map((route: any, index: number) => {
                     const { options } = descriptors[route.key];
                     const icon =
                         options.tabBarIcon !== undefined
@@ -52,6 +60,7 @@ const BottomBar = ({ state, descriptors, navigation }) => {
 
                     return (
                         <Pressable
+                            key={route.key}
                             accessibilityState={isFocused ? { selected: true } : {}}
                             accessibilityLabel={options.tabBarAccessibilityLabel}
                             testID={options.tabBarButtonTestID}

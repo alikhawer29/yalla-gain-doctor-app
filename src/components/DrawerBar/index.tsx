@@ -76,7 +76,7 @@ const DrawerBar = (props) => {
             </Row>
             {
                 DRAWER_ROUTES.map((item) => (
-                    <Row gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route, item?.child ? { screen: item?.child } : {})}>
+                    <Row key={item.title} gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route, item?.child ? { screen: item?.child } : {})}>
                         {item?.icon && <Icon source={item?.icon} size={24} tint_color={colors.white} />}
                         <Text size={15} weight="semibold" color={colors.white}>{item.title}</Text>
                     </Row>

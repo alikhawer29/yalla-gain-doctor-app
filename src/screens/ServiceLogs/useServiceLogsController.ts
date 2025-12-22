@@ -1,10 +1,11 @@
 import { useIsFocused } from "@react-navigation/native"
 import { useEffect, useState } from "react"
+import { CommonActions } from "@react-navigation/native"
 import useSearch from "../../hooks/useSearch"
 import { useGetBookingsQuery } from "../../redux/Apis/User"
 import { STATUSES } from "../../utils/data"
-import { navigate } from "../../utils/navigation"
-import { ROUTES } from "../../utils/routes"
+import { navigationRef } from "../../utils/navigation"
+import { NAVIGATORS, ROUTES } from "../../utils/routes"
 
 const useServiceLogsController = () => {
 
@@ -22,11 +23,15 @@ const useServiceLogsController = () => {
     }, [isFocused])
 
     const onPressCard = (id: number) => {
-        navigate(ROUTES.BOOKING_DETAILS, { id })
+        if (navigationRef.isReady()) {
+            navigationRef.navigate(NAVIGATORS.BOOKING_STACK, { screen: ROUTES.BOOKING_DETAILS, params: { id } })
+        }
     }
 
     const onRequests = () => {
-        navigate(ROUTES.APPOINTMENT_REQUESTS)
+        if (navigationRef.isReady()) {
+            navigationRef.navigate(ROUTES.BOOKING_STACK)
+        }
     }
 
     const onChangeStatus = (status: string) => setSelected(status)

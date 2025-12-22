@@ -1,5 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Image, Modal, StyleSheet, TouchableWithoutFeedback, View } from 'react-native';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { Image, Modal, StyleSheet, TouchableWithoutFeedback, View, TextInput } from 'react-native';
 import images from '../assets/images';
 import Button from '../components/Button';
 import Icon from '../components/Icon';
@@ -23,7 +23,13 @@ export const ModalProvider = ({ children }) => {
         message: '',
         onConfirm: () => { },
         onCancel: () => { },
+        inputValue: '',
+        placeholder: '',
     });
+
+    useEffect(() => {
+        console.log("Modal state changed:", { isVisible, modalType });
+    }, [isVisible, modalType]);
 
     const showOkModal = (data, onConfirm, onCancel) => {
         setModalType('ok');
@@ -60,6 +66,25 @@ export const ModalProvider = ({ children }) => {
         setIsVisible(true);
     };
 
+    const showInputModal = (data, onConfirm, onCancel) => {
+        console.log("showInputModal called with data:", data);
+        setModalType('input');
+        setModalContent({
+            ...data,
+            inputValue: data.inputValue || '',
+            placeholder: data.placeholder || 'Enter reason...',
+            onConfirm: onConfirm ? onConfirm : () => setIsVisible(false),
+            onCancel: () => {
+                setIsVisible(false)
+                if (onCancel) {
+                    onCancel()
+                }
+            },
+        });
+        setIsVisible(true);
+        console.log("Modal type set to input, isVisible set to true");
+    };
+
     const hideModal = () => {
         if (modalContent.onCancel) {
             modalContent.onCancel()
@@ -73,6 +98,7 @@ export const ModalProvider = ({ children }) => {
                 showOkModal,
                 showYesNoModal,
                 showInformativeModal,
+                showInputModal,
                 hideModal,
             }}
         >
@@ -102,9 +128,29 @@ export const ModalProvider = ({ children }) => {
                                             <Image source={modalContent.type === "success" ? images.modal_check : modalContent.type === "warning" ? images.warning : images.modal_cross} style={{ height: heightPixel(78), resizeMode: "contain", marginBottom: heightPixel(20) }} />
                                         )
                                     }
+                                    
                                     <Text style={[styles.title, modalContent.type == "info" ? { width: "100%" } : {}]} color={colors.white} position="center" size={24} weight='bold' line_height={40}>{modalContent?.title}</Text>
                                     <Text style={[styles.message, modalContent.type == "info" ? { width: "100%" } : {}]} color={colors.white} position="center">{modalContent?.message}</Text>
-                                    {modalType === 'ok' ? (
+                                    {modalType === 'input' ? (
+                                        <View style={styles.inputContainer}>
+                                            <TextInput
+                                                style={styles.textInput}
+                                                value={modalContent.inputValue}
+                                                onChangeText={(text) => setModalContent(prev => ({ ...prev, inputValue: text }))}
+                                                placeholder={modalContent.placeholder}
+                                                placeholderTextColor={colors.gray}
+                                                multiline
+                                                numberOfLines={3}
+                                                textAlignVertical="top"
+                                            />
+                                            <Button text="Submit" onPress={() => {
+                                                if (modalContent.inputValue.trim()) {
+                                                    modalContent.onConfirm(modalContent.inputValue.trim());
+                                                    hideModal();
+                                                }
+                                            }} />
+                                        </View>
+                                    ) : modalType === 'ok' ? (
                                         <Button text="OK" onPress={() => {
                                             modalContent.onConfirm();
                                             hideModal();
@@ -113,7 +159,8 @@ export const ModalProvider = ({ children }) => {
                                         <Row justify='space-between' align='center' gap={10} style={styles.buttonContainer}>
                                             <Button text="Yes" style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
                                                 modalContent.onConfirm();
-                                                hideModal();
+                                                // Don't call hideModal here if onConfirm is showing another modal
+                                                // The new modal will handle its own visibility
                                             }} />
                                             <Button text="No" type='outlined' style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
                                                 if (modalContent?.onCancel) {
@@ -160,5 +207,19 @@ const styles = StyleSheet.create({
     },
     buttonContainer: {
         width: '90%',
+    },
+    inputContainer: {
+        width: '90%',
+    },
+    textInput: {
+        width: '100%',
+        height: heightPixel(80),
+        backgroundColor: colors.white,
+        borderRadius: heightPixel(8),
+        padding: heightPixel(10),
+        color: colors.black,
+        marginBottom: heightPixel(20),
+        marginTop: heightPixel(-55),
+        textAlignVertical: 'top',
     },
 });

@@ -10,7 +10,7 @@ const useBookingDetailsController = () => {
 
     const isFocused = useIsFocused()
     const { params } = useRoute()
-    const { showOkModal, showYesNoModal } = useModal()
+    const { showOkModal, showYesNoModal, showInputModal } = useModal()
     const [toggleEditMode, editMode] = useToggle()
 
     const [prescription, setPrescription] = useState("")
@@ -78,8 +78,26 @@ const useBookingDetailsController = () => {
             type: "warning",
             title: "Reject",
             message: "Are You Sure You Want To Reject This Appointment?"
-        }, () => update({ type: "reject", id: data?.data?.id, body: { rejection_reason: "Lorem ipsum dolor set amet." } }))
+        }, () => {
+            console.log("Yes clicked, showing input modal");
+            showInputModal({
+                type: "warning",
+                title: "Rejection Reason",
+                placeholder: "Write Rejection Reason....."
+            }, (rejectionReason: string) => {
+                console.log("Input modal submitted with reason:", rejectionReason);
+                update({ type: "reject", id: data?.data?.id, body: { rejection_reason: rejectionReason } })
+            })
+        })
     }
+
+    //    const onReject = () => {
+    //     showYesNoModal({
+    //         type: "warning",
+    //         title: "Reject",
+    //         message: "Are You Sure You Want To Reject This Appointment?"
+    //     }, () => update({ type: "reject", id: data?.data?.id, body: { rejection_reason: "Lorem ipsum dolor set amet." } }))
+    // }
 
     const onReschedule = () => {
         showYesNoModal({

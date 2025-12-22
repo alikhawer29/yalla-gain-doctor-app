@@ -1,6 +1,7 @@
 import { useIsFocused } from "@react-navigation/native"
 import { useEffect, useState } from "react"
 import useSearch from "../../hooks/useSearch"
+import useToggle from "../../hooks/useToggle"
 import { useGetAppointmentRequestsQuery } from "../../redux/Apis/User"
 import { REQUEST_STATUSES } from "../../utils/data"
 import { navigate } from "../../utils/navigation"
@@ -12,7 +13,21 @@ const useAppointmentRequests = () => {
     const { search, debouncedSearch, onChange: onSearch } = useSearch()
     const [selected, setSelected] = useState(REQUEST_STATUSES[0]?.value)
 
-    const { data, isFetching: isLoading, refetch } = useGetAppointmentRequestsQuery({ type: selected === "all" ? "" : selected, search: debouncedSearch })
+    const [toggleFilterModal, filterModalVisible] = useToggle()
+    const [fromDate, setFromDate] = useState('')
+    const [toDate, setToDate] = useState('')
+
+    const [appliedFilters, setAppliedFilters] = useState({
+        from: '',
+        to: '',
+    })
+
+    const { data, isFetching: isLoading, refetch } = useGetAppointmentRequestsQuery({ 
+        type: selected === "all" ? "" : selected, 
+        search: debouncedSearch,
+        from: appliedFilters.from || undefined,
+        to: appliedFilters.to || undefined,
+    })
 
     useEffect(() => {
         if (isFocused) {
@@ -26,18 +41,44 @@ const useAppointmentRequests = () => {
 
     const onChangeStatus = (status: string) => setSelected(status)
 
+    const onApplyFilters = () => {
+        setAppliedFilters({
+            from: fromDate,
+            to: toDate,
+        })
+        toggleFilterModal()
+    }
+
+    const onClearFilters = () => {
+        setFromDate('')
+        setToDate('')
+        setAppliedFilters({
+            from: '',
+            to: '',
+        })
+        toggleFilterModal()
+    }
+
     return {
         values: {
             data: data?.data || [],
             isLoading,
             search,
-            selected
+            selected,
+            filterModalVisible,
+            fromDate,
+            toDate,
         },
         functions: {
             onReload: refetch,
             onPressCard,
             onSearch,
-            onChangeStatus
+            onChangeStatus,
+            toggleFilterModal,
+            setFromDate,
+            setToDate,
+            onApplyFilters,
+            onClearFilters,
         }
     }
 }
