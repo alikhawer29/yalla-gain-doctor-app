@@ -52,7 +52,7 @@ const Home = () => {
     } = useServiceLogsController()
 
     const handleViewAll = () => {
-        ; (navigation as any).navigate(NAVIGATORS.BOOKING_STACK)
+        ; (navigation as any).navigate(NAVIGATORS.BOOKING_STACK, { screen: ROUTES.SERVICE_LOGS })
     }
 
     return (
