@@ -134,7 +134,9 @@ export const ADD_SERVICE_SCHEMA = Yup.object().shape({
         .test('file-or-url', 'Image is required', value => {
             return (
                 (value instanceof File) ||
-                (typeof value === 'string' && value.startsWith('http'))
+                (typeof value === 'string' && value.startsWith('http')) ||
+                (typeof value === 'object' && value !== null && 'uri' in value && (value as any).uri) ||
+                (typeof value === 'string' && value)
             );
         })
         .required('Image is required')
