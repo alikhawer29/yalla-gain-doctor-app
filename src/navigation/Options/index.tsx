@@ -8,23 +8,46 @@ import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import colors from "../../utils/colors"
 import { heightPixel, widthPixel } from "../../utils/helper"
-import { goBack } from "../../utils/navigation"
-import { ROUTES_OPTIONS } from "../../utils/routes"
+import { goBack, navigate } from "../../utils/navigation"
+import { ROUTES, ROUTES_OPTIONS } from "../../utils/routes"
+import { RouteProp } from "@react-navigation/native"
+import { StackNavigationOptions, StackNavigationProp } from "@react-navigation/stack"
 
-const Options = (props) => {
+interface OptionsProps {
+  route?: RouteProp<any, any> | {
+    name?: string
+    params?: {
+      title?: string
+    }
+  }
+  navigation?: StackNavigationProp<any, any> | {
+    openDrawer?: () => void
+  }
+}
 
-  const route = ROUTES_OPTIONS.find(item => item.route_name === props?.route?.name)
+const Options = (props: OptionsProps): StackNavigationOptions => {
 
+  const routeName = (props?.route as any)?.name
+  const route = ROUTES_OPTIONS.find(item => item.route_name === routeName)
   const handleLeftPress = () => {
     if (route?.left === "back") {
       goBack()
     } else if (route?.left === "drawer") {
-      props?.navigation.openDrawer()
+      const nav = props?.navigation as any
+      nav?.openDrawer?.()
     }
   }
 
+  const handleRightPress = () => {
+    console.log("handleRightPress", route?.right)
+    // if (route?.right === "notifications") {
+    //   navigate(ROUTES.NOTIFICATIONS)
+    // }
+  }
+
   const renderLeft = () => {
-    const icon_source = route?.left ? images[route?.left] : null
+    const leftKey = route?.left
+    const icon_source = leftKey && leftKey !== null ? images[leftKey as keyof typeof images] : null
     if (!icon_source) return <View style={styles.sideSpace} />
 
     return (
@@ -42,20 +65,21 @@ const Options = (props) => {
   }
 
   const renderRight = () => {
-    const icon_source = route?.right ? images[route?.right] : null
+    const rightKey = route?.right
+    const icon_source = rightKey && rightKey !== null ? images[rightKey as keyof typeof images] : null
     if (!icon_source) return <View style={styles.sideSpace} />
 
     return (
-      <View style={styles.sideSpace}>
+      <Touchable onPress={handleRightPress} style={styles.sideSpace}>
         <Icon
-          source={images.notifications}
+          source={icon_source}
           border={colors.white}
           size={40}
           rounded
           less_rounded
           less_padding
         />
-      </View>
+      </Touchable>
     )
   }
 
@@ -72,16 +96,25 @@ const Options = (props) => {
         size={22}
         position="center"
       >
-        {props?.route?.params?.title || route?.title}
+        {(route && 'title' in route ? route.title : undefined) || props?.route?.params?.title || ''}
       </Text>
     )
   }
 
+  const isTransparent = (route && 'transparent' in route ? route.transparent : false) || false
+
+
   return {
     headerShown: true,
-    headerTransparent: route?.transparent || false,
+    headerTransparent: isTransparent,
     header: () => (
-      <SafeAreaView edges={["top"]} style={styles.safeArea}>
+      <SafeAreaView
+        edges={["top"]}
+        style={[
+          styles.safeArea,
+          { backgroundColor: isTransparent ? colors.transparent : colors.black }
+        ]}
+      >
         <View style={styles.container}>
           {renderLeft()}
           <View style={styles.center}>{renderTitle()}</View>
@@ -104,6 +137,7 @@ const styles = StyleSheet.create({
     paddingVertical: 8,
   },
   sideSpace: {
+    // width: widthPixel(40),
     width: widthPixel(40),
     justifyContent: "center",
     alignItems: "center",

@@ -13,6 +13,7 @@ import AppStackNavigator from './src/navigation/AppStackNavigator';
 import { persistor, store } from './src/redux/Store';
 import colors from './src/utils/colors';
 import { navigationRef } from './src/utils/navigation';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
   UIManager.setLayoutAnimationEnabledExperimental(true);
@@ -38,54 +39,60 @@ function App() {
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
-        <AppWrapper>
-          <StatusBar barStyle={'light-content'} />
-          <MenuProvider>
-            <ModalProvider>
-              <NavigationContainer ref={navigationRef} theme={navTheme}>
-                <AppStackNavigator />
-                <Toast />
-              </NavigationContainer>
+        <SafeAreaProvider>
+          <AppWrapper>
+            <StatusBar
+              barStyle="light-content"
+              translucent={false}
+              backgroundColor={colors.primary}
+            />
+            <MenuProvider>
+              <ModalProvider>
+                <NavigationContainer ref={navigationRef} theme={navTheme}>
+                  <AppStackNavigator />
+                  <Toast />
+                </NavigationContainer>
 
-              {/* Floating button to open Network Logger */}
-              {/* <TouchableOpacity
-                style={styles.floatingButton}
-                onPress={() => setShowNetworkLogger(true)}
-              >
-                <View style={styles.floatingButtonInner}>
-                  <View style={styles.wifiIcon}>
-                    <View style={styles.wifiBar1} />
-                    <View style={styles.wifiBar2} />
-                    <View style={styles.wifiBar3} />
+                {/* Floating button to open Network Logger */}
+                <TouchableOpacity
+                  style={styles.floatingButton}
+                  onPress={() => setShowNetworkLogger(true)}
+                >
+                  <View style={styles.floatingButtonInner}>
+                    <View style={styles.wifiIcon}>
+                      <View style={styles.wifiBar1} />
+                      <View style={styles.wifiBar2} />
+                      <View style={styles.wifiBar3} />
+                    </View>
                   </View>
-                </View>
-              </TouchableOpacity> */}
+                </TouchableOpacity>
 
-              {/* Network Logger Modal */}
-              <Modal
-                visible={showNetworkLogger}
-                animationType="slide"
-                onRequestClose={() => setShowNetworkLogger(false)}
-              >
-                <View style={styles.loggerContainer}>
-                  <View style={styles.loggerHeader}>
-                    <TouchableOpacity
-                      onPress={() => setShowNetworkLogger(false)}
-                      style={styles.closeButton}
-                    >
-                      <View style={styles.closeIcon}>
-                        <View style={styles.closeLine1} />
-                        <View style={styles.closeLine2} />
-                      </View>
-                    </TouchableOpacity>
+                {/* Network Logger Modal */}
+                <Modal
+                  visible={showNetworkLogger}
+                  animationType="slide"
+                  onRequestClose={() => setShowNetworkLogger(false)}
+                >
+                  <View style={styles.loggerContainer}>
+                    <View style={styles.loggerHeader}>
+                      <TouchableOpacity
+                        onPress={() => setShowNetworkLogger(false)}
+                        style={styles.closeButton}
+                      >
+                        <View style={styles.closeIcon}>
+                          <View style={styles.closeLine1} />
+                          <View style={styles.closeLine2} />
+                        </View>
+                      </TouchableOpacity>
+                    </View>
+                    <NetworkLogger theme="dark" />
                   </View>
-                  <NetworkLogger theme="dark" />
-                </View>
-              </Modal>
+                </Modal>
 
-            </ModalProvider>
-          </MenuProvider>
-        </AppWrapper>
+              </ModalProvider>
+            </MenuProvider>
+          </AppWrapper>
+        </SafeAreaProvider>
       </PersistGate>
     </Provider>
   );

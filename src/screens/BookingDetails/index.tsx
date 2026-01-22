@@ -41,7 +41,16 @@ const BookingDetails = () => {
         return <Loader mode="secondary" />
     }
 
-    const getButtonsByStatus = (status, handler) => {
+    const getButtonsByStatus = (status: "pending" | "upcoming" | "in-progress" | "past" | "rejected", handler: {
+        editMode?: boolean;
+        onApprove?: () => void;
+        onReject?: () => void;
+        onReschedule?: () => void;
+        onEdit?: () => void;
+        onSavePrescription?: () => void;
+        onStartSession?: () => void;
+        onReport?: () => void;
+    }) => {
         switch (status) {
             case "pending":
                 return (

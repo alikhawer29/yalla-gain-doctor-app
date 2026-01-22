@@ -19,7 +19,7 @@ const Wrapper: FC<IWrapper> = ({
 }) => {
 
     const headerHeight = useHeaderHeight()
-    const bottomBarPadding = hide_bottom_bar ? 0 : BOTTOMBAR_HEIGHT
+    const bottomBarPadding = hide_bottom_bar ? 0 : BOTTOMBAR_HEIGHT;
 
     const container_style = [
         styles.container,
@@ -41,7 +41,7 @@ const Wrapper: FC<IWrapper> = ({
 
     const renderBody = () =>
         loading ? (
-            <Loader mode="secondary" />
+            <ActivityIndicator size="small" color={colors.primary} />
         ) : (
             children
         )
