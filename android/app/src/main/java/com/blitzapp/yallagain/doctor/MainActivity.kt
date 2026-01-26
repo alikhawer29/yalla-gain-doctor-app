@@ -21,4 +21,11 @@ class MainActivity : ReactActivity() {
    */
   override fun createReactActivityDelegate(): ReactActivityDelegate =
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
+
+  override fun onCreate(savedInstanceState: Bundle?) {
+    // Prevent fragment restoration for react-native-screens
+    // This fixes the "Screen fragments should never be restored" error
+    // Pass null to prevent fragment restoration
+    super.onCreate(null)
+  }
 }

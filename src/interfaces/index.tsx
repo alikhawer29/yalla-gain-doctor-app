@@ -69,6 +69,7 @@ export type RootStackParamList = {
     ReportBooking: { id: string | number },
     UserHistory: { id: string | number },
     Reviews: undefined,
+    ZoomMeeting: { sdk_key: string; signature: string; meeting_number: string; password: string; join_url?: string; zak_token?: string },
 }
 
 export interface IWrapper {

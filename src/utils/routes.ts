@@ -60,6 +60,7 @@ const ROUTES = {
   SAVED_WORKOUT_CONTENT: 'SavedWorkoutContent',
   CREATE_AVATAR: 'CreateAvatar',
   SCAN: 'Scan',
+  ZOOM_MEETING: 'ZoomMeeting',
 } as const;
 
 const ROUTES_OPTIONS = [
