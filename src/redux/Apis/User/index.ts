@@ -150,6 +150,12 @@ export const userApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+    endZoomMeeting: builder.mutation({
+      query: id => ({
+        url: `appointments/${id}/zoom/end`,
+        method: 'POST',
+      }),
+    }),
     getBookings: builder.query({
       query: params => ({
         url: `my-bookings`,
@@ -320,6 +326,8 @@ export const {
   useUpdatePrescriptionMutation,
   useCreateZoomMeetingMutation,
   useGetZoomDetailsQuery,
+  useLazyGetZoomDetailsQuery,
+  useEndZoomMeetingMutation,
   useGetBookingHistoryQuery,
   useGetReviewsQuery,
   // old

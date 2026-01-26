@@ -1,7 +1,7 @@
-import { useIsFocused, useRoute } from "@react-navigation/native"
+import { useIsFocused, useRoute, useNavigation } from "@react-navigation/native"
 import { useEffect, useRef, useState } from "react"
 import { useModal } from "../../contexts/ModalContext"
-import { useGetBookingByIdQuery, useUpdateAppointmentStatusMutation, useUpdatePrescriptionMutation, useCreateZoomMeetingMutation, useGetZoomDetailsQuery } from "../../redux/Apis/User"
+import { useGetBookingByIdQuery, useUpdateAppointmentStatusMutation, useUpdatePrescriptionMutation, useCreateZoomMeetingMutation, useLazyGetZoomDetailsQuery } from "../../redux/Apis/User"
 import { navigate } from "../../utils/navigation"
 import { ROUTES } from "../../utils/routes"
 import useToggle from "../../hooks/useToggle"
@@ -11,6 +11,7 @@ import { RouteProp } from "@react-navigation/native"
 const useBookingDetailsController = () => {
 
     const isFocused = useIsFocused()
+    const navigation = useNavigation()
     const route = useRoute<RouteProp<RootStackParamList, 'BookingDetails'>>()
     const params = route.params
     const { showOkModal, showYesNoModal, showInputModal } = useModal()
@@ -18,9 +19,12 @@ const useBookingDetailsController = () => {
     const previousIdRef = useRef< string | number | undefined>(undefined)
 
     const [prescription, setPrescription] = useState("")
+    const [isStartingSession, setIsStartingSession] = useState(false)
 
     const { data, refetch, isLoading, isSuccess } = useGetBookingByIdQuery(params?.id as string | number)
-    const { refetch: refetchZoomDetails } = useGetZoomDetailsQuery(params?.id as number, { skip: !params?.id })
+    // Use lazy query to prevent auto-fetching - only fetch when explicitly needed (when starting session)
+    // This prevents "Meeting not created yet" errors from showing automatically
+    const [getZoomDetails, { isLoading: isFetchingZoomDetails }] = useLazyGetZoomDetailsQuery()
 
     const [update, { data: updateData, isLoading: isUpdateLoading, isSuccess: isUpdateSuccess }] = useUpdateAppointmentStatusMutation()
     const [updatePrescription, { isLoading: isUpdatePrescriptionLoading, isSuccess: isUpdatePrescriptionSuccess }] = useUpdatePrescriptionMutation()
@@ -30,7 +34,30 @@ const useBookingDetailsController = () => {
         if (isFocused && params?.id) {
             refetch()
         }
+        // Reset loading state when screen comes back into focus (e.g., after ending Zoom meeting)
+        // This ensures loading stops when user navigates back from Zoom screen
+        if (isFocused) {
+            setIsStartingSession(false)
+        }
     }, [isFocused])
+    
+    // Listen for navigation focus events to reset loading when returning from Zoom screen
+    // This is a backup in case isFocused doesn't trigger properly
+    useEffect(() => {
+        const unsubscribe = navigation.addListener('focus', () => {
+            // Reset loading state when screen regains focus
+            setIsStartingSession(false)
+        })
+        
+        return unsubscribe
+    }, [navigation])
+    
+    // Also reset loading state on unmount as a safety measure
+    useEffect(() => {
+        return () => {
+            setIsStartingSession(false)
+        }
+    }, [])
 
     useEffect(() => {
         if (params?.id && params?.id !== previousIdRef.current) {
@@ -147,6 +174,9 @@ const useBookingDetailsController = () => {
             return
         }
 
+        // Set loading state - this will persist until navigation
+        setIsStartingSession(true)
+
         try {
             // First, try to create the meeting (or get "already created" response)
             let createResult
@@ -166,10 +196,26 @@ const useBookingDetailsController = () => {
             
             // Always fetch zoom details to get zak token from zoom_start_url
             // This is required for host to start the meeting
-            const zoomDetailsResult = await refetchZoomDetails()
-            const zoomDetails = zoomDetailsResult?.data?.data
+            let zoomDetails
+            try {
+                const zoomDetailsResult = await getZoomDetails(data.data.id).unwrap()
+                zoomDetails = zoomDetailsResult?.data
+            } catch (zoomError: any) {
+                // If meeting doesn't exist yet, show appropriate error
+                if (zoomError?.data?.message?.includes("not created") || zoomError?.data?.message?.includes("Meeting not created")) {
+                    setIsStartingSession(false)
+                    showOkModal({
+                        type: "error",
+                        title: "Error",
+                        message: "Meeting is being created. Please wait a moment and try again."
+                    })
+                    return
+                }
+                throw zoomError
+            }
             
             if (!zoomDetails) {
+                setIsStartingSession(false)
                 showOkModal({
                     type: "error",
                     title: "Error",
@@ -202,6 +248,7 @@ const useBookingDetailsController = () => {
             console.log("Zoom Details - Has ZAK token:", !!zakToken)
             
             if (!zakToken) {
+                setIsStartingSession(false)
                 showOkModal({
                     type: "error",
                     title: "Error",
@@ -211,6 +258,7 @@ const useBookingDetailsController = () => {
             }
             
             if (!meetingNumber) {
+                setIsStartingSession(false)
                 showOkModal({
                     type: "error",
                     title: "Error",
@@ -224,6 +272,7 @@ const useBookingDetailsController = () => {
             const bookingData = bookingRefetch?.data?.data
             
             if (!bookingData?.sdk_key || !bookingData?.signature) {
+                setIsStartingSession(false)
                 showOkModal({
                     type: "error",
                     title: "Error",
@@ -242,8 +291,15 @@ const useBookingDetailsController = () => {
                 password: zoomDetails.zoom_password || zoomDetails.zoom_api?.password || "",
                 join_url: zoomDetails.zoom_join_url || zoomDetails.zoom_api?.join_url,
                 zak_token: zakToken, // ZAK token is required for host to start meeting
+                appointment_id: params?.id, // Appointment ID for end meeting API
             } as any)
+            
+            // Reset loading state after navigation - use setTimeout to ensure navigation completes first
+            setTimeout(() => {
+                setIsStartingSession(false)
+            }, 100)
         } catch (err: any) {
+            setIsStartingSession(false)
             console.error("Zoom meeting error:", err)
             showOkModal({
                 type: "error",
@@ -260,7 +316,7 @@ const useBookingDetailsController = () => {
     return {
         values: {
             data: data?.data || null,
-            isUpdateLoading: isUpdateLoading || isUpdatePrescriptionLoading || isCreatingZoomMeeting,
+            isUpdateLoading: isUpdateLoading || isUpdatePrescriptionLoading || isCreatingZoomMeeting || isStartingSession,
             isLoading,
             editMode,
             prescription

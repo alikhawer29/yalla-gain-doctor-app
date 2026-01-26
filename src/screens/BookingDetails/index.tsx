@@ -50,6 +50,7 @@ const BookingDetails = () => {
         onSavePrescription?: () => void;
         onStartSession?: () => void;
         onReport?: () => void;
+        isStartingSession?: boolean;
     }) => {
         switch (status) {
             case "pending":
@@ -81,6 +82,7 @@ const BookingDetails = () => {
                     <Button
                         text="Start Session"
                         onPress={handler?.onStartSession}
+                        loading={handler?.isStartingSession || false}
                     />
                 )
 
@@ -110,6 +112,7 @@ const BookingDetails = () => {
                                         text="Start Session"
                                         onPress={handler?.onStartSession}
                                         type="outlined"
+                                        loading={handler?.isStartingSession || false}
                                     />
                                 </>
                             )
@@ -295,7 +298,7 @@ const BookingDetails = () => {
                     }
                 </View>
                 <View style={{ marginVertical: heightPixel(30) }}>
-                    {getButtonsByStatus(data?.status, { editMode, onApprove, onReject, onReschedule, onEdit, onSavePrescription, onStartSession, onReport })}
+                    {getButtonsByStatus(data?.status, { editMode, onApprove, onReject, onReschedule, onEdit, onSavePrescription, onStartSession, onReport, isStartingSession: isUpdateLoading })}
                 </View>
             </Wrapper>
         </>

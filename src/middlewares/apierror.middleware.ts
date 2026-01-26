@@ -6,6 +6,12 @@ const errorLogger = () => (next) => (action) => {
     if (isRejectedWithValue(action)) {
         const message = action?.payload?.data?.message || action?.error?.message || 'Something went wrong';
 
+        // Skip showing error toast for "Meeting not created yet" - this is expected for new appointments
+        if (message?.toLowerCase().includes("meeting not created yet")) {
+            console.log("Skipping error toast for:", message)
+            return next(action);
+        }
+
         console.log("Error Message :: ", message)
 
         Toast.show({ text1: "Error!", text2: message, type: "error" });

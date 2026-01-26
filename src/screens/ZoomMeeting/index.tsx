@@ -10,6 +10,7 @@ import { heightPixel } from "../../utils/helper"
 import { goBack } from "../../utils/navigation"
 import usePermissions from "../../hooks/usePermissions"
 import { RESULTS } from "react-native-permissions"
+import { useEndZoomMeetingMutation } from "../../redux/Apis/User"
 
 interface ZoomMeetingParams {
     sdk_key: string
@@ -18,6 +19,7 @@ interface ZoomMeetingParams {
     password: string
     join_url?: string
     zak_token?: string // ZAK token required for host to start meeting
+    appointment_id?: string | number // Appointment ID to call end API
 }
 
 const ZoomMeetingContent = () => {
@@ -25,6 +27,7 @@ const ZoomMeetingContent = () => {
     const { params } = useRoute()
     const zoom = useZoom()
     const { ensurePermissions, PERMISSIONS, openAppSettings } = usePermissions()
+    const [endZoomMeeting] = useEndZoomMeetingMutation()
     const [isInitializing, setIsInitializing] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [inMeeting, setInMeeting] = useState(false)
@@ -32,6 +35,7 @@ const ZoomMeetingContent = () => {
     const hasJoinedRef = useRef(false)
     const isLeavingRef = useRef(false)
     const joinTimeRef = useRef<number>(0)
+    const hasEndedMeetingRef = useRef(false) // Track if we've already called the end API
 
     const meetingParams = params as ZoomMeetingParams
 
@@ -113,7 +117,7 @@ const ZoomMeetingContent = () => {
         appStateRef.current = nextAppState
     }
 
-    const handleMeetingEnd = () => {
+    const handleMeetingEnd = async () => {
         if (isLeavingRef.current) {
             console.log("Zoom Meeting - Already leaving, ignoring duplicate call")
             return
@@ -121,6 +125,24 @@ const ZoomMeetingContent = () => {
 
         console.log("Zoom Meeting - Handling meeting end")
         isLeavingRef.current = true
+
+        // Call the end meeting API if appointment ID is available and we haven't called it yet
+        if (meetingParams?.appointment_id && !hasEndedMeetingRef.current) {
+            try {
+                console.log("Zoom Meeting - Calling end meeting API for appointment:", meetingParams.appointment_id)
+                hasEndedMeetingRef.current = true
+                await endZoomMeeting(meetingParams.appointment_id).unwrap()
+                console.log("Zoom Meeting - Successfully called end meeting API")
+            } catch (err: any) {
+                console.error("Zoom Meeting - Error calling end meeting API:", err)
+                // Don't block navigation if API call fails
+            }
+        } else {
+            console.log("Zoom Meeting - Skipping end API call:", {
+                hasAppointmentId: !!meetingParams?.appointment_id,
+                alreadyCalled: hasEndedMeetingRef.current
+            })
+        }
 
         cleanup()
 
