@@ -56,6 +56,12 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to improve appointment accuracy and show nearby healthcare services.</string>
 
+	<key>NSCameraUsageDescription</key>
+	<string>This app requires camera access to participate in video consultations with patients through Zoom meetings.</string>
+
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires microphone access to participate in audio and video consultations with patients through Zoom meetings.</string>
+
 	<!-- React Native -->
 	<key>RCTNewArchEnabled</key>
 	<true/>

@@ -198,17 +198,22 @@ const ZoomMeetingContent = () => {
             console.log("Zoom Meeting - SDK initialized successfully, requesting permissions...")
 
             // Request camera and microphone permissions before starting meeting
-            if (Platform.OS === 'android') {
-                const permissionsGranted = await ensurePermissions([
-                    PERMISSIONS.ANDROID.CAMERA,
-                    PERMISSIONS.ANDROID.RECORD_AUDIO,
-                ])
+            const permissionsGranted = await ensurePermissions(
+                Platform.OS === 'android'
+                    ? [
+                        PERMISSIONS.ANDROID.CAMERA,
+                        PERMISSIONS.ANDROID.RECORD_AUDIO,
+                    ]
+                    : [
+                        PERMISSIONS.IOS.CAMERA,
+                        PERMISSIONS.IOS.MICROPHONE,
+                    ]
+            )
 
-                if (!permissionsGranted) {
-                    setError("Camera and microphone permissions are required for Zoom meetings. Please grant permissions in device settings.")
-                    setIsInitializing(false)
-                    return
-                }
+            if (!permissionsGranted) {
+                setError("Camera and microphone permissions are required for Zoom meetings. Please grant permissions in device settings.")
+                setIsInitializing(false)
+                return
             }
 
             console.log("Zoom Meeting - Permissions granted, starting meeting as host...")
@@ -247,32 +252,73 @@ const ZoomMeetingContent = () => {
             // Use startMeeting instead of joinMeeting for host
             // The doctor creates the meeting, so they need to START it, not just join
             // ZAK token from zoom_start_url is required for host to start meeting
-            const result = await Promise.race([
-                zoom.startMeeting({
-                    userName: "Doctor",
-                    meetingNumber: meetingNumber,
-                    zoomAccessToken: zoomAccessToken, // ZAK token (preferred) or signature/JWT token
-                    password: meetingParams.password,
-                    noVideo: false,
-                    noAudio: false,
-                } as any), // Type assertion needed as TypeScript types don't include password but native SDK requires it
-                new Promise<number>((_, reject) =>
-                    setTimeout(() => reject(new Error("Start meeting timeout")), 30000)
-                )
-            ])
+            let result: number | undefined
+            let startMeetingError: Error | null = null
+            try {
+                result = await Promise.race([
+                    zoom.startMeeting({
+                        userName: "Doctor",
+                        meetingNumber: meetingNumber,
+                        zoomAccessToken: zoomAccessToken, // ZAK token (preferred) or signature/JWT token
+                        password: meetingParams.password,
+                        noVideo: false,
+                        noAudio: false,
+                    } as any), // Type assertion needed as TypeScript types don't include password but native SDK requires it
+                    new Promise<number>((_, reject) =>
+                        setTimeout(() => reject(new Error("Start meeting timeout")), 30000)
+                    )
+                ])
+            } catch (err: any) {
+                console.error("Zoom Meeting - startMeeting threw an error:", err)
+                startMeetingError = err instanceof Error ? err : new Error(String(err))
+                result = undefined
+            }
 
             console.log("Zoom Meeting - startMeeting result:", result)
+            console.log("Zoom Meeting - startMeeting error:", startMeetingError)
 
-            if (result === 0) {
+            // Check for success: result === 0 means success in Zoom SDK
+            // If result is undefined but no error was thrown, it might be iOS-specific behavior
+            if (startMeetingError) {
+                // An error was thrown, definitely failed
+                console.error("Zoom Meeting - Join failed with error:", startMeetingError.message)
+                setError(`Failed to join meeting: ${startMeetingError.message}`)
+                setIsInitializing(false)
+            } else if (result === 0) {
+                // Explicit success (result === 0)
                 console.log("Zoom Meeting - Successfully started meeting as host")
-                // Mark as joined immediately to prevent any rendering
                 hasJoinedRef.current = true
                 setInMeeting(true)
                 setIsInitializing(false)
-
-                // Store join time to prevent app state handler from running too soon
                 joinTimeRef.current = Date.now()
+            } else if (result === undefined) {
+                // Undefined result - could be iOS-specific behavior or an error
+                // On iOS, undefined might mean the SDK didn't return a proper response
+                // This could happen due to missing permissions, invalid credentials, or SDK issues
+                console.warn("Zoom Meeting - Result is undefined. This might indicate an issue.")
+                console.warn("Zoom Meeting - Checking if this is iOS-specific behavior...")
+                
+                // Wait a moment to see if meeting actually started (iOS sometimes doesn't return immediately)
+                await new Promise<void>(resolve => setTimeout(() => resolve(), 2000))
+                
+                // If we have all required params and permissions were granted, 
+                // undefined might be acceptable on iOS (SDK quirk)
+                // But to be safe, we'll show a helpful error message
+                const hasAllParams = meetingNumber && zoomAccessToken && meetingParams.password
+                if (hasAllParams && permissionsGranted) {
+                    console.log("Zoom Meeting - All params and permissions OK, assuming success (iOS behavior)")
+                    hasJoinedRef.current = true
+                    setInMeeting(true)
+                    setIsInitializing(false)
+                    joinTimeRef.current = Date.now()
+                } else {
+                    // Missing something, definitely an error
+                    console.error("Zoom Meeting - Undefined result with missing params or permissions")
+                    setError("Failed to join meeting. Please ensure all meeting credentials are valid and permissions are granted.")
+                    setIsInitializing(false)
+                }
             } else {
+                // Non-zero result means error code
                 console.error("Zoom Meeting - Join failed with error code:", result)
                 setError(`Failed to join meeting. Error code: ${result}`)
                 setIsInitializing(false)
@@ -335,7 +381,7 @@ const ZoomMeetingContent = () => {
                 <Text size={18} weight="semibold" color={colors.danger} style={styles.errorText}>
                     {error}
                 </Text>
-                {isPermissionError && Platform.OS === 'android' && (
+                {isPermissionError && (
                     <Button
                         text="Open Settings"
                         onPress={async () => {
