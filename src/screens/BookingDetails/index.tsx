@@ -22,7 +22,8 @@ const BookingDetails = () => {
             isUpdateLoading,
             isLoading,
             editMode,
-            prescription
+            prescription,
+            prescriptionFile
         },
         functions: {
             onApprove,
@@ -33,9 +34,12 @@ const BookingDetails = () => {
             onChangePrescription,
             onStartSession,
             onReport,
-            onBookingHistory
+            onBookingHistory,
+            onPickPrescriptionFile
         }
     } = useBookingDetailsController()
+
+    console.log(prescription, 'prescription')
 
     if (isLoading) {
         return <Loader mode="secondary" />
@@ -90,34 +94,34 @@ const BookingDetails = () => {
                 return (
                     <View style={{ gap: heightPixel(10) }}>
                         {
-                            handler?.editMode ? (
-                                <>
-                                    <Button
-                                        text="Save"
-                                        onPress={handler?.onSavePrescription}
-                                    />
-                                    <Button
-                                        text="Cancel"
-                                        type="outlined"
-                                        onPress={handler?.onEdit}
-                                    />
-                                </>
-                            ) : (
-                                <>
-                                    <Button
-                                        text="Edit"
-                                        onPress={handler?.onEdit}
-                                    />
-                                    <Button
-                                        text="Start Session"
-                                        onPress={handler?.onStartSession}
-                                        type="outlined"
-                                        loading={handler?.isStartingSession || false}
-                                    />
-                                </>
-                            )
+                            // handler?.editMode ? (
+                            //     <>
+                            //         <Button
+                            //             text="Save"
+                            //             onPress={handler?.onSavePrescription}
+                            //         />
+                            //         <Button
+                            //             text="Cancel"
+                            //             type="outlined"
+                            //             onPress={handler?.onEdit}
+                            //         />
+                            //     </>
+                            // ) : (
+                            //     <>
+                            //         <Button
+                            //             text="Edit"
+                            //             onPress={handler?.onEdit}
+                            //         />
+                            <Button
+                                text="Start Session"
+                                onPress={handler?.onStartSession}
+                                type="outlined"
+                                loading={handler?.isStartingSession || false}
+                            />
+                            // </>
+                            // )
                         }
-                    </View>
+                    </View >
                 )
 
             case "past":
@@ -139,7 +143,7 @@ const BookingDetails = () => {
                             ) : (
                                 <>
                                     <Button
-                                        text="Edit"
+                                        text={prescription ? "Edit" : "Upload Prescription"}
                                         onPress={handler?.onEdit}
                                     />
                                     <Button
@@ -288,13 +292,31 @@ const BookingDetails = () => {
                     }
                     {
                         editMode &&
-                        <Input
-                            label="Prescription"
-                            type="textarea"
-                            placeholder="Write Prescription ..."
-                            onChangeText={onChangePrescription}
-                            value={prescription}
-                        />
+                        <>
+                            <Input
+                                label="Prescription"
+                                type="textarea"
+                                placeholder="Write Prescription ..."
+                                onChangeText={onChangePrescription}
+                                value={prescription}
+                            />
+                            <View style={{ marginTop: heightPixel(10) }}>
+                                <Button
+                                    text={prescriptionFile ? "Change File" : "Upload File"}
+                                    onPress={onPickPrescriptionFile}
+                                    type="outlined"
+                                />
+                                {!!prescriptionFile && (
+                                    <Text
+                                        style={{ marginTop: heightPixel(5) }}
+                                        color={colors.icon_gray}
+                                        size={12}
+                                    >
+                                        Selected file: {prescriptionFile.name}
+                                    </Text>
+                                )}
+                            </View>
+                        </>
                     }
                 </View>
                 <View style={{ marginVertical: heightPixel(30) }}>

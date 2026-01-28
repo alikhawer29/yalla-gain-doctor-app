@@ -1,5 +1,6 @@
 import { useIsFocused, useRoute, useNavigation } from "@react-navigation/native"
 import { useEffect, useRef, useState } from "react"
+import { launchImageLibrary, ImageLibraryOptions, Asset } from "react-native-image-picker"
 import { useModal } from "../../contexts/ModalContext"
 import { useGetBookingByIdQuery, useUpdateAppointmentStatusMutation, useUpdatePrescriptionMutation, useCreateZoomMeetingMutation, useLazyGetZoomDetailsQuery } from "../../redux/Apis/User"
 import { navigate } from "../../utils/navigation"
@@ -19,6 +20,7 @@ const useBookingDetailsController = () => {
     const previousIdRef = useRef< string | number | undefined>(undefined)
 
     const [prescription, setPrescription] = useState("")
+    const [prescriptionFile, setPrescriptionFile] = useState<{ uri: string; name: string; type: string } | null>(null)
     const [isStartingSession, setIsStartingSession] = useState(false)
 
     const { data, refetch, isLoading, isSuccess } = useGetBookingByIdQuery(params?.id as string | number)
@@ -151,8 +153,54 @@ const useBookingDetailsController = () => {
         navigate(ROUTES.REPORT_BOOKING, { id: data?.data?.id })
     }
 
+    const onPickPrescriptionFile = () => {
+        const options: ImageLibraryOptions = {
+            mediaType: "photo",
+            selectionLimit: 1
+        }
+
+        launchImageLibrary(options, response => {
+            if (response.didCancel) {
+                return
+            }
+
+            if (response.errorCode) {
+                console.log("Prescription file picker error:", response.errorMessage)
+                return
+            }
+
+            const asset: Asset | undefined = response.assets && response.assets[0]
+            if (!asset || !asset.uri) {
+                return
+            }
+
+            setPrescriptionFile({
+                uri: asset.uri,
+                name: asset.fileName || "prescription.jpg",
+                type: asset.type || "image/jpeg"
+            })
+        })
+    }
+
     const onSavePrescription = () => {
-        updatePrescription({ id: data?.data?.id, body: { prescription_text: prescription } })
+        if (!data?.data?.id) return
+
+        // If a file is selected, send multipart/form-data with text + file
+        if (prescriptionFile) {
+            const formData = new FormData()
+            formData.append("prescription_text", prescription || "")
+            // NOTE: Change "prescription_file" to match your backend field name if different
+            formData.append("prescription_file", {
+                uri: prescriptionFile.uri,
+                name: prescriptionFile.name,
+                type: prescriptionFile.type
+            } as any)
+
+            updatePrescription({ id: data.data.id, body: formData })
+        } else {
+            // Text-only prescription
+            updatePrescription({ id: data.data.id, body: { prescription_text: prescription } })
+        }
     }
 
     const onStartSession = async () => {
@@ -319,7 +367,8 @@ const useBookingDetailsController = () => {
             isUpdateLoading: isUpdateLoading || isUpdatePrescriptionLoading || isCreatingZoomMeeting || isStartingSession,
             isLoading,
             editMode,
-            prescription
+            prescription,
+            prescriptionFile
         },
         functions: {
             onApprove,
@@ -330,7 +379,8 @@ const useBookingDetailsController = () => {
             onChangePrescription: setPrescription,
             onStartSession,
             onReport,
-            onBookingHistory
+            onBookingHistory,
+            onPickPrescriptionFile
         },
     }
 
