@@ -229,7 +229,7 @@ const ZoomMeetingContent = () => {
 
             // ZAK token is required for host to start meeting
             // If zak_token is provided, use it; otherwise fall back to signature
-            const zoomAccessToken = meetingParams.zak_token || meetingParams.signature
+            const zoomAccessToken = meetingParams.zak_token
 
             console.log("Zoom Meeting - Token check:")
             console.log("  - Has zak_token:", !!meetingParams.zak_token)
@@ -480,6 +480,19 @@ const styles = StyleSheet.create({
     meetingContainer: {
         flex: 1,
         backgroundColor: colors.black,
+        justifyContent: "flex-end",
+        padding: heightPixel(20),
+    },
+    inMeetingFooter: {
+        width: "100%",
+        alignItems: "center",
+    },
+    inMeetingText: {
+        textAlign: "center",
+        marginBottom: heightPixel(10),
+    },
+    inMeetingButton: {
+        width: "100%",
     },
 })
 

@@ -13,6 +13,7 @@ import useBookingDetailsController from "./useBookingDetailsController"
 import Input from "../../components/Input"
 import colors from "../../utils/colors"
 import { Rating } from "react-native-ratings"
+import images from "../../assets/images"
 
 const BookingDetails = () => {
 
@@ -276,20 +277,44 @@ const BookingDetails = () => {
                             </Row>
                         </>
                     )}
-                    {
-                        data?.prescription_text && !editMode && (
-                            <>
-                                <Text size={20} weight="semibold" style={{ marginTop: heightPixel(10) }}>
-                                    Prescription
-                                </Text>
-                                <Row>
-                                    <View style={styles.full_width_box}>
-                                        <Text style={styles.value_text} color={colors.icon_gray}>{data?.prescription_text}</Text>
-                                    </View>
+                    {data?.prescription_text && !editMode && (
+                        <>
+                            <Text
+                                size={20}
+                                weight="semibold"
+                                style={{ marginTop: heightPixel(10) }}
+                            >
+                                Prescription
+                            </Text>
+                            <Row>
+                                <View style={styles.full_width_box}>
+                                    <Text
+                                        style={styles.value_text}
+                                        color={colors.icon_gray}
+                                    >
+                                        {data?.prescription_text}
+                                    </Text>
+                                </View>
+                            </Row>
+
+                            {data?.prescription_file && (
+                                <Row style={{ marginTop: heightPixel(10) }} align="center" gap={10}>
+                                    <Image
+                                        source={images.file}
+                                        style={{ width: widthPixel(24), height: widthPixel(24) }}
+                                        resize="contain"
+                                    />
+                                    <Text
+                                        style={styles.value_text}
+                                        color={colors.icon_gray}
+                                        lines={1}
+                                    >
+                                        {String(data?.prescription_file).split("/").pop()}
+                                    </Text>
                                 </Row>
-                            </>
-                        )
-                    }
+                            )}
+                        </>
+                    )}
                     {
                         editMode &&
                         <>

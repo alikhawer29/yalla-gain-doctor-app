@@ -65,6 +65,7 @@ const images = {
     plus: require('./plus.png'),
     home: require('./home.png'),
     trash: require('./trash.png'),
+    file: require('./Frame.png'),
     plus_green: require('./plus_green.png'),
     star: require('./star.png'),
     recommended_videos: {
