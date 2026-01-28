@@ -53,6 +53,12 @@
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>This app requires access to the photo library to allow doctors to upload profile photos and medical images for patient records.</string>
 
+	<key>NSContactsUsageDescription</key>
+	<string>This app may access your contacts to help doctors manage patient-related contact information and facilitate communication when needed.</string>
+
+	<key>NSCalendarsUsageDescription</key>
+	<string>This app may access your calendar to help doctors manage and sync appointment schedules with their device calendar.</string>
+
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Your location is used to improve appointment accuracy and show nearby healthcare services.</string>
 
