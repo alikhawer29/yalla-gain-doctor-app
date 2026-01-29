@@ -301,7 +301,7 @@ const BookingDetails = () => {
                                 <Row style={{ marginTop: heightPixel(10) }} align="center" gap={10}>
                                     <Image
                                         source={images.file}
-                                        style={{ width: widthPixel(24), height: widthPixel(24) }}
+                                        style={{ width: widthPixel(50), height: widthPixel(50) }}
                                         resize="contain"
                                     />
                                     <Text
