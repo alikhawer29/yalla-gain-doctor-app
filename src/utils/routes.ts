@@ -15,6 +15,7 @@ const NAVIGATORS = {
   AVATAR_STACK: 'AvatarStackNavigator',
   SERVICE_STACK: 'ServiceStackNavigator',
   BOOKING_STACK: 'BookingStackNavigator',
+  DASHBOARD_STACK: 'DashboardStackNavigator',
 } as const;
 
 const ROUTES = {
@@ -61,6 +62,7 @@ const ROUTES = {
   CREATE_AVATAR: 'CreateAvatar',
   SCAN: 'Scan',
   ZOOM_MEETING: 'ZoomMeeting',
+  DASHBOARD: 'Dashboard',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -76,6 +78,13 @@ const ROUTES_OPTIONS = [
     left: 'drawer',
     right: 'notifications',
     logo: true,
+  },
+  {
+    route_name: ROUTES.DASHBOARD,
+    left: 'drawer',
+    right: 'notifications',
+    logo: false,
+    title: 'Dashboard',
   },
   {
     route_name: ROUTES.PROGRESS_TRACKING,

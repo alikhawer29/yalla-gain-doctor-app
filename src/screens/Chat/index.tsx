@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useMemo, useState } from "react"
+import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FlatList, View } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { StackNavigationProp } from "@react-navigation/stack"
+import { useSelector } from "react-redux"
+import { RootState } from "../../redux/Store"
 import images from "../../assets/images"
 import ChatCard from "../../components/Cards/ChatCard"
 import Input from "../../components/Input"
@@ -27,47 +29,70 @@ const FILTER_OPTIONS = [
 
 const Chat = () => {
     const navigation = useNavigation<ChatNavigationProp>()
+    const user = useSelector((state: RootState) => state.auth.user)
+
     const [searchQuery, setSearchQuery] = useState("")
     const [filterValue, setFilterValue] = useState("all")
 
-    const { data: chatListData, isLoading, refetch, isSuccess } = useGetChatListQuery(undefined)
+    // ⭐ IMPORTANT — useRef guard to stop infinite API calls
+    const adminChatCreatedRef = useRef(false)
+
+    const userId = user?.id || user?.user_id || user?.user?.id
+
+    const {
+        data: chatListData,
+        isLoading,
+        refetch,
+        isSuccess,
+    } = useGetChatListQuery(
+        { user_id: userId },
+        { skip: !userId }
+    )
+
     const [createAdminChat] = useCreateAdminChatMutation()
 
-    // Create admin chat only if it doesn't exist in the list
+    // ⭐ Create admin chat ONLY once if not exists
     useEffect(() => {
-        if (isSuccess && chatListData?.data) {
-            const hasAdminChat = chatListData.data.some(
-                (chat: IChatCard) => chat.user_role === 'admin'
-            )
-            if (!hasAdminChat) {
-                createAdminChat(undefined).unwrap().then(() => {
+        if (!isSuccess || !chatListData?.data || adminChatCreatedRef.current) return
+
+        const hasAdminChat = chatListData.data.some(
+            (chat: IChatCard) => chat.user_role === "admin"
+        )
+
+        if (!hasAdminChat) {
+            adminChatCreatedRef.current = true
+
+            createAdminChat({ user_id: userId })
+                .unwrap()
+                .then(() => {
                     refetch()
-                }).catch(() => {
-                    // Ignore error if admin chat creation fails
                 })
-            }
+                .catch(() => {
+                    // allow retry if failed
+                    adminChatCreatedRef.current = false
+                })
         }
-    }, [isSuccess, chatListData, createAdminChat, refetch])
+    }, [isSuccess, chatListData, userId])
 
     const chatList = useMemo(() => {
         let list: IChatCard[] = chatListData?.data || []
 
-        // Sort to put admin chat on top
+        // Put admin chat on top
         list = [...list].sort((a, b) => {
-            if (a.user_role === 'admin' && b.user_role !== 'admin') return -1
-            if (a.user_role !== 'admin' && b.user_role === 'admin') return 1
+            if (a.user_role === "admin" && b.user_role !== "admin") return -1
+            if (a.user_role !== "admin" && b.user_role === "admin") return 1
             return 0
         })
 
-        // Filter by type
+        // Filter by dropdown
         if (filterValue !== "all") {
             list = list.filter(chat => chat.user_role === filterValue)
         }
 
-        // Filter by search query
+        // Filter by search
         if (searchQuery.trim()) {
             list = list.filter(chat =>
-                chat.name.toLowerCase().includes(searchQuery.toLowerCase())
+                chat.name?.toLowerCase().includes(searchQuery.toLowerCase())
             )
         }
 
@@ -75,12 +100,12 @@ const Chat = () => {
     }, [chatListData, filterValue, searchQuery])
 
     const handleChatPress = useCallback((chat: IChatCard) => {
-        navigation.navigate(ROUTES.CHAT_DETAIL as any, {
+        navigation.navigate(ROUTES.CHAT_DETAIL as never, {
             chatId: chat.id,
             name: chat.name,
             image: chat.image,
             user_role: chat.user_role,
-        })
+        } as never)
     }, [navigation])
 
     if (isLoading) {
@@ -89,7 +114,7 @@ const Chat = () => {
 
     return (
         <Wrapper bottom_bar>
-            {/* Header outside FlatList so dropdown can overlap */}
+            {/* Header */}
             <View style={styles.header_container}>
                 <View style={styles.search_container}>
                     <Input
@@ -100,23 +125,31 @@ const Chat = () => {
                         onChangeText={setSearchQuery}
                     />
                 </View>
+
                 <Row style={styles.filter_container} align="center">
                     <Text style={styles.filter_label}>Showing:</Text>
                     <View style={styles.dropdown_container}>
                         <Dropdown
                             options={FILTER_OPTIONS}
                             value={filterValue}
-                            onChangeText={(item: any) => setFilterValue(item.value)}
+                            onChangeText={(item: any) =>
+                                setFilterValue(item.value)
+                            }
                             height={35}
                         />
                     </View>
                 </Row>
             </View>
+
+            {/* List */}
             <FlatList
                 data={chatList}
                 keyExtractor={(item) => item.id.toString()}
                 renderItem={({ item }) => (
-                    <ChatCard {...item} onPress={() => handleChatPress(item)} />
+                    <ChatCard
+                        {...item}
+                        onPress={() => handleChatPress(item)}
+                    />
                 )}
                 ItemSeparatorComponent={() => <Seperator size={15} />}
                 showsVerticalScrollIndicator={false}

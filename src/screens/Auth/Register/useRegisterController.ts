@@ -37,39 +37,6 @@ const initial = {
   ],
 };
 
-// const initial = {
-//     first_name: "Omar",
-//     last_name: "Khalid",
-//     email: "omar.khalid@yopmail.com",
-//     password: "12345678",
-//     password_confirmation: "12345678",
-//     dialing_code: "+971",
-//     country_code: "AE",
-//     phone: "509843233",
-//     gender: "male",
-//     language: "english",
-//     state: "Dubai",
-//     city: "Dubai",
-//     bio: "Dedicated wellness coach helping clients achieve fitness goals through strength training and mindful nutrition.",
-//     photo: null,
-//     experience: [
-//         { experience: "6 years", specialization: "Strength Training" },
-//         { experience: "3 years", specialization: "Nutrition Planning" }
-//     ],
-//     certificates: [
-//         {
-//             institute_name: "WellFit Academy",
-//             certificate_title: "Certified Fitness Instructor",
-//             certificate_picture: null
-//         },
-//         {
-//             institute_name: "MindBody Institute",
-//             certificate_title: "Advanced Nutrition Certification",
-//             certificate_picture: null
-//         }
-//     ]
-// }
-
 const useRegisterController = () => {
   const { openGallery } = usePicker();
 

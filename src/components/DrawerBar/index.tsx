@@ -21,7 +21,7 @@ const DRAWER_ROUTES = [
     },
     {
         title: "Dashboard",
-        route: NAVIGATORS.BOTTOM
+        route: NAVIGATORS.DASHBOARD_STACK
     },
     {
         title: "Add New Service",

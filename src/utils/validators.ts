@@ -54,7 +54,10 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     .required('Confirm Password is required'),
   dialing_code: Yup.string()
     .required('Dialing code is required')
-    .matches(/^\+\d{1,4}$/, 'Invalid dialing code format'),
+    .matches(
+      /^\+\d{1,4}$/,
+      'Dialing code must start with + followed by 1-4 digits',
+    ),
   country_code: Yup.string()
     .required('Country code is required')
     .matches(/^[A-Z]{2}$/, 'Invalid country code format'),
@@ -199,7 +202,10 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     ),
   dialing_code: Yup.string()
     .required('Dialing code is required')
-    .matches(/^\+\d{1,4}$/, 'Invalid dialing code format'),
+    .matches(
+      /^\+\d{1,4}$/,
+      'Dialing code must start with + followed by 1-4 digits',
+    ),
   country_code: Yup.string()
     .required('Country code is required')
     .matches(/^[A-Z]{2}$/, 'Invalid country code format'),

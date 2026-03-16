@@ -34,6 +34,7 @@ export type AuthStackParamList = {
 
 export type RootStackParamList = {
     Home: undefined;
+    Dashboard: undefined;
     MyProfile: undefined
     EditProfile: undefined
     ChangePassword: undefined

@@ -6,6 +6,7 @@ import { NAVIGATORS } from '../../utils/routes';
 import AvatarStackNavigator from '../AvatarStackNavigator';
 import BookingStackNavigator from '../BookingStackNavigator';
 import BottomTabNavigator from '../BottomTabNavigator';
+import DashboardStackNavigator from '../DashboardStackNavigator';
 import HelpDeskStackNavigator from '../HelpDeskStackNavigator';
 import ReviewsStackNavigator from '../ReviewsStackNavigator';
 import ServiceStackNavigator from '../ServiceStackNavigator';
@@ -17,6 +18,7 @@ const DrawerNavigator = () => {
     return (
         <Drawer.Navigator screenOptions={{ headerShown: false, drawerType: "slide", drawerStyle: { backgroundColor: colors.black, width: "100%", paddingTop: STATUSBAR_HEIGHT, } }} drawerContent={(props) => <DrawerBar {...props} />} >
             <Drawer.Screen name={NAVIGATORS.BOTTOM} component={BottomTabNavigator} />
+            <Drawer.Screen name={NAVIGATORS.DASHBOARD_STACK} component={DashboardStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.SERVICE_STACK} component={ServiceStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.BOOKING_STACK} component={BookingStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.REVIEWS_STACK} component={ReviewsStackNavigator} />
