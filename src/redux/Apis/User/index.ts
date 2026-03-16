@@ -306,6 +306,14 @@ export const userApi = createApi({
         method: 'GET',
       }),
     }),
+    getAvatar: builder.query({
+      query: (userId: string | number) => ({
+        url: `avatar`,
+        method: 'GET',
+        params: { user_id: userId },
+      }),
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -354,4 +362,5 @@ export const {
   useGetVideosByWorkoutQuery,
   useGetVideoDetailsQuery,
   useSaveVideoMutation,
+  useGetAvatarQuery,
 } = userApi;

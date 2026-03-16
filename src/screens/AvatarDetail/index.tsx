@@ -1,56 +1,47 @@
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ActivityIndicator } from "react-native";
+import { useRoute } from "@react-navigation/native";
+import { useSelector } from "react-redux";
 import Wrapper from "../../components/Wrapper";
 import Text from "../../components/Text";
 import Image from "../../components/Image";
 import Row from "../../components/Row";
 import colors from "../../utils/colors";
 import { heightPixel, widthPixel } from "../../utils/helper";
+import { useGetAvatarQuery } from "../../redux/Apis/User";
+import { RootState } from "../../redux/Store";
 import images from "../../assets/images";
 
 const AvatarDetail = () => {
+  const route = useRoute<any>();
+  const passedUserId = route?.params?.id;
+
+  const authUser = useSelector((state: RootState) => state.auth.user);
+  const fallbackUserId =
+    authUser?.id || authUser?.user_id || authUser?.user?.id;
+
+  const userId = passedUserId || fallbackUserId;
+
+  const { data, isLoading, isError } = useGetAvatarQuery(userId, {
+    skip: !userId,
+  });
+
+  const avatarImageUri = data?.image || data?.image_values;
+
   return (
-    <Wrapper scrollable>
+    <Wrapper>
       <View style={styles.container}>
-        <Text size={22} weight="semibold" style={styles.title}>
-          Body Measurements
-        </Text>
-
         <View style={styles.avatarCard}>
-          <Image source={images.avatar.slim} style={styles.avatar} resize="contain" />
+          {isLoading && (
+            <ActivityIndicator size="small" color={colors.primary} />
+          )}
 
-          {/* Top measurements */}
-          <Row style={styles.row} justify="space-between">
-            <Text size={12} color={colors.icon_gray}>
-              Height: 14 cm
-            </Text>
-            <Text size={12} color={colors.icon_gray}>
-              Weight: 120 Lbs
-            </Text>
-          </Row>
-
-          <View style={styles.measurementsContainer}>
-            <Text size={12} color={colors.icon_gray}>
-              Shoulder Width: 14 cm
-            </Text>
-            <Text size={12} color={colors.icon_gray}>
-              Neck Circumference: 14 cm
-            </Text>
-            <Text size={12} color={colors.icon_gray}>
-              Chest Circumference: 24 cm
-            </Text>
-            <Text size={12} color={colors.icon_gray}>
-              Arm Circumference: 22 cm
-            </Text>
-            <Text size={12} color={colors.icon_gray}>
-              Hip Circumference: 44 cm
-            </Text>
-            <Text size={12} color={colors.icon_gray}>
-              Waist Circumference: 34 cm
-            </Text>
-            <Text size={12} color={colors.icon_gray}>
-              Thigh Circumference: 14 cm
-            </Text>
-          </View>
+          {!isLoading && (
+            <Image
+              source={avatarImageUri ? { uri: avatarImageUri } : images.avatar.slim}
+              style={styles.avatar}
+              resize="contain"
+            />
+          )}
         </View>
       </View>
     </Wrapper>
@@ -60,31 +51,19 @@ const AvatarDetail = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    paddingHorizontal: widthPixel(20),
-    paddingVertical: heightPixel(20),
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: heightPixel(20),
+    backgroundColor: colors.black,
+    justifyContent: "center",
+    alignItems: "center",
   },
   avatarCard: {
-    backgroundColor: colors.blackish_gray,
-    borderRadius: 20,
-    padding: heightPixel(20),
+    width: "100%",
+    height: "100%",
+    justifyContent: "center",
     alignItems: "center",
   },
   avatar: {
-    width: "70%",
-    height: heightPixel(260),
-    marginBottom: heightPixel(20),
-  },
-  row: {
     width: "100%",
-    marginBottom: heightPixel(15),
-  },
-  measurementsContainer: {
-    width: "100%",
-    gap: heightPixel(6),
+    height: "100%",
   },
 });
 
