@@ -10,6 +10,7 @@ const styles = StyleSheet.create({
   header_container: {
     gap: heightPixel(SPACING),
     zIndex: 1000,
+    marginTop: heightPixel(10),
     marginBottom: heightPixel(SPACING),
   },
   filter_container: {
@@ -26,7 +27,8 @@ const styles = StyleSheet.create({
     zIndex: 1000,
   },
   search_container: {
-    flex: 1,
+    // flex: 1,
+    
   },
   empty_container: {
     flex: 1,
