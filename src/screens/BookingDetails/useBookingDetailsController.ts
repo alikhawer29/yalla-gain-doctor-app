@@ -18,7 +18,7 @@ import {
   useLazyGetZoomDetailsQuery,
 } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
-import { ROUTES } from '../../utils/routes';
+import { ROUTES, NAVIGATORS } from '../../utils/routes';
 import useToggle from '../../hooks/useToggle';
 import { RootStackParamList } from '../../interfaces';
 import { RouteProp } from '@react-navigation/native';
@@ -443,10 +443,18 @@ const useBookingDetailsController = () => {
   };
 
   const onUserProgress = () => {
-    navigate(ROUTES.PROGRESS_TRACKING as any, {
-      // Pass user id so progress screens can load correct data in future
-      id: data?.data?.user?.id,
-    } as any);
+    navigate(
+      NAVIGATORS.BOTTOM as any,
+      {
+        screen: NAVIGATORS.PROGRESS_TRACKING_STACK,
+        params: {
+          screen: ROUTES.PROGRESS_TRACKING,
+          params: {
+            id: data?.data?.user?.id,
+          },
+        },
+      } as any,
+    );
   };
 
   return {
