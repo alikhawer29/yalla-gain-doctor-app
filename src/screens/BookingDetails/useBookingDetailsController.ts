@@ -442,6 +442,13 @@ const useBookingDetailsController = () => {
     navigate(ROUTES.USER_HISTORY as any, { id: data?.data?.user?.id } as any);
   };
 
+  const onUserProgress = () => {
+    navigate(ROUTES.PROGRESS_TRACKING as any, {
+      // Pass user id so progress screens can load correct data in future
+      id: data?.data?.user?.id,
+    } as any);
+  };
+
   return {
     values: {
       data: data?.data || null,
@@ -466,6 +473,7 @@ const useBookingDetailsController = () => {
       onReport,
       onBookingHistory,
       onPickPrescriptionFile,
+      onUserProgress,
     },
   };
 };

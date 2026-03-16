@@ -41,7 +41,7 @@ export type RootStackParamList = {
     Chat: undefined
     ChatDetail: { chatId: number; name: string; image: string; user_role: 'admin' | 'user' }
     NewsFeed: undefined
-    ProgressTracking: undefined
+    ProgressTracking: { id?: string | number } | undefined
     MusicAuth: undefined
     PlaylistDetails: { id: string },
     HelpDesk: undefined,
@@ -71,6 +71,7 @@ export type RootStackParamList = {
     UserHistory: { id: string | number },
     Reviews: undefined,
     ZoomMeeting: { sdk_key: string; signature: string; meeting_number: string; password: string; join_url?: string; zak_token?: string; appointment_id?: string | number },
+    AvatarDetail: { id?: string | number } | undefined,
 }
 
 export interface IWrapper {

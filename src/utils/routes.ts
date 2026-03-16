@@ -63,6 +63,7 @@ const ROUTES = {
   SCAN: 'Scan',
   ZOOM_MEETING: 'ZoomMeeting',
   DASHBOARD: 'Dashboard',
+  AVATAR_DETAIL: 'AvatarDetail',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -92,6 +93,13 @@ const ROUTES_OPTIONS = [
     right: 'notifications',
     logo: false,
     title: 'Progress Tracking',
+  },
+  {
+    route_name: ROUTES.AVATAR_DETAIL,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Avatar Detail',
   },
   {
     route_name: ROUTES.CHAT,

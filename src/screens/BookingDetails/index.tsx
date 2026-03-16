@@ -36,7 +36,8 @@ const BookingDetails = () => {
             onStartSession,
             onReport,
             onBookingHistory,
-            onPickPrescriptionFile
+            onPickPrescriptionFile,
+            onUserProgress,
         }
     } = useBookingDetailsController()
 
@@ -190,7 +191,13 @@ const BookingDetails = () => {
                             <Button onPress={onBookingHistory} type="outlined" text="View User Booking History" font_size={10} style={{ height: heightPixel(30), marginRight: widthPixel(30), paddingHorizontal: widthPixel(5) }} />
                         </View>
                         <View style={styles.half_width_box}>
-                            <Button type="outlined" text="User Progress" font_size={10} style={{ height: heightPixel(30), marginRight: widthPixel(30), paddingHorizontal: widthPixel(5) }} />
+                            <Button
+                                type="outlined"
+                                text="User Progress"
+                                font_size={10}
+                                onPress={onUserProgress}
+                                style={{ height: heightPixel(30), marginRight: widthPixel(30), paddingHorizontal: widthPixel(5) }}
+                            />
                         </View>
                     </Row>
                     <Text size={20} weight="semibold" style={{ marginVertical: heightPixel(5) }}>Booking Details</Text>
