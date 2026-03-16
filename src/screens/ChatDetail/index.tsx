@@ -6,6 +6,8 @@ import {
     TextInput,
     View,
 } from 'react-native';
+import { useHeaderHeight } from '@react-navigation/elements';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import dayjs from 'dayjs';
 import images from '../../assets/images';
 import Icon from '../../components/Icon';
@@ -20,6 +22,7 @@ import { IChatMessage } from '../../interfaces';
 import useChatDetailController from './useChatDetailController';
 import styles from './styles';
 import useKeyboard from '../../hooks/useKeyboard';
+import { heightPixel } from '../../utils/helper';
 
 const ChatDetail = () => {
     const {
@@ -30,6 +33,8 @@ const ChatDetail = () => {
 
     const keyboardHeight = useKeyboard();
     const isNewAndroid = Platform.OS === 'android' && Platform.Version >= 35;
+    const headerHeight = useHeaderHeight();
+    const insets = useSafeAreaInsets();
 
     const renderHeader = () => (
         <View style={styles.header_container}>
@@ -94,7 +99,13 @@ const ChatDetail = () => {
     };
 
     const renderInput = () => (
-        <View style={styles.input_container}>
+        <View style={[styles.input_container, {
+            paddingVertical: heightPixel(10),
+            paddingBottom:
+              Platform.OS === 'ios'
+                ? heightPixel(0)
+                : (keyboardHeight ? heightPixel(80) : heightPixel(30)) + insets.bottom,
+          }]}>
             <View style={styles.input_wrapper}>
                 <TextInput
                     style={styles.input}
@@ -127,8 +138,8 @@ const ChatDetail = () => {
             {renderHeader()}
             <KeyboardAvoidingView
                 style={styles.container}
-                behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-                keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 0}
+                behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+                keyboardVerticalOffset={Platform.OS === 'ios' ? headerHeight + insets.top : 0}
             >
                 <FlatList
                     ref={flatListRef}
