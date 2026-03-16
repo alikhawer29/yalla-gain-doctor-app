@@ -1,16 +1,23 @@
-import { StyleSheet } from "react-native";
-import { heightPixel } from "../../../utils/helper";
+import { StyleSheet } from 'react-native';
+import { heightPixel } from '../../../utils/helper';
 
 const styles = StyleSheet.create({
-    tab_wrapper: {
-        marginBottom: heightPixel(20),
-    },
-    bottom_text_alt: {
-        marginVertical: heightPixel(100),
-    },
-    upload_margin: {
-        marginVertical: heightPixel(7.5),
-    },
-})
+  back_button_wrapper: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    alignSelf: 'center',
+    marginTop: 15,
+  },
+  tab_wrapper: {
+    marginBottom: heightPixel(20),
+  },
+  bottom_text_alt: {
+    marginVertical: heightPixel(40),
+    marginBottom: heightPixel(20),
+  },
+  upload_margin: {
+    marginVertical: heightPixel(7.5),
+  },
+});
 
-export default styles
+export default styles;

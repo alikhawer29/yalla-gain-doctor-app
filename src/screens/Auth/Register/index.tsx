@@ -1,5 +1,6 @@
 import { FieldArray, Formik } from "formik"
 import { View } from "react-native"
+import { useNavigation } from "@react-navigation/native"
 import images from "../../../assets/images"
 import AuthWrapper from "../../../components/AuthWrapper"
 import Button from "../../../components/Button"
@@ -20,6 +21,7 @@ import styles from "./styles"
 import useRegisterController from "./useRegisterController"
 
 const Register = () => {
+    const navigation = useNavigation()
 
     const {
         schema,
@@ -41,6 +43,7 @@ const Register = () => {
 
     return (
         <AuthWrapper>
+
             <View style={styles.tab_wrapper}>
                 <Tabs tabs={tabs} selected={"register"} setSelected={() => { }} type="basic" />
             </View>
@@ -166,6 +169,11 @@ const Register = () => {
                 </Text>
                 Now
             </Text>
+            <Row style={styles.back_button_wrapper} onPress={() => navigation.goBack()}>
+                <Icon source={images.back} size={12} color={colors.primary} />
+                <Text size={14} color={colors.primary}>Back</Text>
+            </Row>
+
         </AuthWrapper>
     )
 }
