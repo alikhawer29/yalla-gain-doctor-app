@@ -27,6 +27,7 @@ const useWithdrawAmountController = () => {
         dob: user?.dob || "1990-01-01",
         phone: user?.phone || "",
         ssn_last_4: "",
+        id_number: "",
         mcc: "8099"
     })
 
@@ -57,7 +58,8 @@ const useWithdrawAmountController = () => {
         if (!form.dob) newErrors.dob = "Date of birth is required"
         if (!form.phone) newErrors.phone = "Phone number is required"
         if (!form.ssn_last_4) newErrors.ssn_last_4 = "SSN Last 4 digits are required"
-        
+        if (!form.id_number) newErrors.id_number = "ID number is required"
+
         setErrors(newErrors)
         return Object.keys(newErrors).length === 0
     }
@@ -81,6 +83,7 @@ const useWithdrawAmountController = () => {
                 dob: form.dob,
                 phone: form.phone,
                 ssn_last_4: form.ssn_last_4,
+                id_number: form.id_number,
                 mcc: form.mcc
             }
 

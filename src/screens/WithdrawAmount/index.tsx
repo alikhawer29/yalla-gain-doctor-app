@@ -152,6 +152,15 @@ const WithdrawAmount = () => {
                         type="number"
                     />
 
+                    <Input
+                        label="ID Number"
+                        placeholder="Enter ID Number"
+                        required
+                        value={form.id_number}
+                        onChangeText={(val: string) => handleChange("id_number", val)}
+                        error={errors.id_number}
+                    />
+
                     <Button
                         text="Transfer Amount"
                         loading={isLoading}
