@@ -21,7 +21,8 @@ const Icon: FC<IIcon> = props => {
         less_rounded = false,
         no_padding = false,
         rotate = false,
-        resize = "contain"
+        resize = "contain",
+        style
     } = props
 
     let default_styles = {
@@ -42,7 +43,7 @@ const Icon: FC<IIcon> = props => {
     let Component = onPress ? Touchable : View
 
     return (
-        <Component onPress={onPress} style={[styles.container, default_styles]}>
+        <Component onPress={onPress} style={[styles.container, default_styles, style]}>
             <Image source={source} style={[styles.icon, icon_style]} resize={resize} />
         </Component>
     )

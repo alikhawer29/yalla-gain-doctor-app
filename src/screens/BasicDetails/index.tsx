@@ -10,7 +10,7 @@ import { heightPixel, widthPixel } from "../../utils/helper"
 const BasicDetails = () => {
     return (
         <Wrapper scrollable>
-            <View style={{ paddingHorizontal: widthPixel(20), paddingBottom: heightPixel(30) }}>
+            <View style={{ paddingBottom: heightPixel(30) }}>
                 <Text color={colors.white} size={15} weight="regular" style={{ marginTop: 20 }}>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor.
                 </Text>

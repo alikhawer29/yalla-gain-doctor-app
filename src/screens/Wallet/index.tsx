@@ -10,13 +10,13 @@ import colors from "../../utils/colors"
 import useWalletController from "./useWalletController"
 
 const Wallet = () => {
-    const { walletData, isWalletLoading, handleWithdraw } = useWalletController()
+    const { walletData, isWalletLoading, handleWithdraw, handlePaymentLogs } = useWalletController()
 
     return (
         <Wrapper bottom_bar loading={isWalletLoading}>
             <View style={styles.container}>
                 <Image source={images.coin} style={styles.coinImage} resize="contain" />
-                
+
                 <Text size={22} weight="bold" color={colors.white} style={styles.title}>
                     My Coins : {walletData?.my_coins || "0"} <Text color={colors.white} weight="regular" size={16}>(Yalla Coins)</Text>
                 </Text>
@@ -32,6 +32,7 @@ const Wallet = () => {
                 </View>
 
                 <Button text="Withdraw Amount" onPress={handleWithdraw} style={styles.button} />
+                {/* <Button text="View History" onPress={handlePaymentLogs} type="outlined" style={{ marginTop: 15 }} /> */}
             </View>
         </Wrapper>
     )

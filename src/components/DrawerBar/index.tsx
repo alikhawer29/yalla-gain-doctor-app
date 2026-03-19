@@ -38,7 +38,8 @@ const DRAWER_ROUTES: any[] = [
     },
     {
         title: "Payment Logs",
-        route: NAVIGATORS.BOTTOM,
+        route: ROUTES.PAYMENT_LOGS as any,
+        useParentNav: true,
         icon: images.helpdesk.wallet
     },
     {
@@ -88,7 +89,20 @@ const DrawerBar = (props: any) => {
             </Row>
             {
                 DRAWER_ROUTES.map((item) => (
-                    <Row key={item.title} gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route, item?.child ? { screen: item?.child } : {} as any)}>
+                    <Row
+                        key={item.title}
+                        gap={8}
+                        align="center"
+                        style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]}
+                        onPress={() => {
+                            props.navigation.closeDrawer();
+                            if (item.useParentNav) {
+                                props.navigation.getParent()?.navigate(item.route as never, (item?.child ? { screen: item?.child } : undefined) as never);
+                            } else {
+                                navigate(item.route, item?.child ? { screen: item?.child } : {} as any);
+                            }
+                        }}
+                    >
                         {item?.icon && <Icon source={item?.icon} size={24} tint_color={colors.white} />}
                         <Text size={15} weight="semibold" color={colors.white}>{item.title}</Text>
                     </Row>

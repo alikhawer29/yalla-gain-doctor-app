@@ -39,10 +39,9 @@ const Options = (props: OptionsProps): StackNavigationOptions => {
   }
 
   const handleRightPress = () => {
-    console.log("handleRightPress", route?.right)
-    // if (route?.right === "notifications") {
-    //   navigate(ROUTES.NOTIFICATIONS)
-    // }
+    if (route?.right === "notifications") {
+      navigate(ROUTES.NOTIFICATION)
+    }
   }
 
   const renderLeft = () => {

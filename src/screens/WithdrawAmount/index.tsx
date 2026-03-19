@@ -20,16 +20,16 @@ const WithdrawAmount = () => {
                     <Text size={16} weight="semibold" color={colors.white} position="center">
                         1 Yalla Coin Is Equal To {walletData?.coin_amount || "1"}$
                     </Text>
-                    
+
                     <Seperator size={20} />
 
                     <Input
                         label="Fund Amount"
                         placeholder="Enter Fund Amount"
                         required
-                        value={form.fund_amount}
-                        onChangeText={(val: string) => handleChange("fund_amount", val)}
-                        error={errors.fund_amount}
+                        value={form.amount}
+                        onChangeText={(val: string) => handleChange("amount", val)}
+                        error={errors.amount}
                         type="number"
                     />
 

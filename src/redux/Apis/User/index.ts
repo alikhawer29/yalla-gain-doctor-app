@@ -335,6 +335,39 @@ export const userApi = createApi({
         body,
       }),
     }),
+    getFaqs: builder.query({
+      query: () => ({
+        url: `faqs`,
+        method: 'GET',
+      }),
+    }),
+    getNotifications: builder.query({
+      query: params => ({
+        url: `notification/all/list`,
+        method: 'GET',
+        params,
+      }),
+    }),
+    readAllNotifications: builder.mutation({
+      query: () => ({
+        url: `../user/notification/all/read`,
+        method: 'POST',
+      }),
+    }),
+    readNotification: builder.mutation({
+      query: body => ({
+        url: `../user/notification/read`,
+        method: 'POST',
+        body,
+      }),
+    }),
+    unreadNotification: builder.mutation({
+      query: body => ({
+        url: `../user/notification/unread`,
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -387,4 +420,9 @@ export const {
   useWithdrawMutation,
   useGetWalletQuery,
   useContactUsMutation,
+  useGetFaqsQuery,
+  useGetNotificationsQuery,
+  useReadAllNotificationsMutation,
+  useReadNotificationMutation,
+  useUnreadNotificationMutation,
 } = userApi;

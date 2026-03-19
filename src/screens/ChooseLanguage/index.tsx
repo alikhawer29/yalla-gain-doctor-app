@@ -12,7 +12,7 @@ const ChooseLanguage = () => {
 
     return (
         <Wrapper>
-            <View style={{ paddingHorizontal: widthPixel(20) }}>
+            <View>
                 <Text color={colors.white} size={15} weight="regular" style={{ marginTop: 20 }}>
                     Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo.
                 </Text>

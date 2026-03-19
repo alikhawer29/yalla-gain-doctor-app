@@ -13,7 +13,7 @@ const useWithdrawAmountController = () => {
     const { showOkModal } = useModal() as any
 
     const [form, setForm] = useState({
-        fund_amount: "",
+        amount: "",
         account_holder_name: user ? `${user.first_name || ""} ${user.last_name || ""}`.trim() : "",
         country: "US",
         routing_number: "",
@@ -45,7 +45,7 @@ const useWithdrawAmountController = () => {
 
     const validate = () => {
         const newErrors: any = {}
-        if (!form.fund_amount) newErrors.fund_amount = "Fund amount is required"
+        if (!form.amount) newErrors.amount = "Fund amount is required"
         if (!form.routing_number) newErrors.routing_number = "Routing number is required"
         if (form.routing_number !== form.confirm_routing_number) newErrors.confirm_routing_number = "Routing numbers do not match"
         if (!form.account_number) newErrors.account_number = "Account number is required"
@@ -67,6 +67,7 @@ const useWithdrawAmountController = () => {
 
         try {
             const payload = {
+                amount: form.amount,
                 country: form.country,
                 currency: "usd",
                 account_holder_name: form.account_holder_name,

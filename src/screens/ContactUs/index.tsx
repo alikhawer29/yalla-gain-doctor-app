@@ -14,7 +14,7 @@ const ContactUs = () => {
 
     return (
         <Wrapper scrollable>
-            <View style={{ paddingHorizontal: widthPixel(20) }}>
+            <View>
                 <Text position="center" size={16} weight="semibold" style={{ marginVertical: 20 }} color={colors.white}>
                     Please Let Us Know How We Can Improve Your Experience
                 </Text>

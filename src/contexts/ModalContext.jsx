@@ -25,6 +25,7 @@ export const ModalProvider = ({ children }) => {
         onCancel: () => { },
         inputValue: '',
         placeholder: '',
+        rating: 0,
     });
 
     useEffect(() => {
@@ -82,7 +83,17 @@ export const ModalProvider = ({ children }) => {
             },
         });
         setIsVisible(true);
-        console.log("Modal type set to input, isVisible set to true");
+    };
+
+    const showRatingModal = (data, onConfirm) => {
+        setModalType('rating');
+        setModalContent({
+            ...data,
+            rating: 0,
+            onConfirm: onConfirm ? onConfirm : () => setIsVisible(false),
+            onCancel: () => setIsVisible(false),
+        });
+        setIsVisible(true);
     };
 
     const hideModal = () => {
@@ -99,6 +110,7 @@ export const ModalProvider = ({ children }) => {
                 showYesNoModal,
                 showInformativeModal,
                 showInputModal,
+                showRatingModal,
                 hideModal,
             }}
         >
@@ -155,7 +167,30 @@ export const ModalProvider = ({ children }) => {
                                             modalContent.onConfirm();
                                             hideModal();
                                         }} />
-                                    ) : modalType === 'info' ? null : (
+                                    ) : modalType === 'info' ? null : modalType === 'rating' ? (
+                                        <View style={{ width: '100%', alignItems: 'center' }}>
+                                            <Row justify="center" gap={10} style={{ marginVertical: 20 }}>
+                                                {[1, 2, 3, 4, 5].map((star) => (
+                                                    <Icon
+                                                        key={star}
+                                                        source={images.star}
+                                                        size={30}
+                                                        tint_color={modalContent.rating >= star ? colors.primary : colors.gray}
+                                                        onPress={() => setModalContent(prev => ({ ...prev, rating: star }))}
+                                                    />
+                                                ))}
+                                            </Row>
+                                            <Button
+                                                text="Submit"
+                                                onPress={() => {
+                                                    if (modalContent.rating > 0) {
+                                                        modalContent.onConfirm(modalContent.rating);
+                                                        hideModal();
+                                                    }
+                                                }}
+                                            />
+                                        </View>
+                                    ) : (
                                         <Row justify='space-between' align='center' gap={10} style={styles.buttonContainer}>
                                             <Button text="Yes" style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
                                                 modalContent.onConfirm();

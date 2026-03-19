@@ -12,11 +12,16 @@ const useWalletController = () => {
         navigate(ROUTES.WITHDRAW_AMOUNT)
     }
 
+    const handlePaymentLogs = () => {
+        navigate(ROUTES.PAYMENT_LOGS)
+    }
+
     return {
         user,
         walletData,
         isWalletLoading,
-        handleWithdraw
+        handleWithdraw,
+        handlePaymentLogs
     }
 }
 

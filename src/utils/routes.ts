@@ -72,6 +72,8 @@ const ROUTES = {
   ABOUT_US: 'AboutUs',
   BASIC_DETAILS: 'BasicDetails',
   CONTACT_US: 'ContactUs',
+  NOTIFICATION: 'Notification',
+  PAYMENT_LOGS: 'PaymentLogs',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -385,6 +387,20 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Contact Us',
+  },
+  {
+    route_name: ROUTES.NOTIFICATION,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Notification',
+  },
+  {
+    route_name: ROUTES.PAYMENT_LOGS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Payment Logs',
   },
 ] as const;
 

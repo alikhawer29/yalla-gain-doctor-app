@@ -18,6 +18,9 @@ export type AppStackParamList = {
     Chatbot: undefined
     ServiceDetails: { id: number, title: string }
     Slots: { id: number }
+    Notification: undefined
+    PaymentLogs: undefined
+    WithdrawAmount: undefined
 };
 
 export type AuthStackParamList = {
@@ -79,6 +82,8 @@ export type RootStackParamList = {
     AboutUs: undefined;
     BasicDetails: undefined;
     ContactUs: undefined;
+    Notification: undefined;
+    PaymentLogs: undefined;
 };
 
 export interface IWrapper {
@@ -193,6 +198,7 @@ export interface IIcon {
     no_padding?: boolean
     rotate?: boolean,
     resize?: ImageResizeMode
+    style?: StyleProp<ViewStyle>
 }
 
 export interface IProgressBar {
