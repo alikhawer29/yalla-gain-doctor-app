@@ -53,8 +53,7 @@ function App() {
                   <Toast />
                 </NavigationContainer>
 
-                {/* Floating button to open Network Logger */}
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={styles.floatingButton}
                   onPress={() => setShowNetworkLogger(true)}
                 >
@@ -68,7 +67,7 @@ function App() {
                 </TouchableOpacity> */}
 
                 {/* Network Logger Modal */}
-                <Modal
+                {/* <Modal
                   visible={showNetworkLogger}
                   animationType="slide"
                   onRequestClose={() => setShowNetworkLogger(false)}
@@ -87,7 +86,7 @@ function App() {
                     </View>
                     <NetworkLogger theme="dark" />
                   </View>
-                </Modal>
+                </Modal> */}
 
               </ModalProvider>
             </MenuProvider>
