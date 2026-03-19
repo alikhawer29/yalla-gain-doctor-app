@@ -245,12 +245,15 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     ),
   gender: Yup.string()
     .required('Gender is required')
+    .transform(val => (typeof val === 'string' ? val.toLowerCase() : val))
     .oneOf(['male', 'female', 'other'], 'Invalid gender selection'),
   state: Yup.string()
     .required('State is required')
+    .transform(val => (val == null ? '' : String(val)))
     .min(2, 'State name must be at least 2 characters'),
   city: Yup.string()
     .required('City is required')
+    .transform(val => (val == null ? '' : String(val)))
     .min(2, 'City name must be at least 2 characters'),
   bio: Yup.string()
     .required('Bio is required')
@@ -264,14 +267,14 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
       'Profile picture must be an image file (JPG, PNG, or GIF)',
       value => {
         if (!value) return true; // Photo is optional
+        if (typeof value === 'string' && value.length > 0) return true; // Existing URL from API
         if (value instanceof File) {
           return ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(
             value.type,
           );
         }
         if (typeof value === 'object' && value !== null && 'uri' in value) {
-          // For React Native image picker objects
-          return true; // Assume it's valid if it comes from image picker
+          return true; // From image picker
         }
         return false;
       },
@@ -313,6 +316,7 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
             'Certificate must be an image file (JPG, PNG, or GIF)',
             value => {
               if (!value) return false;
+              if (typeof value === 'string' && value.length > 0) return true; // Existing URL from API
               if (value instanceof File) {
                 return [
                   'image/jpeg',
@@ -321,12 +325,8 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
                   'image/gif',
                 ].includes(value.type);
               }
-              if (
-                typeof value === 'object' &&
-                value !== null &&
-                'uri' in value
-              ) {
-                return true; // Assume it's valid if it comes from image picker
+              if (typeof value === 'object' && value !== null) {
+                if ('uri' in value || 'url' in value) return true; // From picker or API object
               }
               return false;
             },

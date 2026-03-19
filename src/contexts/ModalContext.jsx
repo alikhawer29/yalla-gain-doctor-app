@@ -193,9 +193,8 @@ export const ModalProvider = ({ children }) => {
                                     ) : (
                                         <Row justify='space-between' align='center' gap={10} style={styles.buttonContainer}>
                                             <Button text="Yes" style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
-                                                modalContent.onConfirm();
-                                                // Don't call hideModal here if onConfirm is showing another modal
-                                                // The new modal will handle its own visibility
+                                                modalContent.onConfirm?.();
+                                                hideModal();
                                             }} />
                                             <Button text="No" type='outlined' style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
                                                 if (modalContent?.onCancel) {

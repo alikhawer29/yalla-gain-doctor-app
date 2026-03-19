@@ -27,8 +27,8 @@ const useEditProfileController = () => {
     bio: user?.bio || '',
     experience: user?.experience || [],
     certificates: user?.certifications || [],
-    state: user?.state || null,
-    city: user?.city || null,
+    state: user?.state || '',
+    city: user?.city || '',
     photo: user?.photo || null,
   };
 
@@ -56,10 +56,16 @@ const useEditProfileController = () => {
     submit(payload);
   }, []);
 
-  const onPressUpload = useCallback(async () => {
-    let photo = await openGallery();
-    formik_ref?.current?.setFieldValue('photo', photo);
-  }, []);
+  const onPressUpload = useCallback(async (setFieldValue?: (field: string, value: unknown) => void) => {
+    const photo = await openGallery();
+    if (photo) {
+      if (typeof setFieldValue === 'function') {
+        setFieldValue('photo', photo);
+      } else {
+        (formik_ref?.current as any)?.setFieldValue('photo', photo);
+      }
+    }
+  }, [openGallery]);
 
   return {
     schema: EDIT_PROFILE_SCHEMA,
@@ -74,6 +80,7 @@ const useEditProfileController = () => {
     functions: {
       onSubmit,
       onPressUpload,
+      openGallery,
       cities: getCities,
     },
   };

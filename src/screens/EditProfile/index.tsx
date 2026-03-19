@@ -32,6 +32,7 @@ const EditProfile = () => {
         functions: {
             onSubmit,
             onPressUpload,
+            openGallery,
             cities
         }
     } = useEditProfileController()
@@ -50,9 +51,9 @@ const EditProfile = () => {
                         <>
                             <View style={styles.icon_container}>
                                 <View>
-                                    <Icon source={{ uri: typeof data?.photo === "object" ? data?.photo?.uri : data?.photo }} size={100} rounded no_padding border={colors.white} resize="cover" />
+                                    <Icon source={{ uri: typeof data?.photo === "object" ? data?.photo?.uri : (data?.photo || "") }} size={100} rounded no_padding border={colors.white} resize="cover" />
                                     <View style={styles.upload_container}>
-                                        <Icon color={colors.primary} source={images.camera} rounded size={29} less_padding border={colors.white} onPress={onPressUpload} />
+                                        <Icon color={colors.primary} source={images.camera} rounded size={29} less_padding border={colors.white} onPress={() => onPressUpload(setFieldValue)} />
                                     </View>
                                 </View>
                             </View>
@@ -134,12 +135,30 @@ const EditProfile = () => {
                                             <View style={{ marginBottom: heightPixel(7.5) }} key={index}>
                                                 <Input label="Institute Name" placeholder="Enter Institute Name" required value={data?.certificates?.[index]?.institute_name} onChangeText={text => setFieldValue(`certificates[${index}].institute_name`, text)} error={touched?.certificates?.[index]?.institute_name ? errors?.certificates?.[index]?.institute_name : ""} />
                                                 <Input label="Certificate Title" placeholder="Enter Certificate Title" required value={data?.certificates?.[index]?.certificate_title} onChangeText={text => setFieldValue(`certificates[${index}].certificate_title`, text)} error={touched?.certificates?.[index]?.certificate_title ? errors?.certificates?.[index]?.certificate_title : ""} />
-                                                <Upload error={touched?.certificates?.[index]?.certificate_picture ? errors?.certificates?.[index]?.certificate_picture : ""} required text={data?.certificates?.[index]?.certificate_picture ? data?.certificates?.[index]?.certificate_picture?.name : "Certificate Picture"} style={{ marginVertical: heightPixel(7.5) }} onPress={async () => {
-                                                    // const img = await openGallery()
-                                                    // if (img) {
-                                                    //     setFieldValue(`certificates[${index}].certificate_picture`, img)
-                                                    // }
-                                                }} />
+                                                {(() => {
+                                                    const certPicture = data?.certificates?.[index]?.certificate_picture
+                                                    const certUri = typeof certPicture === "string" ? certPicture : certPicture?.uri
+                                                    return (
+                                                        <View style={{ marginVertical: heightPixel(7.5) }}>
+                                                            {certUri ? (
+                                                                <View style={{ marginBottom: heightPixel(7.5) }}>
+                                                                    <Icon source={{ uri: certUri }} size={180} rounded resize="cover" style={{ alignSelf: "flex-start" }} />
+                                                                    <Text size={12} color={colors.white} style={{ marginTop: 4 }}>Tap below to replace</Text>
+                                                                </View>
+                                                            ) : null}
+                                                            <Upload
+                                                                error={touched?.certificates?.[index]?.certificate_picture ? errors?.certificates?.[index]?.certificate_picture : ""}
+                                                                required
+                                                                text={certPicture ? (typeof certPicture === "object" ? certPicture?.name : "Certificate Image") : "Certificate Picture"}
+                                                                style={{ marginVertical: heightPixel(4) }}
+                                                                onPress={async () => {
+                                                                    const img = await openGallery()
+                                                                    if (img) setFieldValue(`certificates[${index}].certificate_picture`, img)
+                                                                }}
+                                                            />
+                                                        </View>
+                                                    )
+                                                })()}
                                                 {form?.values?.certificates?.length > 1 && <Text size={14} color={colors.danger} onPress={() => remove(index)} position="right" weight="semibold">Delete</Text>}
                                             </View>
                                         ))}

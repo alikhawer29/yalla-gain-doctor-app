@@ -60,6 +60,9 @@ export const formatTimer = (s: number): string => {
     return `${mins}:${secs}`;
 };
 
+const isFileLike = (val: any) =>
+    typeof val === 'object' && val !== null && 'uri' in val && (val.uri || val.name)
+
 export const formHandler = (data: any) => {
 
     let formdata = new FormData()
@@ -73,7 +76,15 @@ export const formHandler = (data: any) => {
                     item[1].forEach((i, index) => {
                         if (item[0] !== "valid_id" && item[0] !== "files" && item[0] !== "images" && typeof i === "object") {
                             Object.entries(i).forEach(element => {
-                                formdata.append(`${item[0]}[${index}][${element[0]}]`, element[1])
+                                const key = `${item[0]}[${index}][${element[0]}]`
+                                const val = element[1]
+                                if (isFileLike(val)) {
+                                    formdata.append(key, val as any)
+                                } else if (typeof val === 'string' || typeof val === 'number' || val == null) {
+                                    formdata.append(key, val == null ? '' : String(val))
+                                } else {
+                                    formdata.append(key, val as any)
+                                }
                             })
                         } else {
                             formdata.append(`${item[0]}[${index}]`, i)
@@ -81,7 +92,12 @@ export const formHandler = (data: any) => {
                     })
                 } else if (item[0] !== "image" && item[0] !== "photo" && item[0] !== "file" && typeof item[1] === "object") {
                     Object.entries(item[1]).forEach(element => {
-                        formdata.append(`${item[0]}[${element[0]}]`, element[1])
+                        const val = element[1]
+                        if (isFileLike(val)) {
+                            formdata.append(`${item[0]}[${element[0]}]`, val as any)
+                        } else {
+                            formdata.append(`${item[0]}[${element[0]}]`, element[1] as any)
+                        }
                     })
                 } else {
                     formdata.append(item[0], item[1])
