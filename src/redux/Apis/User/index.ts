@@ -314,6 +314,27 @@ export const userApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+    getWallet: builder.query({
+      query: () => ({
+        url: `wallet`,
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 0,
+    }),
+    contactUs: builder.mutation({
+      query: body => ({
+        url: `contact-us`,
+        method: 'POST',
+        body,
+      }),
+    }),
+    withdraw: builder.mutation({
+      query: body => ({
+        url: `stripe/custom/bank/raw`,
+        method: 'POST',
+        body,
+      }),
+    }),
   }),
 });
 
@@ -363,4 +384,7 @@ export const {
   useGetVideoDetailsQuery,
   useSaveVideoMutation,
   useGetAvatarQuery,
+  useWithdrawMutation,
+  useGetWalletQuery,
+  useContactUsMutation,
 } = userApi;

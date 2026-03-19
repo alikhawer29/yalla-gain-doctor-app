@@ -8,7 +8,7 @@ import Icon from "../Icon"
 import Row from "../Row"
 
 // Routes where bottom bar should be hidden
-const HIDDEN_ROUTES = [ROUTES.CHAT_DETAIL]
+const HIDDEN_ROUTES = [ROUTES.CHAT_DETAIL, ROUTES.WITHDRAW_AMOUNT]
 
 interface BottomBarProps {
     state: TabNavigationState<ParamListBase>

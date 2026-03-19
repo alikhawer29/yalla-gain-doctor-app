@@ -16,6 +16,7 @@ const NAVIGATORS = {
   SERVICE_STACK: 'ServiceStackNavigator',
   BOOKING_STACK: 'BookingStackNavigator',
   DASHBOARD_STACK: 'DashboardStackNavigator',
+  WALLET_STACK: 'WalletStackNavigator',
 } as const;
 
 const ROUTES = {
@@ -64,6 +65,13 @@ const ROUTES = {
   ZOOM_MEETING: 'ZoomMeeting',
   DASHBOARD: 'Dashboard',
   AVATAR_DETAIL: 'AvatarDetail',
+  WALLET: 'Wallet',
+  WITHDRAW_AMOUNT: 'WithdrawAmount',
+  FAQ: 'FAQ',
+  CHOOSE_LANGUAGE: 'ChooseLanguage',
+  ABOUT_US: 'AboutUs',
+  BASIC_DETAILS: 'BasicDetails',
+  CONTACT_US: 'ContactUs',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -328,6 +336,55 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Reviews',
+  },
+  {
+    route_name: ROUTES.WALLET,
+    left: 'drawer',
+    right: 'notifications',
+    logo: false,
+    title: 'Wallet',
+  },
+  {
+    route_name: ROUTES.WITHDRAW_AMOUNT,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Payment',
+  },
+  {
+    route_name: ROUTES.FAQ,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: "FAQ's",
+  },
+  {
+    route_name: ROUTES.CHOOSE_LANGUAGE,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Choose language',
+  },
+  {
+    route_name: ROUTES.ABOUT_US,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'About Us',
+  },
+  {
+    route_name: ROUTES.BASIC_DETAILS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Basic Details',
+  },
+  {
+    route_name: ROUTES.CONTACT_US,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Contact Us',
   },
 ] as const;
 

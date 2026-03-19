@@ -11,6 +11,7 @@ import HelpDeskStackNavigator from '../HelpDeskStackNavigator';
 import ReviewsStackNavigator from '../ReviewsStackNavigator';
 import ServiceStackNavigator from '../ServiceStackNavigator';
 import WorkoutStackNavigator from '../WorkoutStackNavigator';
+import WalletStackNavigator from '../WalletStackNavigator';
 
 const Drawer = createDrawerNavigator();
 
@@ -25,6 +26,7 @@ const DrawerNavigator = () => {
             <Drawer.Screen name={NAVIGATORS.HELP_DESK_STACK} component={HelpDeskStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.WORKOUT_STACK} component={WorkoutStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.AVATAR_STACK} component={AvatarStackNavigator} />
+            <Drawer.Screen name={NAVIGATORS.WALLET_STACK} component={WalletStackNavigator} />
         </Drawer.Navigator>
     );
 }

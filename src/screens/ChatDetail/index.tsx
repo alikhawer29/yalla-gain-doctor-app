@@ -32,7 +32,7 @@ const ChatDetail = () => {
     } = useChatDetailController();
 
     const keyboardHeight = useKeyboard();
-    const isNewAndroid = Platform.OS === 'android' && Platform.Version >= 35;
+    const isNewAndroid = Platform.OS === 'android';
     const headerHeight = useHeaderHeight();
     const insets = useSafeAreaInsets();
 
@@ -102,10 +102,10 @@ const ChatDetail = () => {
         <View style={[styles.input_container, {
             paddingVertical: heightPixel(10),
             paddingBottom:
-              Platform.OS === 'ios'
-                ? heightPixel(0)
-                : (keyboardHeight ? heightPixel(80) : heightPixel(30)) + insets.bottom,
-          }]}>
+                Platform.OS === 'ios'
+                    ? heightPixel(0)
+                    : (keyboardHeight ? heightPixel(80) : heightPixel(30)),
+        }]}>
             <View style={styles.input_wrapper}>
                 <TextInput
                     style={styles.input}

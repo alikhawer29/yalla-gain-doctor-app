@@ -8,18 +8,13 @@ import { navigate } from "../../utils/navigation"
 import { ROUTES } from "../../utils/routes"
 
 const HELPDESK = [
-    { icon: images.helpdesk.faq, title: "FAQ's" },
-    { icon: images.helpdesk.complaint, title: "Yalla Chatbot", onPress: () => navigate(ROUTES.CHATBOT) },
-    { icon: images.helpdesk.wallet, title: "Wallet" },
-    { icon: images.helpdesk.basic_details, title: "Basic Details" },
-    { icon: images.helpdesk.languages, title: "Choose Language" },
+    { icon: images.helpdesk.faq, title: "FAQ's", onPress: () => navigate(ROUTES.FAQ) },
+    { icon: images.helpdesk.complaint, title: "Complain Chat Bot", onPress: () => navigate(ROUTES.CHATBOT) },
+    { icon: images.helpdesk.languages, title: "Choose Language", onPress: () => navigate(ROUTES.CHOOSE_LANGUAGE) },
+    { icon: images.helpdesk.basic_details, title: "Basic Details", onPress: () => navigate(ROUTES.BASIC_DETAILS) },
+    { icon: images.helpdesk.contact, title: "Contact Us", onPress: () => navigate(ROUTES.CONTACT_US) },
     { icon: images.helpdesk.rate, title: "Rate App" },
-    { icon: images.helpdesk.myposts, title: "My Posts" },
-    { icon: images.helpdesk.blocked_user, title: "Blocked User" },
-    { icon: images.helpdesk.subscription, title: "Subscription", onPress: () => navigate(ROUTES.SUBSCRIPTION) },
-    { icon: images.helpdesk.aboutus, title: "About Us" },
-    { icon: images.helpdesk.contact, title: "Contact Us" },
-    { icon: images.helpdesk.trash, title: "Delete Account", color: colors.danger }
+    { icon: images.helpdesk.aboutus, title: "About Us", onPress: () => navigate(ROUTES.ABOUT_US) },
 ]
 
 const HelpDesk = () => {

@@ -14,39 +14,51 @@ import Row from "../Row"
 import Text from "../Text"
 import styles from "./styles"
 
-const DRAWER_ROUTES = [
+const DRAWER_ROUTES: any[] = [
     {
         title: "Home",
-        route: NAVIGATORS.BOTTOM
+        route: NAVIGATORS.BOTTOM,
+        icon: images.drawer_icons.home
     },
     {
         title: "Dashboard",
-        route: NAVIGATORS.DASHBOARD_STACK
+        route: NAVIGATORS.DASHBOARD_STACK,
+        icon: images.drawer_icons.home // Dashboard icon if available
     },
     {
         title: "Add New Service",
-        route: NAVIGATORS.SERVICE_STACK,
-        child: ROUTES.CATEGORIES
+        route: NAVIGATORS.SERVICE_STACK as any,
+        child: ROUTES.CATEGORIES,
+        icon: images.drawer_icons.consult_trainer
     },
     {
         title: "Service Logs",
-        route: NAVIGATORS.BOOKING_STACK
+        route: NAVIGATORS.BOOKING_STACK as any,
+        icon: images.drawer_icons.my_bookings
     },
     {
         title: "Payment Logs",
-        route: NAVIGATORS.BOTTOM
+        route: NAVIGATORS.BOTTOM,
+        icon: images.helpdesk.wallet
     },
     {
         title: "Reviews & Ratings",
-        route: NAVIGATORS.REVIEWS_STACK
+        route: NAVIGATORS.REVIEWS_STACK as any,
+        icon: images.star
     },
     {
         title: "Help Desk",
-        route: NAVIGATORS.BOTTOM
+        route: NAVIGATORS.HELP_DESK_STACK as any,
+        icon: images.drawer_icons.help_center
+    },
+    {
+        title: "Wallet",
+        route: NAVIGATORS.WALLET_STACK as any,
+        icon: images.helpdesk.wallet
     }
 ]
 
-const DrawerBar = (props) => {
+const DrawerBar = (props: any) => {
 
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
@@ -67,16 +79,16 @@ const DrawerBar = (props) => {
                     <Icon source={{ uri: user?.photo }} size={50} rounded no_padding border={colors.white} resize="cover" />
                 </View>
                 <View>
-                    <Text size={18} weight="bold">{user?.first_name} {user?.last_name}</Text>
+                    <Text size={18} weight="bold" color={colors.white}>{user?.first_name} {user?.last_name}</Text>
                     <Row align="center" gap={3}>
-                        <Text size={14}>{user?.coins || "0"} Yalla Coins</Text>
+                        <Text size={14} color={colors.white}>{user?.total_coin || "0"} Yalla Coins</Text>
                         <Icon source={images.coin} size={14} />
                     </Row>
                 </View>
             </Row>
             {
                 DRAWER_ROUTES.map((item) => (
-                    <Row key={item.title} gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route, item?.child ? { screen: item?.child } : {})}>
+                    <Row key={item.title} gap={8} align="center" style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]} onPress={() => navigate(item.route, item?.child ? { screen: item?.child } : {} as any)}>
                         {item?.icon && <Icon source={item?.icon} size={24} tint_color={colors.white} />}
                         <Text size={15} weight="semibold" color={colors.white}>{item.title}</Text>
                     </Row>

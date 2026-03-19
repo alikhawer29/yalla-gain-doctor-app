@@ -65,7 +65,7 @@ function App() {
                       <View style={styles.wifiBar3} />
                     </View>
                   </View>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
                 {/* Network Logger Modal */}
                 <Modal

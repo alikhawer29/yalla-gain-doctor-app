@@ -72,7 +72,14 @@ export type RootStackParamList = {
     Reviews: undefined,
     ZoomMeeting: { sdk_key: string; signature: string; meeting_number: string; password: string; join_url?: string; zak_token?: string; appointment_id?: string | number },
     AvatarDetail: { id?: string | number } | undefined,
-}
+    Wallet: undefined;
+    WithdrawAmount: undefined;
+    FAQ: undefined;
+    ChooseLanguage: undefined;
+    AboutUs: undefined;
+    BasicDetails: undefined;
+    ContactUs: undefined;
+};
 
 export interface IWrapper {
     children: ReactNode
