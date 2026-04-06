@@ -32,7 +32,12 @@ export const auth = createSlice({
             state.isLoggedIn = false
             state.user = null
             state.token = null
-        }
+        },
+        syncUserCoins: (state, action: PayloadAction<string | number>) => {
+            if (state.user) {
+                state.user.coins = String(action.payload)
+            }
+        },
     },
     extraReducers: (builder) => {
         builder.addMatcher(
@@ -52,7 +57,7 @@ export const auth = createSlice({
     }
 })
 
-export const { logout } = auth.actions
+export const { logout, syncUserCoins } = auth.actions
 
 export const selectUser = (state: RootState): any | null => state.auth.user
 export const selectLoggedIn = (state: RootState): boolean => state.auth.isLoggedIn

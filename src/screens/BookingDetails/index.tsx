@@ -24,7 +24,8 @@ const BookingDetails = () => {
             isLoading,
             editMode,
             prescription,
-            prescriptionFile
+            prescriptionFile,
+            existingPrescriptionFileUrl,
         },
         functions: {
             onApprove,
@@ -41,8 +42,6 @@ const BookingDetails = () => {
         }
     } = useBookingDetailsController()
 
-    console.log(prescription, 'prescription')
-
     if (isLoading) {
         return <Loader mode="secondary" />
     }
@@ -53,7 +52,7 @@ const BookingDetails = () => {
         onReject?: () => void;
         onReschedule?: () => void;
         onEdit?: () => void;
-        onSavePrescription?: () => void;
+        onSavePrescription?: () => void | Promise<void>;
         onStartSession?: () => void;
         onReport?: () => void;
         isStartingSession?: boolean;
@@ -222,14 +221,18 @@ const BookingDetails = () => {
                         </View>
                     </Row>
                     <Row>
-                        <View style={styles.half_width_box}>
-                            <Text weight="semibold">Email Address:</Text>
-                            <Text style={styles.value_text} lines={1} color={colors.icon_gray}>{data?.email}</Text>
-                        </View>
+
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Appointment Date:</Text>
                             <Text style={styles.value_text} color={colors.icon_gray}>{data?.appointment_date}</Text>
                         </View>
+                    </Row>
+                    <Row>
+                        <View style={styles.half_width_box}>
+                            <Text weight="semibold">Email Address:</Text>
+                            <Text style={styles.value_text} lines={1} color={colors.icon_gray}>{data?.email}</Text>
+                        </View>
+
                     </Row>
                     <Row>
                         {
@@ -284,7 +287,7 @@ const BookingDetails = () => {
                             </Row>
                         </>
                     )}
-                    {data?.prescription_text && !editMode && (
+                    {(data?.prescription_text || data?.prescription_file) && !editMode && (
                         <>
                             <Text
                                 size={20}
@@ -293,16 +296,18 @@ const BookingDetails = () => {
                             >
                                 Prescription
                             </Text>
-                            <Row>
-                                <View style={styles.full_width_box}>
-                                    <Text
-                                        style={styles.value_text}
-                                        color={colors.icon_gray}
-                                    >
-                                        {data?.prescription_text}
-                                    </Text>
-                                </View>
-                            </Row>
+                            {!!data?.prescription_text && (
+                                <Row>
+                                    <View style={styles.full_width_box}>
+                                        <Text
+                                            style={styles.value_text}
+                                            color={colors.icon_gray}
+                                        >
+                                            {data?.prescription_text}
+                                        </Text>
+                                    </View>
+                                </Row>
+                            )}
 
                             {data?.prescription_file && (
                                 <Row style={{ marginTop: heightPixel(10) }} align="center" gap={10}>
@@ -333,8 +338,22 @@ const BookingDetails = () => {
                                 value={prescription}
                             />
                             <View style={{ marginTop: heightPixel(10) }}>
+                                {existingPrescriptionFileUrl && !prescriptionFile ? (
+                                    <Text
+                                        style={{ marginBottom: heightPixel(8) }}
+                                        color={colors.icon_gray}
+                                        size={12}
+                                    >
+                                        Current file:{' '}
+                                        {String(existingPrescriptionFileUrl).split('/').pop()}
+                                    </Text>
+                                ) : null}
                                 <Button
-                                    text={prescriptionFile ? "Change File" : "Upload File"}
+                                    text={
+                                        prescriptionFile || existingPrescriptionFileUrl
+                                            ? 'Change File'
+                                            : 'Upload File'
+                                    }
                                     onPress={onPickPrescriptionFile}
                                     type="outlined"
                                 />
@@ -344,7 +363,7 @@ const BookingDetails = () => {
                                         color={colors.icon_gray}
                                         size={12}
                                     >
-                                        Selected file: {prescriptionFile.name}
+                                        New file: {prescriptionFile.name}
                                     </Text>
                                 )}
                             </View>

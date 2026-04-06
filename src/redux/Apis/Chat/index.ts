@@ -59,16 +59,24 @@ export const chatApi = createApi({
       invalidatesTags: ['ChatList'],
     }),
 
-    // Send message
+    // Send message (multipart; do not set Content-Type — RN/fetch must add boundary)
     sendMessage: builder.mutation({
-      query: (payload: { chat_id: number; message: string; files?: any[] }) => {
+      query: (payload: {
+        chat_id: number;
+        message: string;
+        files?: { uri: string; name: string; type: string }[];
+      }) => {
         const formData = new FormData();
         formData.append('chat_id', payload.chat_id.toString());
         formData.append('message', payload.message);
 
         if (payload.files && payload.files.length > 0) {
           payload.files.forEach((file, index) => {
-            formData.append(`files[${index}]`, file);
+            formData.append(`files[${index}]`, {
+              uri: file.uri,
+              name: file.name || `attachment_${index}`,
+              type: file.type || 'application/octet-stream',
+            } as any);
           });
         }
 
@@ -76,9 +84,6 @@ export const chatApi = createApi({
           url: 'chat/sendMessage',
           method: 'POST',
           body: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
         };
       },
       invalidatesTags: ['Chat', 'ChatList'],

@@ -123,7 +123,7 @@ const Dashboard = () => {
                         <View style={{ height: heightPixel(60), marginLeft: -widthPixel(40), marginBottom: -heightPixel(10) }}>
                             <BarChart
                                 data={miniBarData}
-                                width={vw * 45} 
+                                width={vw * 45}
                                 height={heightPixel(80)}
                                 yAxisLabel=""
                                 yAxisSuffix=""
@@ -156,14 +156,14 @@ const Dashboard = () => {
                                     { label: 'Monthly', value: 'Monthly' },
                                     { label: 'Yearly', value: 'Yearly' },
                                 ]}
-                                height={40}
+                                height={10}
                             />
                         </View>
                     </Row>
                     <View style={{ marginLeft: -widthPixel(20) }}>
                         <LineChart
                             data={earningsData}
-                            width={vw * 100 - widthPixel(20)} 
+                            width={vw * 100 - widthPixel(20)}
                             height={heightPixel(220)}
                             chartConfig={fullChartConfig}
                             bezier
@@ -197,7 +197,7 @@ const Dashboard = () => {
                     <View style={{ marginLeft: -widthPixel(20) }}>
                         <LineChart
                             data={bookingsData}
-                            width={vw * 100 - widthPixel(20)} 
+                            width={vw * 100 - widthPixel(20)}
                             height={heightPixel(220)}
                             chartConfig={fullChartConfig}
                             bezier

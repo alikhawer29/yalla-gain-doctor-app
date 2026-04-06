@@ -136,34 +136,49 @@ export const ModalProvider = ({ children }) => {
                                         )
                                     }
                                     {
-                                        modalContent.type !== "info" && (
+                                        modalType !== 'input' && modalContent.type !== "info" && (
                                             <Image source={modalContent.type === "success" ? images.modal_check : modalContent.type === "warning" ? images.warning : images.modal_cross} style={{ height: heightPixel(78), resizeMode: "contain", marginBottom: heightPixel(20) }} />
                                         )
                                     }
                                     
-                                    <Text style={[styles.title, modalContent.type == "info" ? { width: "100%" } : {}]} color={colors.white} position="center" size={24} weight='bold' line_height={40}>{modalContent?.title}</Text>
-                                    <Text style={[styles.message, modalContent.type == "info" ? { width: "100%" } : {}]} color={colors.white} position="center">{modalContent?.message}</Text>
                                     {modalType === 'input' ? (
-                                        <View style={styles.inputContainer}>
-                                            <TextInput
-                                                style={styles.textInput}
-                                                value={modalContent.inputValue}
-                                                onChangeText={(text) => setModalContent(prev => ({ ...prev, inputValue: text }))}
-                                                placeholder={modalContent.placeholder}
-                                                placeholderTextColor={colors.gray}
-                                                multiline
-                                                numberOfLines={3}
-                                                textAlignVertical="top"
-                                            />
-                                            <Button text="Submit" onPress={() => {
-                                                if (modalContent.inputValue.trim()) {
-                                                    modalContent.onConfirm(modalContent.inputValue.trim());
-                                                    hideModal();
-                                                }
-                                            }} />
+                                        <View style={{ width: '100%', alignItems: 'flex-start' }}>
+                                            <Row align="center" style={{ marginBottom: heightPixel(10) }}>
+                                                <Text size={20} weight="bold" color={colors.white}>
+                                                    {modalContent?.title}
+                                                </Text>
+                                                {modalContent?.required && (
+                                                    <Text size={20} weight="bold" color={colors.danger}>*</Text>
+                                                )}
+                                                <Text size={20} weight="bold" color={colors.white}> :</Text>
+                                            </Row>
+                                            <View style={styles.inputContainer}>
+                                                <TextInput
+                                                    style={styles.textInput}
+                                                    value={modalContent.inputValue}
+                                                    onChangeText={(text) => setModalContent(prev => ({ ...prev, inputValue: text }))}
+                                                    placeholder={modalContent.placeholder}
+                                                    placeholderTextColor={colors.gray}
+                                                    multiline
+                                                    numberOfLines={5}
+                                                    textAlignVertical="top"
+                                                />
+                                                <Button text="Submit" onPress={() => {
+                                                    if (modalContent.inputValue.trim()) {
+                                                        modalContent.onConfirm(modalContent.inputValue.trim());
+                                                        hideModal();
+                                                    }
+                                                }} />
+                                            </View>
                                         </View>
-                                    ) : modalType === 'ok' ? (
-                                        <Button text="OK" onPress={() => {
+                                    ) : (
+                                        <>
+                                            <Text style={[styles.title, modalContent.type == "info" ? { width: "100%" } : {}]} color={colors.white} position="center" size={24} weight='bold' line_height={40}>{modalContent?.title}</Text>
+                                            <Text style={[styles.message, modalContent.type == "info" ? { width: "100%" } : {}]} color={colors.white} position="center">{modalContent?.message}</Text>
+                                        </>
+                                    )}
+                                    {modalType === 'ok' ? (
+                                        <Button text="Ok" onPress={() => {
                                             modalContent.onConfirm();
                                             hideModal();
                                         }} />
@@ -190,11 +205,15 @@ export const ModalProvider = ({ children }) => {
                                                 }}
                                             />
                                         </View>
-                                    ) : (
+                                    ) : modalType === 'input' ? null : (
                                         <Row justify='space-between' align='center' gap={10} style={styles.buttonContainer}>
                                             <Button text="Yes" style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
-                                                modalContent.onConfirm?.();
-                                                hideModal();
+                                                // If onConfirm returns false, keep the overlay open (e.g. chain to input modal).
+                                                // Do not use hideModal() here — it runs onCancel and would close before a nested modal opens.
+                                                const suppressClose = modalContent.onConfirm?.() === false;
+                                                if (!suppressClose) {
+                                                    setIsVisible(false);
+                                                }
                                             }} />
                                             <Button text="No" type='outlined' style={{ width: "50%", minWidth: 'auto' }} onPress={() => {
                                                 if (modalContent?.onCancel) {
@@ -251,9 +270,11 @@ const styles = StyleSheet.create({
         backgroundColor: colors.white,
         borderRadius: heightPixel(8),
         padding: heightPixel(10),
-        color: colors.black,
+        color: colors.white,
         marginBottom: heightPixel(20),
-        marginTop: heightPixel(-55),
         textAlignVertical: 'top',
+        borderWidth: 1,
+        borderColor: colors.gray,
+        backgroundColor: 'transparent'
     },
 });

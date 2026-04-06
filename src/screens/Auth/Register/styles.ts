@@ -18,6 +18,13 @@ const styles = StyleSheet.create({
   upload_margin: {
     marginVertical: heightPixel(7.5),
   },
+  profile_preview_wrap: {
+    alignItems: 'center',
+    marginBottom: heightPixel(8),
+  },
+  cert_preview_wrap: {
+    marginBottom: heightPixel(8),
+  },
 });
 
 export default styles;

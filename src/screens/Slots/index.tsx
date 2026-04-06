@@ -127,6 +127,7 @@ const Slots = () => {
 
     const [slotsData, setSlotsData] = useState(INITIAL_SLOTS);
     const [errors, setErrors] = useState<any>({});
+    const [autoFillForWeek, setAutoFillForWeek] = useState(false);
 
     const validateSlot = (start: string, end: string) => {
 
@@ -157,11 +158,21 @@ const Slots = () => {
     };
 
     const handleToggleDay = (dayIndex) => {
-        setSlotsData((prev) =>
-            prev.map((item, i) =>
-                i === dayIndex ? { ...item, enabled: !item.enabled } : item
-            )
-        );
+        setSlotsData((prev) => {
+            const newState = !prev[dayIndex].enabled;
+
+            if (autoFillForWeek && dayIndex === 0) {
+                return prev.map((item) => ({ ...item, enabled: newState }));
+            }
+
+            if (autoFillForWeek && dayIndex !== 0) {
+                setAutoFillForWeek(false);
+            }
+
+            return prev.map((item, i) =>
+                i === dayIndex ? { ...item, enabled: newState } : item
+            );
+        });
     };
 
     const handleChangeSlot = (dayIndex: number, slotIndex: number, key: 'start_time' | 'end_time', value: string) => {
@@ -170,22 +181,36 @@ const Slots = () => {
             updated[dayIndex].slots[slotIndex][key] = value;
             updated[dayIndex].enabled = true;
 
-            const { start_time, end_time } = updated[dayIndex].slots[slotIndex];
-            const errorMsg = validateSlot(start_time, end_time);
+            if (autoFillForWeek && dayIndex === 0) {
+                const mondaySlots = JSON.parse(JSON.stringify(updated[0].slots));
+                updated.forEach((day, i) => {
+                    day.slots = JSON.parse(JSON.stringify(mondaySlots));
+                    day.enabled = true;
+                });
+            } else if (autoFillForWeek && dayIndex !== 0) {
+                setAutoFillForWeek(false);
+            }
 
-            setErrors((prevErr) => {
+            const activeDayIndices = autoFillForWeek && dayIndex === 0 ? [0, 1, 2, 3, 4, 5, 6] : [dayIndex];
+
+            setErrors((prevErr: any) => {
                 const updatedErr = { ...prevErr };
-                const dayErrors = [...(updatedErr[dayIndex] || [])];
 
-                dayErrors[slotIndex] = errorMsg
-                    ? {
-                        start: key === "start_time",
-                        end: key === "end_time",
-                        message: errorMsg,
-                    }
-                    : {};
+                activeDayIndices.forEach((dIdx) => {
+                    const { start_time, end_time } = updated[dIdx].slots[slotIndex];
+                    const errorMsg = validateSlot(start_time, end_time);
 
-                updatedErr[dayIndex] = dayErrors;
+                    const dayErrors = [...(updatedErr[dIdx] || [])];
+                    dayErrors[slotIndex] = errorMsg
+                        ? {
+                            start: key === "start_time",
+                            end: key === "end_time",
+                            message: errorMsg,
+                        }
+                        : {};
+                    updatedErr[dIdx] = dayErrors;
+                });
+
                 return updatedErr;
             });
 
@@ -196,7 +221,14 @@ const Slots = () => {
     const handleAddSlot = (dayIndex) => {
         setSlotsData((prev) => {
             const updated = [...prev];
-            updated[dayIndex].slots.push({ start_time: "", end_time: "" });
+            if (autoFillForWeek && dayIndex === 0) {
+                updated.forEach((day) => {
+                    day.slots.push({ start_time: "", end_time: "" });
+                });
+            } else {
+                if (autoFillForWeek) setAutoFillForWeek(false);
+                updated[dayIndex].slots.push({ start_time: "", end_time: "" });
+            }
             return updated;
         });
     };
@@ -204,20 +236,60 @@ const Slots = () => {
     const handleRemoveSlot = (dayIndex, slotIndex) => {
         setSlotsData((prev) => {
             const updated = [...prev];
-            if (updated[dayIndex].slots.length > 1) {
-                updated[dayIndex].slots.splice(slotIndex, 1);
-            } else {
-                updated[dayIndex].slots[0] = { start_time: "", end_time: "" };
-                updated[dayIndex].enabled = false;
-                setErrors((prevErr) => {
-                    const updatedErr = { ...prevErr };
-                    if (updatedErr[dayIndex]) {
-                        updatedErr[dayIndex][0] = {};
+
+            const applyToIndices = (autoFillForWeek && dayIndex === 0) ? [0, 1, 2, 3, 4, 5, 6] : [dayIndex];
+
+            if (autoFillForWeek && dayIndex !== 0) setAutoFillForWeek(false);
+
+            applyToIndices.forEach((dIdx) => {
+                if (updated[dIdx].slots.length > 1) {
+                    updated[dIdx].slots.splice(slotIndex, 1);
+                } else {
+                    updated[dIdx].slots[0] = { start_time: "", end_time: "" };
+                    updated[dIdx].enabled = false;
+                }
+            });
+
+            // Clear errors for current slot indices
+            setErrors((prevErr: any) => {
+                const updatedErr = { ...prevErr };
+                applyToIndices.forEach(dIdx => {
+                    if (updatedErr[dIdx]) {
+                        if (updated[dIdx].slots.length > 1) {
+                            updatedErr[dIdx].splice(slotIndex, 1);
+                        } else {
+                            updatedErr[dIdx][0] = {};
+                        }
                     }
+                });
+                return updatedErr;
+            });
+
+            return updated;
+        });
+    };
+
+    const handleAutoFillToggle = () => {
+        setAutoFillForWeek((prev) => {
+            const newValue = !prev;
+            if (newValue) {
+                setSlotsData((prevSlots) => {
+                    const mondayData = prevSlots[0];
+                    return prevSlots.map((day, i) =>
+                        i === 0 ? day : { ...day, enabled: mondayData.enabled, slots: JSON.parse(JSON.stringify(mondayData.slots)) }
+                    );
+                });
+
+                setErrors((prevErr: any) => {
+                    const updatedErr = { ...prevErr };
+                    const mondayErrors = prevErr[0] || [];
+                    [1, 2, 3, 4, 5, 6].forEach(i => {
+                        updatedErr[i] = JSON.parse(JSON.stringify(mondayErrors));
+                    });
                     return updatedErr;
                 });
             }
-            return updated;
+            return newValue;
         });
     };
 
@@ -301,15 +373,23 @@ const Slots = () => {
                 ItemSeparatorComponent={() => <Seperator />}
                 keyExtractor={(item) => item.day}
                 renderItem={({ item, index }) => (
-                    <SlotCard
-                        data={item}
-                        index={index}
-                        onToggleDay={handleToggleDay}
-                        onChangeSlot={handleChangeSlot}
-                        onAddSlot={handleAddSlot}
-                        onRemoveSlot={handleRemoveSlot}
-                        errors={errors}
-                    />
+                    <>
+                        <SlotCard
+                            data={item}
+                            index={index}
+                            onToggleDay={handleToggleDay}
+                            onChangeSlot={handleChangeSlot}
+                            onAddSlot={handleAddSlot}
+                            onRemoveSlot={handleRemoveSlot}
+                            errors={errors}
+                        />
+                        {index === 0 && (
+                            <Row align="center" style={{ marginVertical: heightPixel(15), marginLeft: widthPixel(5) }}>
+                                <Checkbox checked={autoFillForWeek} onPress={handleAutoFillToggle} />
+                                <Text style={{ marginLeft: widthPixel(12) }} weight="semibold">Auto-Fill For The Week</Text>
+                            </Row>
+                        )}
+                    </>
                 )}
                 ListFooterComponent={() => <Button text="Save Slots" onPress={handleSubmit} loading={isLoading} />}
                 ListFooterComponentStyle={{ marginVertical: heightPixel(30) }}

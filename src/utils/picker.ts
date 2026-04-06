@@ -4,7 +4,9 @@ export const openImageGallery = async (onSelect) => {
 
   return launchImageLibrary({
     mediaType: 'photo',
-    selectionLimit: 1
+    selectionLimit: 1,
+    // Helps some devices re-open the picker and return a fresh asset on re-selection
+    includeExtra: true,
   })
     .then(async (photo) => {
 

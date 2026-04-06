@@ -22,9 +22,9 @@ const styles = StyleSheet.create({
     borderColor: colors.white + '20',
   },
   card: {
-    backgroundColor: colors.white + '05',
-    borderRadius: 20,
-    padding: 15,
+    backgroundColor: colors.blackish_gray,
+    borderRadius: 10,
+    padding: widthPixel(10),
     marginBottom: 15,
     borderWidth: 1,
     borderColor: colors.white + '10',

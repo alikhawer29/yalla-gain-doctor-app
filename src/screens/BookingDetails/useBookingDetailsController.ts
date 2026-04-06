@@ -30,6 +30,27 @@ import {
   DocumentPickerResponse,
 } from '@react-native-documents/picker';
 
+/** Server URLs must not be sent as multipart file parts — only device-picked assets. */
+const isLocalUploadUri = (uri: string) => {
+  if (!uri || typeof uri !== 'string') return false;
+  const u = uri.trim().toLowerCase();
+  return !u.startsWith('http://') && !u.startsWith('https://');
+};
+
+const formatPrescriptionApiError = (e: any): string => {
+  const top = e?.data?.message;
+  const errObj = e?.data?.errors;
+  if (errObj && typeof errObj === 'object') {
+    const lines = Object.values(errObj).flatMap((v: any) =>
+      Array.isArray(v) ? v.map(String) : [String(v)],
+    );
+    if (lines.length) return lines.join('\n');
+  }
+  return typeof top === 'string' && top.length > 0
+    ? top
+    : 'Could not save prescription. Please try again.';
+};
+
 const useBookingDetailsController = () => {
   const isFocused = useIsFocused();
   const navigation = useNavigation();
@@ -105,18 +126,24 @@ const useBookingDetailsController = () => {
   useEffect(() => {
     if (params?.id && params?.id !== previousIdRef.current) {
       previousIdRef.current = params?.id;
+      setPrescriptionFile(null);
       refetch();
     }
   }, [params?.id]);
 
   useEffect(() => {
     if (isSuccess) {
-      setPrescription(data?.data?.prescription_text);
+      setPrescription(
+        data?.data?.prescription_text != null
+          ? String(data.data.prescription_text)
+          : '',
+      );
     }
   }, [isSuccess, data]);
 
   useEffect(() => {
     if (isUpdatePrescriptionSuccess) {
+      setPrescriptionFile(null);
       toggleEditMode();
       refetch();
       showOkModal({
@@ -166,15 +193,14 @@ const useBookingDetailsController = () => {
         message: 'Are You Sure You Want To Reject This Appointment?',
       },
       () => {
-        console.log('Yes clicked, showing input modal');
         showInputModal(
           {
             type: 'warning',
             title: 'Rejection Reason',
             placeholder: 'Write Rejection Reason.....',
+            required: true,
           },
           (rejectionReason: string) => {
-            console.log('Input modal submitted with reason:', rejectionReason);
             update({
               type: 'reject',
               id: data?.data?.id,
@@ -182,6 +208,7 @@ const useBookingDetailsController = () => {
             });
           },
         );
+        return false;
       },
     );
   };
@@ -236,26 +263,79 @@ const useBookingDetailsController = () => {
       console.log('Prescription document picker error:', err);
     }
   };
-  const onSavePrescription = () => {
+  const onSavePrescription = async () => {
     if (!data?.data?.id) return;
 
-    // If a file is selected, send multipart/form-data with text + file
-    if (prescriptionFile) {
-      const formData = new FormData();
-      formData.append('prescription_text', prescription || '');
-      // NOTE: Change "prescription_file" to match your backend field name if different
-      formData.append('prescription_file', {
-        uri: prescriptionFile.uri,
-        name: prescriptionFile.name,
-        type: prescriptionFile.type,
-      } as any);
+    const prescriptionText =
+      prescription != null && prescription !== undefined
+        ? String(prescription)
+        : '';
+    const trimmed = prescriptionText.trim();
 
-      updatePrescription({ id: data.data.id, body: formData });
-    } else {
-      // Text-only prescription
-      updatePrescription({
-        id: data.data.id,
-        body: { prescription_text: prescription },
+    const hasNewLocalFile =
+      prescriptionFile &&
+      prescriptionFile.uri &&
+      isLocalUploadUri(prescriptionFile.uri);
+    const hasExistingServerFile = !!data?.data?.prescription_file;
+
+    // Laravel: prescription_text required_without prescription_file, and inverse.
+    // Empty request (no text, no new file, no existing attachment) → both rules fail.
+    if (!trimmed && !hasNewLocalFile && !hasExistingServerFile) {
+      showOkModal({
+        type: 'error',
+        title: 'Prescription',
+        message:
+          'Add prescription text or upload a file. Both cannot be empty.',
+      });
+      return;
+    }
+
+    // Matches Postman/backend: file in request with empty text fails validation.
+    if (hasNewLocalFile && !trimmed) {
+      showOkModal({
+        type: 'error',
+        title: 'Prescription',
+        message:
+          'Prescription text is required when uploading a file.',
+      });
+      return;
+    }
+
+    // JSON update without a file field: backend treats file as absent → text required.
+    if (!hasNewLocalFile && !trimmed && hasExistingServerFile) {
+      showOkModal({
+        type: 'error',
+        title: 'Prescription',
+        message:
+          'Prescription text is required while a file is on record. Add text or upload a new file.',
+      });
+      return;
+    }
+
+    try {
+      if (hasNewLocalFile) {
+        const formData = new FormData();
+        formData.append('prescription_text', prescriptionText);
+        formData.append('prescription_file', {
+          uri: prescriptionFile.uri,
+          name: prescriptionFile.name,
+          type: prescriptionFile.type,
+        } as any);
+        await updatePrescription({
+          id: data.data.id,
+          body: formData,
+        }).unwrap();
+      } else {
+        await updatePrescription({
+          id: data.data.id,
+          body: { prescription_text: prescriptionText },
+        }).unwrap();
+      }
+    } catch (e: any) {
+      showOkModal({
+        type: 'error',
+        title: 'Prescription',
+        message: formatPrescriptionApiError(e),
       });
     }
   };
@@ -460,6 +540,7 @@ const useBookingDetailsController = () => {
   return {
     values: {
       data: data?.data || null,
+      existingPrescriptionFileUrl: data?.data?.prescription_file ?? null,
       isUpdateLoading:
         isUpdateLoading ||
         isUpdatePrescriptionLoading ||

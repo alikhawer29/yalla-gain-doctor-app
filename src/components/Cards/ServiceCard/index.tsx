@@ -19,7 +19,7 @@ const ServiceCard = ({ data, onPress }) => {
                 <Row justify="space-between">
                     <Row align="center" gap={10}>
                         <Icon source={images.calendar} size={14} />
-                        <Text size={13}>{dayjs(data?.rescheduled_appointment_date || data?.appointment_date, "DD/MM/YYYY").format("MMM DD, YYYY")}</Text>
+                        <Text size={13}>{data?.appointment_date || data?.rescheduled_appointment_date}</Text>
                     </Row>
                     <StatusBadge status={data?.status} />
                 </Row>

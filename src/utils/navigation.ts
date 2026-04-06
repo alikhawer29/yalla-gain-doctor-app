@@ -1,6 +1,7 @@
 // navigation.ts
 import { CommonActions, createNavigationContainerRef } from '@react-navigation/native';
 import { AppStackParamList, AuthStackParamList, RootStackParamList } from '../interfaces';
+import { NAVIGATORS, ROUTES } from './routes';
 
 type CombinedParamList = RootStackParamList & AuthStackParamList & AppStackParamList;
 
@@ -21,6 +22,23 @@ export const goBack = () => {
     if (navigationRef.isReady()) {
         navigationRef.dispatch(CommonActions.goBack());
     }
+};
+
+/** Drawer → bottom tab → profile stack root (pops Edit Profile / Change Password, selects profile tab). */
+export const navigateToMyProfileTab = () => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.dispatch(
+        CommonActions.navigate({
+            name: NAVIGATORS.DRAWER as keyof CombinedParamList,
+            params: {
+                screen: NAVIGATORS.BOTTOM,
+                params: {
+                    screen: NAVIGATORS.MY_PROFILE_STACK,
+                    params: { screen: ROUTES.MY_PROFILE },
+                },
+            },
+        } as never),
+    );
 };
 
 export const navigateAndSimpleReset = <RouteName extends keyof CombinedParamList>(

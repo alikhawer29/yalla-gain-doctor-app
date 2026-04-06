@@ -4,7 +4,7 @@ import { useAppSelector } from '../../hooks';
 import { useUpdateProfileMutation } from '../../redux/Apis/User';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { formHandler, getCities, getStates } from '../../utils/helper';
-import { goBack } from '../../utils/navigation';
+import { navigateToMyProfileTab } from '../../utils/navigation';
 import { EDIT_PROFILE_SCHEMA } from '../../utils/validators';
 import usePicker from '../../hooks/usePicker';
 
@@ -40,8 +40,7 @@ const useEditProfileController = () => {
           title: 'Success',
           message: 'Profile has been updated successfully.',
         },
-        () => goBack(),
-        () => goBack(),
+        () => navigateToMyProfileTab(),
       );
     }
   }, [isSuccess]);
@@ -50,8 +49,6 @@ const useEditProfileController = () => {
     let payload = { ...data };
 
     payload = formHandler(payload);
-
-    console.log('Hellooooooooooooooo', payload);
 
     submit(payload);
   }, []);

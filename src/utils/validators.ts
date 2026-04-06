@@ -97,19 +97,19 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
     ),
   photo: Yup.mixed()
     .nullable()
+    .required('Profile picture is required')
     .test(
       'file-type',
       'Profile picture must be an image file (JPG, PNG, or GIF)',
       value => {
-        if (!value) return true; // Photo is optional
+        if (!value) return false;
         if (value instanceof File) {
           return ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'].includes(
             value.type,
           );
         }
         if (typeof value === 'object' && value !== null && 'uri' in value) {
-          // For React Native image picker objects
-          return true; // Assume it's valid if it comes from image picker
+          return true; // From image picker
         }
         return false;
       },

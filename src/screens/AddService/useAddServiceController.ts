@@ -39,13 +39,23 @@ const useAddServiceController = () => {
         }
     }, [isServiceSuccess, data])
 
+    const goToMyServices = () => {
+        navigate(
+            NAVIGATORS.BOTTOM as any,
+            {
+                screen: NAVIGATORS.MY_SERVICES_STACK,
+                params: { screen: ROUTES.MY_SERVICES },
+            } as any,
+        )
+    }
+
     useEffect(() => {
         if (isSuccess) {
             showOkModal({
                 type: "success",
                 title: "Successfully",
                 message: params?.service_id ? "Service Has Been Updated Successfully" : "New Service Has Been Added Successfully",
-            }, () => navigate(NAVIGATORS.BOTTOM, { screen: NAVIGATORS.HOME_STACK }), () => navigate(NAVIGATORS.BOTTOM, { screen: NAVIGATORS.HOME_STACK }))
+            }, goToMyServices, goToMyServices)
         }
     }, [isSuccess, params])
 

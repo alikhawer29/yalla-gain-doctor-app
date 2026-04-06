@@ -1,4 +1,5 @@
 import { FieldArray, Formik } from "formik"
+import { useState } from "react"
 import { View } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import images from "../../../assets/images"
@@ -22,6 +23,8 @@ import useRegisterController from "./useRegisterController"
 
 const Register = () => {
     const navigation = useNavigation()
+    const [profileImageBump, setProfileImageBump] = useState(0)
+    const [certImageBumps, setCertImageBumps] = useState<Record<number, number>>({})
 
     const {
         schema,
@@ -53,7 +56,7 @@ const Register = () => {
                 validationSchema={schema}
                 onSubmit={onSubmit}
             >
-                {({ values: data, handleSubmit, handleChange, errors, touched, setFieldValue }) => (
+                {({ values: data, handleSubmit, handleChange, errors, touched, setFieldValue, setFieldTouched, submitCount }) => (
                     <>
                         <Input label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : ""} />
                         <Input label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : ""} />
@@ -133,10 +136,25 @@ const Register = () => {
                                         <View style={{ marginBottom: heightPixel(7.5) }} key={index}>
                                             <Input label="Institute Name" placeholder="Enter Institute Name" required value={data?.certificates?.[index]?.institute_name} onChangeText={text => setFieldValue(`certificates[${index}].institute_name`, text)} error={touched?.certificates?.[index]?.institute_name ? errors?.certificates?.[index]?.institute_name : ""} />
                                             <Input label="Certificate Title" placeholder="Enter Certificate Title" required value={data?.certificates?.[index]?.certificate_title} onChangeText={text => setFieldValue(`certificates[${index}].certificate_title`, text)} error={touched?.certificates?.[index]?.certificate_title ? errors?.certificates?.[index]?.certificate_title : ""} />
-                                            <Upload error={touched?.certificates?.[index]?.certificate_picture ? errors?.certificates?.[index]?.certificate_picture : ""} required text={data?.certificates?.[index]?.certificate_picture ? data?.certificates?.[index]?.certificate_picture?.name : "Certificate Picture"} style={styles.upload_margin} onPress={async () => {
+                                            {data?.certificates?.[index]?.certificate_picture?.uri ? (
+                                                <View style={styles.cert_preview_wrap}>
+                                                    <Icon
+                                                        key={`reg-cert-${index}-${certImageBumps[index] ?? 0}`}
+                                                        source={{ uri: data.certificates[index].certificate_picture.uri }}
+                                                        size={100}
+                                                        rounded
+                                                        no_padding
+                                                        border={colors.white}
+                                                        resize="cover"
+                                                    />
+                                                    <Text size={12} color={colors.gray} style={{ marginTop: 4 }}>Tap below to replace</Text>
+                                                </View>
+                                            ) : null}
+                                            <Upload error={touched?.certificates?.[index]?.certificate_picture ? errors?.certificates?.[index]?.certificate_picture : ""} required text={data?.certificates?.[index]?.certificate_picture ? (data?.certificates?.[index]?.certificate_picture?.name || data?.certificates?.[index]?.certificate_picture?.fileName || 'Certificate') : "Certificate Picture"} style={styles.upload_margin} onPress={async () => {
                                                 const img = await openGallery()
                                                 if (img) {
                                                     setFieldValue(`certificates[${index}].certificate_picture`, img)
+                                                    setCertImageBumps(prev => ({ ...prev, [index]: (prev[index] ?? 0) + 1 }))
                                                 }
                                             }} />
                                             {form?.values?.certificates?.length > 1 && <Text size={14} color={colors.danger} onPress={() => remove(index)} position="right" weight="semibold">Delete</Text>}
@@ -152,12 +170,35 @@ const Register = () => {
                         <Input label="Email Address" placeholder="Enter Email Address" type="email" required value={data?.email} onChangeText={handleChange("email")} error={touched?.email ? errors?.email : ""} />
                         <Input label="Password" placeholder="Enter Password" type="password" required value={data?.password} onChangeText={handleChange("password")} error={touched?.password ? errors?.password : ""} />
                         <Input label="Confirm Password" placeholder="Confirm Password" type="password" required value={data?.password_confirmation} onChangeText={handleChange("password_confirmation")} error={touched?.password_confirmation ? errors?.password_confirmation : ""} />
-                        <Upload text={data?.photo ? data?.photo?.name : "Upload Profile Picture"} style={styles.upload_margin} onPress={async () => {
-                            const img = await openGallery()
-                            if (img) {
-                                setFieldValue(`photo`, img)
-                            }
-                        }} />
+                        <Text size={16} weight="semibold" style={{ marginTop: heightPixel(8), marginBottom: heightPixel(4) }}>Profile Picture</Text>
+                        {data?.photo?.uri ? (
+                            <View style={styles.profile_preview_wrap}>
+                                <Icon
+                                    key={`reg-profile-${profileImageBump}`}
+                                    source={{ uri: data.photo.uri }}
+                                    size={120}
+                                    rounded
+                                    no_padding
+                                    border={colors.white}
+                                    resize="cover"
+                                />
+                                <Text size={12} color={colors.gray} style={{ marginTop: 6 }}>Tap below to change photo</Text>
+                            </View>
+                        ) : null}
+                        <Upload
+                            required
+                            error={(touched?.photo || submitCount > 0) ? errors?.photo : ""}
+                            text={data?.photo ? (data?.photo?.name || data?.photo?.fileName || 'Change profile picture') : "Upload Profile Picture"}
+                            style={styles.upload_margin}
+                            onPress={async () => {
+                                const img = await openGallery()
+                                if (img) {
+                                    setFieldValue(`photo`, img)
+                                    setFieldTouched('photo', true, false)
+                                    setProfileImageBump(b => b + 1)
+                                }
+                            }}
+                        />
                         <Button text={"Register"} style={auth_styles.button} onPress={handleSubmit} loading={isLoading} />
                     </>
                 )}

@@ -276,7 +276,8 @@ export interface IChatMessage {
     read_at: string | null
     date: string
     time: string
-    file: string[]
+    /** URLs or objects like `{ url, name }` depending on API */
+    file?: unknown[]
     is_mine: boolean
 }
 

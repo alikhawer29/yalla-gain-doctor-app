@@ -1,11 +1,18 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
+import { pick, types as DocumentTypes } from '@react-native-documents/picker';
 import { io, Socket } from 'socket.io-client';
 import { useGetChatQuery, useSendMessageMutation } from '../../redux/Apis/Chat';
 import { RootStackParamList, IChatMessage } from '../../interfaces';
 import { chatApi } from '../../redux/Apis/Chat';
 import { useDispatch } from 'react-redux';
+
+export type ChatAttachment = {
+    uri: string;
+    name: string;
+    type: string;
+};
 
 const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com';
 const SOCKET_PORT = 2170;
@@ -22,6 +29,7 @@ const useChatDetailController = () => {
     const socketRef = useRef<Socket | null>(null);
 
     const [input, setInput] = useState('');
+    const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
     const [messages, setMessages] = useState<IChatMessage[]>([]);
 
     const { data: chatData, isLoading, refetch } = useGetChatQuery(chatId);
@@ -84,31 +92,63 @@ const useChatDetailController = () => {
         }, 100);
     }, []);
 
-    const handleSendMessage = useCallback(async () => {
-        if (!input.trim()) return;
+    const pickAttachments = useCallback(async () => {
+        try {
+            const res = await pick({
+                allowMultiSelection: true,
+                type: [
+                    DocumentTypes.images,
+                    DocumentTypes.pdf,
+                    DocumentTypes.plainText,
+                    DocumentTypes.doc,
+                    DocumentTypes.docx,
+                ],
+            });
+            if (!res?.length) return;
+            const next: ChatAttachment[] = res.map((file) => ({
+                uri: file.uri,
+                name: file.name ?? 'file',
+                type: file.type ?? 'application/octet-stream',
+            }));
+            setAttachments((prev) => [...prev, ...next]);
+        } catch {
+            /* user cancelled or picker error */
+        }
+    }, []);
 
-        const messageText = input.trim();
-        setInput('');
+    const removeAttachment = useCallback((index: number) => {
+        setAttachments((prev) => prev.filter((_, i) => i !== index));
+    }, []);
+
+    const handleSendMessage = useCallback(async () => {
+        const text = input.trim();
+        if (!text && attachments.length === 0) return;
+
+        const filesPayload = attachments.map((a) => ({ ...a }));
+        const messageForApi =
+            text || (filesPayload.length > 0 ? ' ' : '');
 
         try {
             const result = await sendMessage({
                 chat_id: chatId,
-                message: messageText,
+                message: messageForApi,
+                files: filesPayload.length > 0 ? filesPayload : undefined,
             }).unwrap();
 
-            // Emit socket event
+            setInput('');
+            setAttachments([]);
+
             if (socketRef.current && result?.data) {
                 socketRef.current.emit('sendMessage', result.data);
             }
 
-            // Invalidate chat list to update last message
             dispatch(chatApi.util.invalidateTags(['ChatList']));
-            
+
             scrollToEnd();
         } catch (error) {
             console.error('Failed to send message:', error);
         }
-    }, [input, chatId, sendMessage, dispatch, scrollToEnd]);
+    }, [input, attachments, chatId, sendMessage, dispatch, scrollToEnd]);
 
     const handleBack = useCallback(() => {
         navigation.goBack();
@@ -146,6 +186,7 @@ const useChatDetailController = () => {
             user_role,
             messages,
             input,
+            attachments,
             isLoading,
             isSending,
         },
@@ -153,6 +194,8 @@ const useChatDetailController = () => {
             handleSendMessage,
             handleBack,
             onChangeInput,
+            pickAttachments,
+            removeAttachment,
             groupMessagesByDate,
             refetch,
         },

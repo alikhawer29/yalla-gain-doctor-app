@@ -3,6 +3,7 @@ import { RootState } from '../../Store';
 
 export const userApi = createApi({
   reducerPath: 'userApi',
+  tagTypes: ['Wallet'],
   baseQuery: fetchBaseQuery({
     baseUrl:
       'https://custom-dev.onlinetestingserver.com/yalla-backend/api/doctor_trainer/',
@@ -58,7 +59,7 @@ export const userApi = createApi({
     deleteMyService: builder.mutation({
       query: id => ({
         url: `service/${id}/delete`,
-        method: 'POST',
+        method: 'DELETE',
       }),
     }),
     getServiceSlots: builder.query({
@@ -319,6 +320,7 @@ export const userApi = createApi({
         url: `wallet`,
         method: 'GET',
       }),
+      providesTags: ['Wallet'],
       keepUnusedDataFor: 0,
     }),
     contactUs: builder.mutation({
@@ -334,6 +336,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Wallet'],
     }),
     getFaqs: builder.query({
       query: () => ({

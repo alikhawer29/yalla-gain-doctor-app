@@ -16,6 +16,17 @@ import { SIGNUP_SCHEMA } from '../../../utils/validators';
 
 type RegisterRouteProp = RouteProp<AuthStackParamList, 'Register'>;
 
+/** Strip UI-only / extra keys before multipart upload */
+const toUploadAsset = (asset: any) => {
+  if (!asset || typeof asset !== 'object' || !asset.uri) return asset;
+  return {
+    uri: asset.uri,
+    type: asset.type,
+    name: asset.name ?? asset.fileName ?? 'image.jpg',
+    fileName: asset.fileName ?? asset.name ?? 'image.jpg',
+  };
+};
+
 const initial = {
   first_name: '',
   last_name: '',
@@ -64,6 +75,17 @@ const useRegisterController = () => {
   const onSubmit = useCallback(
     (data: any) => {
       let payload = { ...data };
+      if (payload.photo) {
+        payload.photo = toUploadAsset(payload.photo);
+      }
+      if (Array.isArray(payload.certificates)) {
+        payload.certificates = payload.certificates.map((c: any) => ({
+          ...c,
+          certificate_picture: c.certificate_picture
+            ? toUploadAsset(c.certificate_picture)
+            : c.certificate_picture,
+        }));
+      }
       console.log('payload', payload);
       payload.source = params.type;
       payload = formHandler(payload);

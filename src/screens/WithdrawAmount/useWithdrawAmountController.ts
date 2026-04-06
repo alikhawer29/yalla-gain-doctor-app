@@ -1,15 +1,24 @@
 import { useState } from "react"
-import { useSelector } from "react-redux"
-import { selectUser } from "../../redux/Slices/AuthSlice"
+import { useDispatch, useSelector } from "react-redux"
+import { selectUser, syncUserCoins } from "../../redux/Slices/AuthSlice"
 import { useWithdrawMutation, useGetWalletQuery } from "../../redux/Apis/User"
 import { goBack } from "../../utils/navigation"
 import { Alert } from "react-native"
 import { useModal } from "../../contexts/ModalContext"
 
+const pickWalletPayload = (raw: unknown) => {
+    if (!raw || typeof raw !== "object") return null
+    const r = raw as Record<string, unknown>
+    const inner = r.data
+    if (inner && typeof inner === "object") return inner as Record<string, unknown>
+    return r
+}
+
 const useWithdrawAmountController = () => {
+    const dispatch = useDispatch()
     const user = useSelector(selectUser)
     const [withdraw, { isLoading }] = useWithdrawMutation()
-    const { data: walletData } = useGetWalletQuery(undefined)
+    const { data: walletData, refetch: refetchWallet } = useGetWalletQuery(undefined)
     const { showOkModal } = useModal() as any
 
     const [form, setForm] = useState({
@@ -88,6 +97,12 @@ const useWithdrawAmountController = () => {
             }
 
             await withdraw(payload).unwrap()
+            const { data: freshWallet } = await refetchWallet()
+            const w = pickWalletPayload(freshWallet)
+            const myCoins = w?.my_coins
+            if (myCoins != null && myCoins !== "") {
+                dispatch(syncUserCoins(myCoins as string | number))
+            }
             showOkModal({
                 type: 'success',
                 title: 'Successfully',

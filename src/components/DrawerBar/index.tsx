@@ -3,10 +3,10 @@ import { View } from "react-native"
 import images from "../../assets/images"
 import { useModal } from "../../contexts/ModalContext"
 import { useAppDispatch, useAppSelector } from "../../hooks"
+import { useGetWalletQuery } from "../../redux/Apis/User"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
-import { navigate } from "../../utils/navigation"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import Button from "../Button"
 import Icon from "../Icon"
@@ -18,6 +18,11 @@ const DRAWER_ROUTES: any[] = [
     {
         title: "Home",
         route: NAVIGATORS.BOTTOM,
+        // Must target Home tab explicitly — empty params keep current tab (e.g. My Services)
+        nestedParams: {
+            screen: NAVIGATORS.HOME_STACK,
+            params: { screen: ROUTES.HOME },
+        },
         icon: images.drawer_icons.home
     },
     {
@@ -64,6 +69,14 @@ const DrawerBar = (props: any) => {
     const user = useAppSelector(selectUser)
     const dispatch = useAppDispatch()
     const { showYesNoModal } = useModal()
+    const { data: walletData } = useGetWalletQuery(undefined, { skip: !user })
+    const walletPayload = walletData && typeof walletData === "object" && "data" in walletData && (walletData as any).data
+        ? (walletData as any).data
+        : walletData
+    const coinsDisplay =
+        walletPayload?.my_coins != null && walletPayload?.my_coins !== ""
+            ? String(walletPayload.my_coins)
+            : (user?.coins ?? user?.total_coin ?? "0")
 
     const onPressLogout = () => {
         showYesNoModal({
@@ -82,7 +95,7 @@ const DrawerBar = (props: any) => {
                 <View>
                     <Text size={18} weight="bold" color={colors.white}>{user?.first_name} {user?.last_name}</Text>
                     <Row align="center" gap={3}>
-                        <Text size={14} color={colors.white}>{user?.coins ?? user?.total_coin ?? "0"} Yalla Coins</Text>
+                        <Text size={14} color={colors.white}>{coinsDisplay} Yalla Coins</Text>
                         <Icon source={images.coin} size={14} />
                     </Row>
                 </View>
@@ -99,7 +112,10 @@ const DrawerBar = (props: any) => {
                             if (item.useParentNav) {
                                 props.navigation.getParent()?.navigate(item.route as never, (item?.child ? { screen: item?.child } : undefined) as never);
                             } else {
-                                navigate(item.route, item?.child ? { screen: item?.child } : {} as any);
+                                const nested =
+                                    item.nestedParams ??
+                                    (item?.child ? { screen: item.child } : undefined);
+                                props.navigation.navigate(item.route, nested);
                             }
                         }}
                     >

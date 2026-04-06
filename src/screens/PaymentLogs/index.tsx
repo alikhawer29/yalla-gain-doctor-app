@@ -11,10 +11,10 @@ import { widthPixel } from "../../utils/helper"
 import FilterModal from "./FilterModal"
 
 const DATA = [
-    { id: "123456", date: "mm/dd/yyyy", amount: "10", commission: "05", payment_date: "mm/dd/yyyy", payment_amount: "15", tip: "05" },
-    { id: "123457", date: "mm/dd/yyyy", amount: "10", commission: "05", payment_date: "mm/dd/yyyy", payment_amount: "15", tip: "05" },
-    { id: "123458", date: "mm/dd/yyyy", amount: "10", commission: "05", payment_date: "mm/dd/yyyy", payment_amount: "15", tip: "05" },
-    { id: "123459", date: "mm/dd/yyyy", amount: "10", commission: "05", payment_date: "mm/dd/yyyy", payment_amount: "15", tip: "05" },
+    { id: "123456", date: "01/01/2026", amount: "10", commission: "05", payment_date: "01/01/2026", payment_amount: "15", tip: "05" },
+    { id: "123457", date: "01/01/2026", amount: "10", commission: "05", payment_date: "01/01/2026", payment_amount: "15", tip: "05" },
+    { id: "123458", date: "01/01/2026", amount: "10", commission: "05", payment_date: "01/01/2026", payment_amount: "15", tip: "05" },
+    { id: "123459", date: "01/01/2026", amount: "10", commission: "05", payment_date: "01/01/2026", payment_amount: "15", tip: "05" },
 ]
 
 const PaymentLogs = () => {
@@ -31,7 +31,7 @@ const PaymentLogs = () => {
             <View style={styles.cardItem}>
                 <View style={styles.coinRow}>
                     <Text color={colors.white} size={13} weight="regular">{label} : <Text color={colors.white} weight="bold">{value} Coins</Text></Text>
-                    <Icon source={images.coin} size={14} />
+                    <Icon source={images.coin} size={13} />
                 </View>
             </View>
         )
@@ -66,7 +66,7 @@ const PaymentLogs = () => {
                         <Icon source={images.coin} size={18} />
                     </View>
                     <TouchableOpacity style={styles.filterBtn} onPress={() => setFilterVisible(true)}>
-                        <Icon source={images.filters} size={20} color={colors.white} />
+                        <Icon source={images.filters} size={20} />
                     </TouchableOpacity>
                 </View>
 
