@@ -82,7 +82,7 @@ const DrawerBar = (props: any) => {
                 <View>
                     <Text size={18} weight="bold" color={colors.white}>{user?.first_name} {user?.last_name}</Text>
                     <Row align="center" gap={3}>
-                        <Text size={14} color={colors.white}>{user?.total_coin || "0"} Yalla Coins</Text>
+                        <Text size={14} color={colors.white}>{user?.coins ?? user?.total_coin ?? "0"} Yalla Coins</Text>
                         <Icon source={images.coin} size={14} />
                     </Row>
                 </View>
