@@ -59,7 +59,9 @@ const ChatDetail = () => {
     const keyboardHeight = useKeyboard();
 
     /** Stack header + in-screen chat header row — KAV sits below both; iOS needs this offset for correct padding. */
-    const iosKeyboardOffset = headerHeight + heightPixel(52);
+    // const iosKeyboardOffset = headerHeight + heightPixel(52);
+    const iosKeyboardOffset = headerHeight;
+
 
     const keyboardAvoidStyle =
         Platform.OS === 'android' && keyboardHeight > 0
