@@ -65,7 +65,7 @@ const useRegisterController = () => {
           type: 'success',
           title: 'Successfully',
           message:
-            'Your information has been successfully sent to the admin. After approval, you will receive a confirmation notification. Until then, you can log in, but your services will not be live until you receive approval.',
+            'Your information has been successfully submitted to the admin. You can log in after approval.',
         },
         () => navigateAndSimpleReset(ROUTES.USER_ENTRY),
       );

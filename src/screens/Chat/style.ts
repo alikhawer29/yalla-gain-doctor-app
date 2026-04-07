@@ -8,15 +8,15 @@ const styles = StyleSheet.create({
     marginBottom: heightPixel(SPACING),
   },
   header_container: {
-    gap: heightPixel(SPACING),
+    // gap: heightPixel(SPACING),
     zIndex: 1000,
-    marginTop: heightPixel(10),
+    // marginTop: heightPixel(10),
     marginBottom: heightPixel(SPACING),
   },
   filter_container: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: widthPixel(10),
+    // gap: widthPixel(10),
     zIndex: 1000,
   },
   filter_label: {
@@ -24,11 +24,11 @@ const styles = StyleSheet.create({
   },
   dropdown_container: {
     width: widthPixel(100),
+
     zIndex: 1000,
   },
   search_container: {
     // flex: 1,
-    
   },
   empty_container: {
     flex: 1,

@@ -46,12 +46,13 @@ const PaymentLogs = () => {
                     <CoinWithIcon label="Booking Amount" value={item.amount} />
                 </View>
                 <View style={styles.cardRow}>
-                    <CoinWithIcon label="Commission" value={item.commission} />
                     <Coin label="Payment Date" value={item.payment_date} />
+                    <CoinWithIcon label="Commission" value={item.commission} />
+
                 </View>
                 <View style={styles.cardRow}>
-                    <CoinWithIcon label="Payment Amount" value={item.payment_amount} />
                     <CoinWithIcon label="Tip" value={item.tip} />
+                    <CoinWithIcon label="Payment Amount" value={item.payment_amount} />
                 </View>
             </View>
         )
