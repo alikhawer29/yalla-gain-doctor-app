@@ -13,7 +13,7 @@ import styles from "./styles"
 import useEditProfileController from "./useEditProfileController"
 import Row from "../../components/Row"
 import Text from "../../components/Text"
-import { heightPixel } from "../../utils/helper"
+import { heightPixel, normalizeDialingCode } from "../../utils/helper"
 import Upload from "../../components/Upload"
 
 const EditProfile = () => {
@@ -78,7 +78,7 @@ const EditProfile = () => {
                                 country={data?.country_code}
                                 onChangeCountry={e => {
                                     setFieldValue("country_code", e?.cca2)
-                                    setFieldValue("dialing_code", e?.callingCode?.[0])
+                                    setFieldValue("dialing_code", normalizeDialingCode(e?.callingCode?.[0]))
                                 }}
                             />
                             <Dropdown

@@ -55,6 +55,8 @@ const Home = () => {
         ; (navigation as any).navigate(NAVIGATORS.BOOKING_STACK, { screen: ROUTES.SERVICE_LOGS })
     }
 
+    console.log("data", data)
+
     return (
         <Wrapper bottom_bar scrollable>
             <View style={{ gap: heightPixel(10) }}>
@@ -69,9 +71,9 @@ const Home = () => {
                         data={data}
                         renderItem={({ item }) => (
                             <ServiceLogCard
-                                date={item?.date}
+                                date={item?.appointment_date}
                                 bookingId={item?.booking_id}
-                                amount={item?.amount}
+                                amount={item?.service?.charges || 0}
                                 status={item?.status}
                                 onPress={() => onPressCard(item?.id)}
                             />
@@ -85,109 +87,7 @@ const Home = () => {
                     <Button text="View All" type="outlined" onPress={handleViewAll} style={{ marginTop: heightPixel(10) }} />
                 </View>
             </View>
-            {/* <View style={{ marginTop: heightPixel(30) }}>
-                <InfoCard />
-            </View> */}
-            {/* <View style={{ marginTop: heightPixel(30) }}>
-                <Row justify="space-between">
-                    <View style={{ padding: heightPixel(8), width: "50%" }}>
-                        <TrackingCard icon={images.steps_graph} title="Steps" progress={3000} subtext="Steps" />
-                    </View>
-                    <View style={{ padding: heightPixel(8), width: "50%" }}>
-                        <TrackingCard icon={images.steps_graph} title="Steps" progress={3000} subtext="Steps" />
-                    </View>
-                </Row>
-                <Row justify="space-between">
-                    <View style={{ padding: heightPixel(8), width: "50%" }}>
-                        <TrackingCard icon={images.challenge_graph} title="Challenges" progress={10} subtext="Completed" />
-                    </View>
-                    <View style={{ padding: heightPixel(8), width: "50%" }}>
-                        <TrackingCard icon={images.steps_graph} title="Steps" progress={3000} subtext="Steps" />
-                    </View>
-                </Row>
-            </View> */}
-            {/* <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
-                <Text weight="semibold" size={20}>Recommended Videos</Text>
-                <FlatList
-                    horizontal
-                    data={RECOMMENDED_VIDEOS}
-                    renderItem={({ item }) => <VideoCard {...item} type="secondary" is_video={false} />}
-                    showsHorizontalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={{ width: widthPixel(10) }} />}
-                />
-            </View>
-            <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
-                <Text weight="semibold" size={20}>Progress Tracking</Text>
-                <FlatList
-                    horizontal
-                    data={PROGRESS_TRACKING}
-                    renderItem={({ item }) => <ProgressCard {...item} />}
-                    showsHorizontalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={{ width: widthPixel(10) }} />}
-                />
-            </View> */}
-            {/* <View style={{ marginTop: heightPixel(30), width: "100%", gap: heightPixel(15) }}>
-                <Text weight="semibold" size={20}>Calories</Text>
-                <View style={{ marginLeft: -widthPixel(40), }}>
-                    <LineChart
-                        style={
-                            {
-                                marginLeft: 0,
-                                margin: 0,
-                                paddingLeft: 0,
-                                padding: 0
-                            }
-                        }
-                        data={data}
-                        width={vw * 100}
-                        height={heightPixel(240)}
-                        chartConfig={{
-                            color: () => colors.white,
-                            strokeWidth: 0,
-                            useShadowColorFromDataset: false,
-                            fillShadowGradientFrom: colors.primary,
-                            fillShadowGradientFromOpacity: 0.9,
-                            fillShadowGradientTo: colors.transparent,
-                            propsForBackgroundLines: {
-                                strokeDasharray: "",
-                                stroke: colors.gray,
-                                strokeWidth: 0.5,
-                            },
-                            decimalPlaces: 0,
-                            // backgroundColor: "#e26a00",
-                            // backgroundGradientFrom: "#fb8c00",
-                            // backgroundGradientTo: "#ffa726",
-                            style: {
-                                width: "100%",
-                                padding: 0
-                            }, barPercentage: 1,
-                            propsForVerticalLabels: {
-                                fontFamily: fonts.sfpro.semibold,
-                                fontSize: font(14),
 
-                            },
-
-                            propsForHorizontalLabels: {
-
-                            },
-                        }}
-                        bezier
-                        withDots={false}
-                        withVerticalLines={false}
-                        withOuterLines={false}
-                        fromZero={true}
-                    />
-                </View>
-            </View>
-            <View style={{ marginTop: heightPixel(30), gap: heightPixel(15) }}>
-                <Text weight="semibold" size={20}>Workout Plans</Text>
-                <FlatList
-                    data={WORKOUT_PLANS}
-                    renderItem={({ item }) => <WorkoutCard {...item} />}
-                    showsVerticalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
-                />
-            </View> */}
         </Wrapper>
     )
 }

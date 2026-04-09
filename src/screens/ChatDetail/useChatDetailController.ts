@@ -7,6 +7,7 @@ import { useGetChatQuery, useSendMessageMutation } from '../../redux/Apis/Chat';
 import { RootStackParamList, IChatMessage } from '../../interfaces';
 import { chatApi } from '../../redux/Apis/Chat';
 import { useDispatch } from 'react-redux';
+import { SERVER_ORIGIN } from '../../utils/data';
 
 export type ChatAttachment = {
     uri: string;
@@ -14,7 +15,7 @@ export type ChatAttachment = {
     type: string;
 };
 
-const SOCKET_URL = 'https://custom-dev.onlinetestingserver.com';
+const SOCKET_URL = SERVER_ORIGIN;
 const SOCKET_PORT = 2170;
 
 type ChatDetailRouteProp = RouteProp<RootStackParamList, 'ChatDetail'>;

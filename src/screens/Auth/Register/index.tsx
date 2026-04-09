@@ -14,7 +14,7 @@ import Text from "../../../components/Text"
 import Upload from "../../../components/Upload"
 import colors from "../../../utils/colors"
 import { GENDERS, LANGUAGES } from "../../../utils/data"
-import { heightPixel } from "../../../utils/helper"
+import { heightPixel, normalizeDialingCode } from "../../../utils/helper"
 import { navigateAndSimpleReset } from "../../../utils/navigation"
 import { ROUTES } from "../../../utils/routes"
 import auth_styles from "../styles"
@@ -79,7 +79,7 @@ const Register = () => {
                             country={data?.country_code}
                             onChangeCountry={e => {
                                 setFieldValue("country_code", e?.cca2)
-                                setFieldValue("dialing_code", e?.callingCode?.[0])
+                                setFieldValue("dialing_code", normalizeDialingCode(e?.callingCode?.[0]))
                             }}
                         />
                         <Dropdown

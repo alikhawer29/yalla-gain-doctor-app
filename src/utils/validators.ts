@@ -369,6 +369,59 @@ export const VERIFY_CODE_SCHEMA = Yup.object().shape({
     .length(4, 'Verification Code must be 4 digit'),
 });
 
+/** Email OTP verification after register or unverified login */
+export const VERIFY_OTP_SCHEMA = Yup.object().shape({
+  otp: Yup.string()
+    .required('OTP is required')
+    .matches(/^\d{4,8}$/, 'OTP must be 4–8 digits'),
+});
+
+/** Simple user registration (UserEntry tab), not doctor/trainer Register screen */
+export const USER_REGISTER_SCHEMA = Yup.object().shape({
+  first_name: Yup.string()
+    .required('First Name is required')
+    .min(2, 'First Name must be at least 2 characters')
+    .max(50, 'First Name cannot exceed 50 characters')
+    .matches(
+      /^[a-zA-Z\s'-]+$/,
+      'First Name can only contain letters, spaces, hyphens, and apostrophes',
+    ),
+  last_name: Yup.string()
+    .required('Last Name is required')
+    .min(2, 'Last Name must be at least 2 characters')
+    .max(50, 'Last Name cannot exceed 50 characters')
+    .matches(
+      /^[a-zA-Z\s'-]+$/,
+      'Last Name can only contain letters, spaces, hyphens, and apostrophes',
+    ),
+  email: Yup.string()
+    .email('Invalid email format')
+    .required('Email is required')
+    .max(255, 'Email cannot exceed 255 characters'),
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/,
+      'Password must contain at least one uppercase letter, one lowercase letter, and one number',
+    )
+    .required('Password is required'),
+  password_confirmation: Yup.string()
+    .oneOf([Yup.ref('password')], 'Passwords must match')
+    .required('Confirm Password is required'),
+  dialing_code: Yup.string()
+    .required('Dialing code is required')
+    .matches(
+      /^\+\d{1,4}$/,
+      'Dialing code must start with + followed by 1-4 digits',
+    ),
+  country_code: Yup.string()
+    .required('Country code is required')
+    .matches(/^[A-Z]{2}$/, 'Invalid country code format'),
+  phone: Yup.string()
+    .required('Mobile Number is required')
+    .matches(/^\d{7,15}$/, 'Phone number must be between 7 and 15 digits'),
+});
+
 export const SET_PASSWORD_SCHEMA = Yup.object().shape({
   password: Yup.string()
     .min(8, 'Password must be at least 8 characters')

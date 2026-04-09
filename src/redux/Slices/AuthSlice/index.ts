@@ -33,6 +33,14 @@ export const auth = createSlice({
             state.user = null
             state.token = null
         },
+        setCredentials: (
+            state,
+            action: PayloadAction<{ token: string; user: any }>,
+        ) => {
+            state.isLoggedIn = true
+            state.token = action.payload.token
+            state.user = action.payload.user
+        },
         syncUserCoins: (state, action: PayloadAction<string | number>) => {
             if (state.user) {
                 state.user.coins = String(action.payload)
@@ -43,8 +51,10 @@ export const auth = createSlice({
         builder.addMatcher(
             authApi.endpoints.login.matchFulfilled,
             (state, action: PayloadAction<LoginResponse>) => {
+                const token = action?.payload?.token
+                if (!token) return
                 state.isLoggedIn = true
-                state.token = action?.payload?.token
+                state.token = token
                 state.user = action?.payload?.user
             },
         )
@@ -57,7 +67,7 @@ export const auth = createSlice({
     }
 })
 
-export const { logout, syncUserCoins } = auth.actions
+export const { logout, setCredentials, syncUserCoins } = auth.actions
 
 export const selectUser = (state: RootState): any | null => state.auth.user
 export const selectLoggedIn = (state: RootState): boolean => state.auth.isLoggedIn

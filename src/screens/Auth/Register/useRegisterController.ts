@@ -1,6 +1,6 @@
 import { RouteProp, useRoute } from '@react-navigation/native';
-import { useCallback, useEffect, useRef } from 'react';
-import { useModal } from '../../../contexts/ModalContext';
+import { useCallback, useRef } from 'react';
+import Toast from 'react-native-toast-message';
 import usePicker from '../../../hooks/usePicker';
 import { AuthStackParamList } from '../../../interfaces';
 import { useSignupMutation } from '../../../redux/Apis/Auth';
@@ -9,6 +9,7 @@ import {
   formHandler,
   getCities,
   getStates,
+  normalizeDialingCode,
 } from '../../../utils/helper';
 import { navigateAndSimpleReset } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
@@ -54,27 +55,11 @@ const useRegisterController = () => {
   const formik_ref = useRef(null);
   const { params } = useRoute<RegisterRouteProp>();
 
-  const { showOkModal } = useModal();
-
-  const [submit, { isSuccess, isLoading }] = useSignupMutation();
-
-  useEffect(() => {
-    if (isSuccess) {
-      showOkModal(
-        {
-          type: 'success',
-          title: 'Successfully',
-          message:
-            'Your information has been successfully submitted to the admin. You can log in after approval.',
-        },
-        () => navigateAndSimpleReset(ROUTES.USER_ENTRY),
-      );
-    }
-  }, [isSuccess]);
+  const [signup, { isLoading }] = useSignupMutation();
 
   const onSubmit = useCallback(
-    (data: any) => {
-      let payload = { ...data };
+    async (data: any) => {
+      let payload: Record<string, unknown> = { ...data };
       if (payload.photo) {
         payload.photo = toUploadAsset(payload.photo);
       }
@@ -86,12 +71,30 @@ const useRegisterController = () => {
             : c.certificate_picture,
         }));
       }
-      console.log('payload', payload);
       payload.source = params.type;
-      payload = formHandler(payload);
-      submit(payload);
+      payload.dialing_code = normalizeDialingCode(
+        payload.dialing_code as string,
+      );
+      const formData = formHandler(payload);
+
+      try {
+        const res: any = await signup(formData).unwrap();
+        const message =
+          res?.message ??
+          'Registration successful. Please verify the OTP sent to your email.';
+        const email = res?.data?.user?.email ?? data.email;
+
+        Toast.show({
+          type: 'success',
+          text1: 'Success',
+          text2: message,
+        });
+        navigateAndSimpleReset(ROUTES.VERIFY_EMAIL_OTP, 0, { email });
+      } catch {
+        // errors handled globally
+      }
     },
-    [params],
+    [params.type, signup],
   );
 
   const onPressBackToLogin = useCallback(() => {

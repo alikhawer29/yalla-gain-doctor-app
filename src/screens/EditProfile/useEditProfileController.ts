@@ -3,7 +3,12 @@ import { useModal } from '../../contexts/ModalContext';
 import { useAppSelector } from '../../hooks';
 import { useUpdateProfileMutation } from '../../redux/Apis/User';
 import { selectUser } from '../../redux/Slices/AuthSlice';
-import { formHandler, getCities, getStates } from '../../utils/helper';
+import {
+  formHandler,
+  getCities,
+  getStates,
+  normalizeDialingCode,
+} from '../../utils/helper';
 import { navigateToMyProfileTab } from '../../utils/navigation';
 import { EDIT_PROFILE_SCHEMA } from '../../utils/validators';
 import usePicker from '../../hooks/usePicker';
@@ -19,7 +24,7 @@ const useEditProfileController = () => {
   const initial = {
     first_name: user?.first_name || '',
     last_name: user?.last_name || '',
-    dialing_code: user?.dialing_code || '+971',
+    dialing_code: normalizeDialingCode(user?.dialing_code) || '+971',
     country_code: user?.country_code || 'AE',
     phone: user?.phone || '',
     gender: user?.gender || '',
@@ -47,6 +52,7 @@ const useEditProfileController = () => {
 
   const onSubmit = useCallback((data: any) => {
     let payload = { ...data };
+    payload.dialing_code = normalizeDialingCode(payload.dialing_code);
 
     payload = formHandler(payload);
 

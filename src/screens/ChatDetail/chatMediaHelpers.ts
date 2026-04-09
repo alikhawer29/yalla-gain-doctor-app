@@ -1,4 +1,6 @@
-const CHAT_MEDIA_ORIGIN = 'https://custom-dev.onlinetestingserver.com';
+import { SERVER_ORIGIN } from '../../utils/data';
+
+const CHAT_MEDIA_ORIGIN = SERVER_ORIGIN;
 
 const IMAGE_EXT_RE = /\.(jpe?g|png|gif|webp|bmp|heic)(\?|$)/i;
 

@@ -1,11 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../../Store';
+import { DOCTOR_TRAINER_API_BASE_URL } from '../../../utils/data';
 
 export const chatApi = createApi({
   reducerPath: 'chatApi',
   baseQuery: fetchBaseQuery({
-    baseUrl:
-      'https://custom-dev.onlinetestingserver.com/yalla-backend/api/doctor_trainer/',
+    baseUrl: DOCTOR_TRAINER_API_BASE_URL,
     prepareHeaders: (headers, { getState }) => {
       const state = getState() as RootState;
       const token = state?.auth?.token;

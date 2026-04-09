@@ -60,6 +60,16 @@ export const formatTimer = (s: number): string => {
     return `${mins}:${secs}`;
 };
 
+/** PhoneInput `callingCode` is often digits only; API expects a leading + (e.g. +971). */
+export const normalizeDialingCode = (
+    code: string | number | null | undefined,
+): string => {
+    if (code === null || code === undefined) return '';
+    const s = String(code).trim();
+    if (!s) return '';
+    return s.startsWith('+') ? s : `+${s}`;
+};
+
 const isFileLike = (val: any) =>
     typeof val === 'object' && val !== null && 'uri' in val && (val.uri || val.name)
 

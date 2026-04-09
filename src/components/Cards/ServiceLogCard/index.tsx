@@ -4,7 +4,7 @@ import Icon from "../../Icon"
 import Text from "../../Text"
 import Touchable from "../../Touchable"
 import colors from "../../../utils/colors"
-import { heightPixel, widthPixel } from "../../../utils/helper"
+import { capitalize, heightPixel, widthPixel } from "../../../utils/helper"
 
 const styles = StyleSheet.create({
     card: {
@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
         backgroundColor: colors.primary,
         paddingHorizontal: widthPixel(12),
         paddingVertical: heightPixel(4),
-        borderRadius: heightPixel(15),
+        borderRadius: heightPixel(5),
         alignItems: "center",
         justifyContent: "center",
     },
@@ -71,18 +71,18 @@ const ServiceLogCard = ({
                     <View style={styles.leftContent}>
                         <View style={styles.dateRow}>
                             <Icon source={images.calendar} size={16} />
-                            <Text size={12} color={colors.gray}>{date}</Text>
+                            <Text size={12} color={colors.white}>{date}</Text>
                         </View>
-                        <Text size={12} color={colors.gray}>Booking Id : {bookingId}</Text>
+                        <Text size={12} color={colors.white}>Booking Id : {bookingId}</Text>
                         <View style={styles.amountRow}>
-                            <Text size={12} color={colors.gray}>Amount : {amount} Yalla Coins</Text>
+                            <Text size={12} color={colors.white}>Amount : {amount} Yalla Coins</Text>
                             <Icon source={images.coin} size={12} />
                         </View>
                     </View>
                     <View style={styles.rightContent}>
                         <View style={[styles.statusBadge, status === "upcoming" && styles.upcomingBadge]}>
                             <Text size={10} color={colors.white} weight="semibold">
-                                {status === "upcoming" ? "Upcoming" : status}
+                                {status === "upcoming" ? "Upcoming" : capitalize(status || "")}
                             </Text>
                         </View>
                     </View>
