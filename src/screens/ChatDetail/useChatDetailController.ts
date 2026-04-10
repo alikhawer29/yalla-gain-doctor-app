@@ -2,12 +2,13 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { FlatList } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { pick, types as DocumentTypes } from '@react-native-documents/picker';
-import { io, Socket } from 'socket.io-client';
+import { useSelector } from 'react-redux';
 import { useGetChatQuery, useSendMessageMutation } from '../../redux/Apis/Chat';
 import { RootStackParamList, IChatMessage } from '../../interfaces';
 import { chatApi } from '../../redux/Apis/Chat';
 import { useDispatch } from 'react-redux';
-import { SERVER_ORIGIN } from '../../utils/data';
+import { RootState } from '../../redux/Store';
+import { connectChatSocket } from '../../services/chatSocket';
 
 export type ChatAttachment = {
     uri: string;
@@ -15,8 +16,21 @@ export type ChatAttachment = {
     type: string;
 };
 
-const SOCKET_URL = SERVER_ORIGIN;
-const SOCKET_PORT = 2170;
+const sameChat = (a: number, b: number) => Number(a) === Number(b);
+
+/**
+ * Socket/API sometimes send wrong `is_mine` (e.g. sender-relative). Align with current user.
+ */
+function normalizeMessageMine(
+    msg: IChatMessage,
+    currentUserId: string | number | undefined | null,
+): IChatMessage {
+    if (currentUserId == null || msg.user_id == null) {
+        return msg;
+    }
+    const mine = Number(msg.user_id) === Number(currentUserId);
+    return { ...msg, is_mine: mine };
+}
 
 type ChatDetailRouteProp = RouteProp<RootStackParamList, 'ChatDetail'>;
 
@@ -26,8 +40,11 @@ const useChatDetailController = () => {
     const dispatch = useDispatch();
     const { chatId, name, image, user_role } = route.params;
 
+    const authUser = useSelector((state: RootState) => state.auth.user);
+    const authUserId =
+        authUser?.id ?? authUser?.user_id ?? authUser?.user?.id;
+
     const flatListRef = useRef<FlatList>(null);
-    const socketRef = useRef<Socket | null>(null);
 
     const [input, setInput] = useState('');
     const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
@@ -36,56 +53,54 @@ const useChatDetailController = () => {
     const { data: chatData, isLoading, refetch } = useGetChatQuery(chatId);
     const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
 
-    // Initialize messages from API
+    // Initialize messages from API (re-apply is_mine using logged-in user)
     useEffect(() => {
         if (chatData?.data) {
-            setMessages(chatData.data);
+            setMessages(
+                chatData.data.map((m: IChatMessage) =>
+                    normalizeMessageMine(m, authUserId),
+                ),
+            );
         }
-    }, [chatData]);
+    }, [chatData, authUserId]);
 
-    // Initialize socket connection
+    // Shared Socket.IO (HTTPS :2170); server emits `io.emit(String(chat_id), data)` + `receiveMessage`
     useEffect(() => {
-        socketRef.current = io(`${SOCKET_URL}:${SOCKET_PORT}`, {
-            transports: ['websocket'],
-            reconnection: true,
-            reconnectionAttempts: 5,
-            reconnectionDelay: 1000,
-        });
+        if (authUserId == null) return;
 
-        socketRef.current.on('connect', () => {
-            console.log('Socket connected');
-        });
+        const socket = connectChatSocket(authUserId);
+        if (!socket) return;
 
-        // Listen for messages on this chat
-        socketRef.current.on(String(chatId), (data: IChatMessage) => {
-            setMessages((prev) => [...prev, data]);
+        const roomEvent = String(chatId);
+
+        const onRoomMessage = (data: IChatMessage) => {
+            if (!sameChat(data.chat_id, chatId)) return;
+            const row = normalizeMessageMine(data, authUserId);
+            setMessages(prev => {
+                if (prev.some(msg => msg.id === row.id)) return prev;
+                return [...prev, row];
+            });
             scrollToEnd();
-        });
+        };
 
-        // Listen for general receive message event
-        socketRef.current.on('receiveMessage', (data: IChatMessage) => {
-            if (data.chat_id === chatId) {
-                setMessages((prev) => {
-                    // Avoid duplicates
-                    if (prev.some(msg => msg.id === data.id)) {
-                        return prev;
-                    }
-                    return [...prev, data];
-                });
-                scrollToEnd();
-            }
-        });
+        const onReceiveMessage = (data: IChatMessage) => {
+            if (!sameChat(data.chat_id, chatId)) return;
+            const row = normalizeMessageMine(data, authUserId);
+            setMessages(prev => {
+                if (prev.some(msg => msg.id === row.id)) return prev;
+                return [...prev, row];
+            });
+            scrollToEnd();
+        };
 
-        socketRef.current.on('disconnect', () => {
-            console.log('Socket disconnected');
-        });
+        socket.on(roomEvent, onRoomMessage);
+        socket.on('receiveMessage', onReceiveMessage);
 
         return () => {
-            if (socketRef.current) {
-                socketRef.current.disconnect();
-            }
+            socket.off(roomEvent, onRoomMessage);
+            socket.off('receiveMessage', onReceiveMessage);
         };
-    }, [chatId]);
+    }, [chatId, authUserId]);
 
     const scrollToEnd = useCallback(() => {
         setTimeout(() => {
@@ -139,8 +154,10 @@ const useChatDetailController = () => {
             setInput('');
             setAttachments([]);
 
-            if (socketRef.current && result?.data) {
-                socketRef.current.emit('sendMessage', result.data);
+            const socket = connectChatSocket(authUserId);
+            const payload = result?.data ?? result;
+            if (socket && payload) {
+                socket.emit('sendMessage', payload);
             }
 
             dispatch(chatApi.util.invalidateTags(['ChatList']));
@@ -149,7 +166,7 @@ const useChatDetailController = () => {
         } catch (error) {
             console.error('Failed to send message:', error);
         }
-    }, [input, attachments, chatId, sendMessage, dispatch, scrollToEnd]);
+    }, [input, attachments, chatId, authUserId, sendMessage, dispatch, scrollToEnd]);
 
     const handleBack = useCallback(() => {
         navigation.goBack();

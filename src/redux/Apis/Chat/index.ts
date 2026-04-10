@@ -40,20 +40,17 @@ export const chatApi = createApi({
       keepUnusedDataFor: 0,
     }),
 
-    // Create admin chat
+    /** Create admin chat when none exists (see Chat screen guard). */
     createAdminChat: builder.mutation({
-      query: (payload: { user_id?: number }) => {
+      query: (payload: { user_id?: number } = {}) => {
         const formData = new FormData();
-        if (payload?.user_id) {
-          formData.append('user_id', payload.user_id.toString());
+        if (payload?.user_id != null) {
+          formData.append('user_id', String(payload.user_id));
         }
         return {
-          url: 'chat/create',
+          url: 'chat/createAdmin',
           method: 'POST',
           body: formData,
-          headers: {
-            'Content-Type': 'multipart/form-data',
-          },
         };
       },
       invalidatesTags: ['ChatList'],

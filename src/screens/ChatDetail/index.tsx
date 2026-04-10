@@ -110,9 +110,9 @@ const ChatDetail = () => {
                         isMine ? styles.my_message_container : styles.other_message_container,
                     ]}
                 >
-                    <View style={styles.avatar_container}>
+                    {/* <View style={styles.avatar_container}>
                         <Icon source={{ uri: item.image }} size={32} rounded no_padding />
-                    </View>
+                    </View> */}
                     <View
                         style={[
                             styles.message_bubble,

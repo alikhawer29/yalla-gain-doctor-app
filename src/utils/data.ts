@@ -9,6 +9,20 @@ export const YALLA_API_BASE_URL = `${SERVER_ORIGIN}/yalla-backend/api/`;
 
 export const DOCTOR_TRAINER_API_BASE_URL = `${SERVER_ORIGIN}/yalla-backend/api/doctor_trainer/`;
 
+/** Socket.IO server (Node HTTPS on this port). Must match backend `server.listen`. */
+export const CHAT_SOCKET_PORT = 2170;
+
+/**
+ * Shared secret the socket server checks before broadcasting `receiveUserId`.
+ * Must match backend `Signature` in your Node socket file.
+ */
+export const CHAT_SOCKET_SIGNATURE = '8lW8XtnPDVwHAdXCCoxRROvQUDtf9p2Zlt1HvJSm';
+
+/**
+ * Full Socket.IO URL (WSS). REST may stay HTTP while chat uses HTTPS — that is OK.
+ */
+export const CHAT_SOCKET_URL = `https://custom-dev.onlinetestingserver.com:${CHAT_SOCKET_PORT}`;
+
 /** Matches backend `user.status`: 0 OTP pending, 1 active, 2 pending admin approval, 3 rejected */
 export const USER_ACCOUNT_STATUS = {
   INACTIVE: 0,

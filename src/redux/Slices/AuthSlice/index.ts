@@ -2,6 +2,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit'
 import { authApi } from '../../Apis/Auth'
 import { userApi } from '../../Apis/User'
 import { RootState } from '../../Store'
+import { disconnectChatSocket } from '../../../services/chatSocket'
 
 interface AuthState {
     user: any | null
@@ -29,6 +30,7 @@ export const auth = createSlice({
     initialState,
     reducers: {
         logout: (state) => {
+            disconnectChatSocket()
             state.isLoggedIn = false
             state.user = null
             state.token = null

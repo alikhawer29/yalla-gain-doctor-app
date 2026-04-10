@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { FlatList, View } from "react-native"
 import { useNavigation } from "@react-navigation/native"
+import { connectChatSocket } from "../../services/chatSocket"
 import { StackNavigationProp } from "@react-navigation/stack"
 import { useSelector } from "react-redux"
 import { RootState } from "../../redux/Store"
@@ -44,10 +45,7 @@ const Chat = () => {
         isLoading,
         refetch,
         isSuccess,
-    } = useGetChatListQuery(
-        { user_id: userId },
-        { skip: !userId }
-    )
+    } = useGetChatListQuery(undefined, { skip: !userId })
 
     const [createAdminChat] = useCreateAdminChatMutation()
 
@@ -72,7 +70,22 @@ const Chat = () => {
                     adminChatCreatedRef.current = false
                 })
         }
-    }, [isSuccess, chatListData, userId])
+    }, [isSuccess, chatListData, userId, createAdminChat, refetch])
+
+    useEffect(() => {
+        if (!userId) return
+        const socket = connectChatSocket(userId)
+        if (!socket) return
+
+        const onUpdateChatList = () => {
+            refetch()
+        }
+
+        socket.on("updateChatList", onUpdateChatList)
+        return () => {
+            socket.off("updateChatList", onUpdateChatList)
+        }
+    }, [userId, refetch])
 
     const chatList = useMemo(() => {
         let list: IChatCard[] = chatListData?.data || []
