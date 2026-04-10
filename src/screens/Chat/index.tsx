@@ -3,8 +3,8 @@ import { FlatList, View } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import { connectChatSocket } from "../../services/chatSocket"
 import { StackNavigationProp } from "@react-navigation/stack"
-import { useSelector } from "react-redux"
-import { RootState } from "../../redux/Store"
+import { useDispatch, useSelector } from "react-redux"
+import { AppDispatch, RootState } from "../../redux/Store"
 import images from "../../assets/images"
 import ChatCard from "../../components/Cards/ChatCard"
 import Input from "../../components/Input"
@@ -15,7 +15,7 @@ import Text from "../../components/Text"
 import Dropdown from "../../components/Dropdown"
 import Empty from "../../components/Empty"
 import ScreenLoader from "../../components/ScreenLoader"
-import { useGetChatListQuery, useCreateAdminChatMutation } from "../../redux/Apis/Chat"
+import { chatApi, useGetChatListQuery, useCreateAdminChatMutation } from "../../redux/Apis/Chat"
 import { IChatCard, RootStackParamList } from "../../interfaces"
 import { ROUTES } from "../../utils/routes"
 import styles from "./style"
@@ -30,6 +30,7 @@ const FILTER_OPTIONS = [
 
 const Chat = () => {
     const navigation = useNavigation<ChatNavigationProp>()
+    const dispatch = useDispatch<AppDispatch>()
     const user = useSelector((state: RootState) => state.auth.user)
 
     const [searchQuery, setSearchQuery] = useState("")
@@ -112,14 +113,20 @@ const Chat = () => {
         return list
     }, [chatListData, filterValue, searchQuery])
 
-    const handleChatPress = useCallback((chat: IChatCard) => {
-        navigation.navigate(ROUTES.CHAT_DETAIL as never, {
-            chatId: chat.id,
-            name: chat.name,
-            image: chat.image,
-            user_role: chat.user_role,
-        } as never)
-    }, [navigation])
+    const handleChatPress = useCallback(
+        (chat: IChatCard) => {
+            dispatch(
+                chatApi.util.prefetch("getChat", chat.id, { force: false }),
+            )
+            navigation.navigate(ROUTES.CHAT_DETAIL as never, {
+                chatId: chat.id,
+                name: chat.name,
+                image: chat.image,
+                user_role: chat.user_role,
+            } as never)
+        },
+        [navigation, dispatch],
+    )
 
     if (isLoading) {
         return <ScreenLoader />

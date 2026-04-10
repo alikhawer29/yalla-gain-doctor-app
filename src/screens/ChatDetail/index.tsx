@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useCallback, useEffect } from 'react';
 import {
     ActivityIndicator,
     FlatList,
@@ -9,6 +9,7 @@ import {
     TextInput,
     View,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import dayjs from 'dayjs';
@@ -20,7 +21,6 @@ import Text from '../../components/Text';
 import Wrapper from '../../components/Wrapper';
 import Badge from '../../components/Badge';
 import Touchable from '../../components/Touchable';
-import ScreenLoader from '../../components/ScreenLoader';
 import colors from '../../utils/colors';
 import { IChatMessage } from '../../interfaces';
 import useChatDetailController from './useChatDetailController';
@@ -42,7 +42,7 @@ const ChatDetail = () => {
             messages,
             input,
             attachments,
-            isLoading,
+            isMessagesInitialLoading,
             isSending,
         },
         functions: {
@@ -53,6 +53,38 @@ const ChatDetail = () => {
             removeAttachment,
         },
     } = useChatDetailController();
+
+    const scrollToLatest = useCallback(() => {
+        if (messages.length === 0) return;
+        requestAnimationFrame(() => {
+            flatListRef.current?.scrollToEnd({ animated: false });
+        });
+    }, [messages.length]);
+
+    /** Screen open / back: list may not have measured height yet — stagger scrolls. */
+    useFocusEffect(
+        useCallback(() => {
+            scrollToLatest();
+            const t = setTimeout(scrollToLatest, 120);
+            const t2 = setTimeout(scrollToLatest, 350);
+            return () => {
+                clearTimeout(t);
+                clearTimeout(t2);
+            };
+        }, [scrollToLatest]),
+    );
+
+    /** First paint + new messages: retry after layout (avoids relying on onContentSizeChange, which also fires when images load). */
+    useEffect(() => {
+        if (messages.length === 0) return;
+        scrollToLatest();
+        const t = setTimeout(scrollToLatest, 80);
+        const t2 = setTimeout(scrollToLatest, 280);
+        return () => {
+            clearTimeout(t);
+            clearTimeout(t2);
+        };
+    }, [messages.length, scrollToLatest]);
 
     const insets = useSafeAreaInsets();
     const headerHeight = useHeaderHeight();
@@ -287,10 +319,6 @@ const ChatDetail = () => {
         </View>
     );
 
-    if (isLoading) {
-        return <ScreenLoader />;
-    }
-
     return (
         <Wrapper no_padding hide_bottom_bar>
             {renderHeader()}
@@ -314,8 +342,35 @@ const ChatDetail = () => {
                         styles.messages_content_grow,
                     ]}
                     showsVerticalScrollIndicator={false}
-                    onContentSizeChange={() =>
-                        flatListRef.current?.scrollToEnd({ animated: false })
+                    ListEmptyComponent={
+                        isMessagesInitialLoading ? (
+                            <View
+                                style={{
+                                    flexGrow: 1,
+                                    minHeight: heightPixel(200),
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <ActivityIndicator
+                                    color={colors.primary}
+                                    size="small"
+                                />
+                            </View>
+                        ) : (
+                            <View
+                                style={{
+                                    flexGrow: 1,
+                                    minHeight: heightPixel(120),
+                                    justifyContent: 'center',
+                                    alignItems: 'center',
+                                }}
+                            >
+                                <Text size={14} color={colors.icon_gray}>
+                                    No messages yet
+                                </Text>
+                            </View>
+                        )
                     }
                 />
                 {renderInput()}

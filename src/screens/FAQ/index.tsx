@@ -19,7 +19,7 @@ const FAQ = () => {
 
     const toggleExpand = (id: number) => {
         LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        setExpandedIds((prev) => 
+        setExpandedIds((prev) =>
             prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
         )
     }
@@ -52,7 +52,7 @@ const FAQ = () => {
 
     return (
         <Wrapper>
-            <View style={{ paddingHorizontal: widthPixel(20), paddingTop: 10, flex: 1 }}>
+            <View style={{ paddingTop: 10, flex: 1 }}>
                 <FlatList
                     data={data?.data || []}
                     renderItem={renderItem}

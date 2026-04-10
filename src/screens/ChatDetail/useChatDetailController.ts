@@ -1,4 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import {
+    useCallback,
+    useEffect,
+    useLayoutEffect,
+    useRef,
+    useState,
+} from 'react';
 import { FlatList } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { pick, types as DocumentTypes } from '@react-native-documents/picker';
@@ -53,16 +59,18 @@ const useChatDetailController = () => {
     const { data: chatData, isLoading, refetch } = useGetChatQuery(chatId);
     const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
 
-    // Initialize messages from API (re-apply is_mine using logged-in user)
-    useEffect(() => {
+    // Sync API → list before paint to avoid empty flash after fetch
+    useLayoutEffect(() => {
         if (chatData?.data) {
             setMessages(
                 chatData.data.map((m: IChatMessage) =>
                     normalizeMessageMine(m, authUserId),
                 ),
             );
+        } else {
+            setMessages([]);
         }
-    }, [chatData, authUserId]);
+    }, [chatId, chatData, authUserId]);
 
     // Shared Socket.IO (HTTPS :2170); server emits `io.emit(String(chat_id), data)` + `receiveMessage`
     useEffect(() => {
@@ -205,7 +213,8 @@ const useChatDetailController = () => {
             messages,
             input,
             attachments,
-            isLoading,
+            /** First load with no cached data — show inline spinner, not full-screen loader */
+            isMessagesInitialLoading: isLoading && !chatData,
             isSending,
         },
         functions: {
