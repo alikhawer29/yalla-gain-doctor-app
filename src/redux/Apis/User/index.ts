@@ -2,6 +2,30 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../../Store';
 import { DOCTOR_TRAINER_API_BASE_URL } from '../../../utils/data';
 
+export type PaymentLogItem = {
+  id: number;
+  booking_id: string;
+  booking_amount: number;
+  payment_date: string;
+  commission: number;
+  tip: number;
+  payment_amount: number;
+};
+
+export type PaymentLogsApiResponse = {
+  data?: {
+    total_earnings?: number;
+    payment_logs?: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+      data: PaymentLogItem[];
+    };
+  };
+  status?: boolean;
+};
+
 export const userApi = createApi({
   reducerPath: 'userApi',
   tagTypes: ['Wallet'],
@@ -371,6 +395,70 @@ export const userApi = createApi({
         body,
       }),
     }),
+    getDashboardStats: builder.query<
+      {
+        data?: { total_bookings?: number; total_earnings?: number };
+        status?: boolean;
+      },
+      void
+    >({
+      query: () => ({
+        url: `dashboard/stats`,
+        method: 'GET',
+      }),
+      keepUnusedDataFor: 0,
+    }),
+    getDashboardEarningsGraph: builder.query<
+      {
+        filter?: string;
+        data?: Array<{ day?: string; date?: string; month?: string; earnings?: number }>;
+        status?: boolean;
+      },
+      { filter: 'weekly' | 'monthly' | 'yearly' }
+    >({
+      query: ({ filter }) => ({
+        url: `dashboard/earnings-graph`,
+        method: 'GET',
+        params: { filter },
+      }),
+      keepUnusedDataFor: 0,
+    }),
+    getDashboardBookingsGraph: builder.query<
+      {
+        filter?: string;
+        data?: Array<{ day?: string; date?: string; month?: string; bookings?: number }>;
+        status?: boolean;
+      },
+      { filter: 'weekly' | 'monthly' | 'yearly' }
+    >({
+      query: ({ filter }) => ({
+        url: `dashboard/bookings-graph`,
+        method: 'GET',
+        params: { filter },
+      }),
+      keepUnusedDataFor: 0,
+    }),
+    getPaymentLogs: builder.query<
+      PaymentLogsApiResponse,
+      {
+        from?: string;
+        to?: string;
+        page?: number;
+        per_page?: number;
+      }
+    >({
+      query: ({ from, to, page = 1, per_page = 15 }) => ({
+        url: `dashboard/payment-logs`,
+        method: 'GET',
+        params: {
+          ...(from ? { from } : {}),
+          ...(to ? { to } : {}),
+          page,
+          per_page,
+        },
+      }),
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -428,4 +516,8 @@ export const {
   useReadAllNotificationsMutation,
   useReadNotificationMutation,
   useUnreadNotificationMutation,
+  useGetDashboardStatsQuery,
+  useGetDashboardEarningsGraphQuery,
+  useGetDashboardBookingsGraphQuery,
+  useGetPaymentLogsQuery,
 } = userApi;

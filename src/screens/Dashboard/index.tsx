@@ -1,43 +1,49 @@
-import { View } from "react-native"
-import { BarChart, LineChart } from "react-native-chart-kit"
-import { useNavigation } from "@react-navigation/native"
-import fonts from "../../assets/fonts"
-import images from "../../assets/images"
-import ProfileHeader from "../../components/ProfileHeader"
-import Row from "../../components/Row"
-import Text from "../../components/Text"
-import Wrapper from "../../components/Wrapper"
-import Icon from "../../components/Icon"
-import Dropdown from "../../components/Dropdown"
-import colors from "../../utils/colors"
-import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
-import styles from "./styles"
-import useDashboardController from "./useDashboardController"
+import { ActivityIndicator, View } from 'react-native';
+import { BarChart, LineChart } from 'react-native-chart-kit';
+import fonts from '../../assets/fonts';
+import images from '../../assets/images';
+import ProfileHeader from '../../components/ProfileHeader';
+import Row from '../../components/Row';
+import Text from '../../components/Text';
+import Wrapper from '../../components/Wrapper';
+import Icon from '../../components/Icon';
+import Dropdown from '../../components/Dropdown';
+import colors from '../../utils/colors';
+import { font, heightPixel, vw, widthPixel } from '../../utils/helper';
+import styles from './styles';
+import useDashboardController from './useDashboardController';
+
+/** Whole numbers on Y axis (library defaults to e.g. 50.00). */
+const formatYAxisInteger = (yLabel: string) => {
+    const n = parseFloat(String(yLabel).replace(/,/g, ''));
+    if (!Number.isFinite(n)) return yLabel;
+    return String(Math.round(n));
+};
 
 const Dashboard = () => {
-    const navigation = useNavigation()
-
     const {
         values: {
-            user,
-            earningsData,
-            bookingsData,
-            bookingFilter,
-            earningsFilter
+            total_bookings,
+            total_earnings,
+            earningsLineData,
+            bookingsLineData,
+            earningsFilter,
+            bookingsFilter,
+            graphFilterOptions,
+            isStatsLoading,
+            isEarningsGraphLoading,
+            isBookingsGraphLoading,
         },
-        functions: {
-            setBookingFilter,
-            setEarningsFilter
-        }
-    } = useDashboardController()
+        functions: { onEarningsFilterChange, onBookingsFilterChange },
+    } = useDashboardController();
 
     const miniBarData = {
-        labels: ["1", "2", "3", "4", "5", "6", "7", "8"],
+        labels: ['1', '2', '3', '4', '5', '6', '7', '8'],
         datasets: [
             {
-                data: [20, 45, 28, 80, 99, 43, 80, 60]
-            }
-        ]
+                data: [20, 45, 28, 80, 99, 43, 80, 60],
+            },
+        ],
     };
 
     const chartConfig = {
@@ -45,24 +51,37 @@ const Dashboard = () => {
         backgroundGradientFromOpacity: 0,
         backgroundGradientTo: colors.grayish_black,
         backgroundGradientToOpacity: 0,
-        color: (opacity = 1) => `rgba(17, 128, 118, ${opacity})`, // colors.primary
-        strokeWidth: 2, // optional, default 3
+        color: (opacity = 1) => `rgba(17, 128, 118, ${opacity})`,
+        strokeWidth: 2,
         barPercentage: 0.5,
         useShadowColorFromDataset: false,
+        formatYLabel: formatYAxisInteger,
     };
 
     const fullChartConfig = {
         ...chartConfig,
         color: (opacity = 1) => `rgba(17, 128, 118, ${opacity})`,
         labelColor: (opacity = 1) => colors.icon_gray,
+        /** Used by LineChart for Y tick strings (default is 2 → "50.00"). */
+        decimalPlaces: 0,
         propsForBackgroundLines: {
             strokeWidth: 1,
             stroke: colors.dark_gray,
         },
         propsForLabels: {
             fontFamily: fonts.sfpro.regular,
-            fontSize: font(10),
-        }
+            fontSize: font(12),
+        },
+    };
+
+    const earningsChartPayload = {
+        labels: earningsLineData.labels,
+        datasets: earningsLineData.datasets,
+    };
+
+    const bookingsChartPayload = {
+        labels: bookingsLineData.labels,
+        datasets: bookingsLineData.datasets,
     };
 
     return (
@@ -71,21 +90,36 @@ const Dashboard = () => {
                 <ProfileHeader />
 
                 <Row justify="space-between" align="stretch">
-                    {/* Total Booking Card */}
                     <View style={styles.topCard}>
                         <Row justify="space-between" align="flex-start">
                             <View style={styles.iconContainer}>
-                                <Icon source={images.drawer_icons.my_bookings} size={20} tint_color={colors.white} />
+                                <Icon
+                                    source={images.drawer_icons.my_bookings}
+                                    size={20}
+                                    tint_color={colors.white}
+                                />
                             </View>
-                            <View style={{ alignItems: "flex-end" }}>
-                                <Text size={12} color={colors.white}>Total Booking</Text>
-                                <Text style={styles.topCardValue}>33</Text>
+                            <View style={{ alignItems: 'flex-end' }}>
+                                <Text size={12} color={colors.white}>
+                                    Total Booking
+                                </Text>
+                                {isStatsLoading ? (
+                                    <ActivityIndicator color={colors.primary} />
+                                ) : (
+                                    <Text size={30} weight="bold" color={colors.white}>{total_bookings}</Text>
+                                )}
                             </View>
                         </Row>
-                        <View style={{ height: heightPixel(60), marginLeft: -widthPixel(40), marginBottom: -heightPixel(10) }}>
+                        <View
+                            style={{
+                                height: heightPixel(60),
+                                marginLeft: -widthPixel(40),
+                                marginBottom: -heightPixel(10),
+                            }}
+                        >
                             <BarChart
                                 data={miniBarData}
-                                width={vw * 45} // slightly smaller than the container 48%
+                                width={vw * 45}
                                 height={heightPixel(80)}
                                 yAxisLabel=""
                                 yAxisSuffix=""
@@ -100,27 +134,39 @@ const Dashboard = () => {
                                 showBarTops={false}
                                 style={{ paddingRight: 0 }}
                                 flatColor={true}
-                                hideLegend={true}
                             />
                         </View>
                     </View>
 
-                    {/* Total Earning Card */}
                     <View style={styles.topCard}>
                         <Row justify="space-between" align="flex-start">
                             <View style={styles.iconContainer}>
                                 <Icon source={images.coin} size={20} tint_color={colors.white} />
                             </View>
-                            <View style={{ alignItems: "flex-end" }}>
-                                <Text size={12} color={colors.white}>Total Earning</Text>
-                                <Text style={styles.topCardValue}>2000</Text>
+                            <View style={{ alignItems: 'flex-end' }}>
+                                <Text size={12} color={colors.white}>
+                                    Total Earning
+                                </Text>
+                                {isStatsLoading ? (
+                                    <ActivityIndicator color={colors.primary} />
+                                ) : (
+                                    <Text size={30} weight="bold" color={colors.white}>{total_earnings}</Text>
+                                )}
                                 <View style={styles.yallaCoinRow}>
                                     <Icon source={images.coin} size={12} />
-                                    <Text size={10} color={colors.primary} weight="semibold">Yalla Coins</Text>
+                                    <Text size={10} color={colors.primary} weight="semibold">
+                                        Yalla Coins
+                                    </Text>
                                 </View>
                             </View>
                         </Row>
-                        <View style={{ height: heightPixel(60), marginLeft: -widthPixel(40), marginBottom: -heightPixel(10) }}>
+                        <View
+                            style={{
+                                height: heightPixel(60),
+                                marginLeft: -widthPixel(40),
+                                marginBottom: -heightPixel(10),
+                            }}
+                        >
                             <BarChart
                                 data={miniBarData}
                                 width={vw * 45}
@@ -143,77 +189,94 @@ const Dashboard = () => {
                     </View>
                 </Row>
 
-                {/* Total Earnings Graph */}
                 <View style={styles.graphCard}>
-                    <Row justify="space-between" align="center" style={{ marginBottom: heightPixel(20) }}>
-                        <Text size={18} weight="semibold" color={colors.white}>Total Earnings</Text>
+                    <Row
+                        justify="space-between"
+                        align="center"
+                        style={{ marginBottom: heightPixel(20) }}
+                    >
+                        <Text size={18} weight="semibold" color={colors.white}>
+                            Total Earnings
+                        </Text>
                         <View style={styles.dropdownContainer}>
                             <Dropdown
                                 value={earningsFilter}
-                                onChangeText={setEarningsFilter}
-                                options={[
-                                    { label: 'Weekly', value: 'Weekly' },
-                                    { label: 'Monthly', value: 'Monthly' },
-                                    { label: 'Yearly', value: 'Yearly' },
-                                ]}
-                                height={10}
-                            />
-                        </View>
-                    </Row>
-                    <View style={{ marginLeft: -widthPixel(20) }}>
-                        <LineChart
-                            data={earningsData}
-                            width={vw * 100 - widthPixel(20)}
-                            height={heightPixel(220)}
-                            chartConfig={fullChartConfig}
-                            bezier
-                            withDots={true}
-                            withVerticalLines={false}
-                            withOuterLines={false}
-                            yAxisLabel=""
-                            yAxisSuffix="k"
-                            fromZero={true}
-                        />
-                    </View>
-                </View>
-
-                {/* Total Booking Graph */}
-                <View style={styles.graphCard}>
-                    <Row justify="space-between" align="center" style={{ marginBottom: heightPixel(20) }}>
-                        <Text size={18} weight="semibold" color={colors.white}>Total Booking</Text>
-                        <View style={styles.dropdownContainer}>
-                            <Dropdown
-                                value={bookingFilter}
-                                onChangeText={setBookingFilter}
-                                options={[
-                                    { label: 'Weekly', value: 'Weekly' },
-                                    { label: 'Monthly', value: 'Monthly' },
-                                    { label: 'Yearly', value: 'Yearly' },
-                                ]}
+                                onChangeText={onEarningsFilterChange}
+                                options={graphFilterOptions}
                                 height={40}
                             />
                         </View>
                     </Row>
-                    <View style={{ marginLeft: -widthPixel(20) }}>
-                        <LineChart
-                            data={bookingsData}
-                            width={vw * 100 - widthPixel(20)}
-                            height={heightPixel(220)}
-                            chartConfig={fullChartConfig}
-                            bezier
-                            withDots={true}
-                            withVerticalLines={false}
-                            withOuterLines={false}
-                            yAxisLabel=""
-                            yAxisSuffix="k"
-                            fromZero={true}
-                        />
+                    <View style={{ marginLeft: -widthPixel(20), minHeight: heightPixel(220) }}>
+                        {isEarningsGraphLoading ? (
+                            <ActivityIndicator
+                                color={colors.primary}
+                                style={{ marginTop: heightPixel(80) }}
+                            />
+                        ) : (
+                            <LineChart
+                                data={earningsChartPayload}
+                                width={vw * 100 - widthPixel(20)}
+                                height={heightPixel(220)}
+                                chartConfig={fullChartConfig}
+                                formatYLabel={formatYAxisInteger}
+                                bezier
+                                withDots={true}
+                                withVerticalLines={false}
+                                withOuterLines={false}
+                                yAxisLabel=""
+                                yAxisSuffix=""
+                                fromZero={true}
+                            />
+                        )}
                     </View>
                 </View>
 
+                <View style={styles.graphCard}>
+                    <Row
+                        justify="space-between"
+                        align="center"
+                        style={{ marginBottom: heightPixel(20) }}
+                    >
+                        <Text size={18} weight="semibold" color={colors.white}>
+                            Total Booking
+                        </Text>
+                        <View style={styles.dropdownContainer}>
+                            <Dropdown
+                                value={bookingsFilter}
+                                onChangeText={onBookingsFilterChange}
+                                options={graphFilterOptions}
+                                height={40}
+                            />
+                        </View>
+                    </Row>
+                    <View style={{ marginLeft: -widthPixel(20), minHeight: heightPixel(220) }}>
+                        {isBookingsGraphLoading ? (
+                            <ActivityIndicator
+                                color={colors.primary}
+                                style={{ marginTop: heightPixel(80) }}
+                            />
+                        ) : (
+                            <LineChart
+                                data={bookingsChartPayload}
+                                width={vw * 100 - widthPixel(20)}
+                                height={heightPixel(220)}
+                                chartConfig={fullChartConfig}
+                                formatYLabel={formatYAxisInteger}
+                                bezier
+                                withDots={true}
+                                withVerticalLines={false}
+                                withOuterLines={false}
+                                yAxisLabel=""
+                                yAxisSuffix=""
+                                fromZero={true}
+                            />
+                        )}
+                    </View>
+                </View>
             </View>
         </Wrapper>
-    )
-}
+    );
+};
 
-export default Dashboard
+export default Dashboard;

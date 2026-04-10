@@ -55,8 +55,6 @@ const Home = () => {
         ; (navigation as any).navigate(NAVIGATORS.BOOKING_STACK, { screen: ROUTES.SERVICE_LOGS })
     }
 
-    console.log("data", data)
-
     return (
         <Wrapper bottom_bar scrollable>
             <View style={{ gap: heightPixel(10) }}>
