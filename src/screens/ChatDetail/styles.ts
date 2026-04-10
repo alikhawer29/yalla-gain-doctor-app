@@ -74,6 +74,8 @@ const styles = StyleSheet.create({
   },
   input_section: {
     flexShrink: 0,
+    // paddingHorizontal: widthPixel(50),
+    paddingVertical: heightPixel(20),
   },
   attachment_strip: {
     maxHeight: heightPixel(130),
