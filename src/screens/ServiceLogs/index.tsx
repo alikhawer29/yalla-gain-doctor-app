@@ -1,4 +1,4 @@
-import { FlatList, RefreshControl, View } from "react-native"
+import { FlatList, Modal, RefreshControl, TouchableWithoutFeedback, View } from "react-native"
 import images from "../../assets/images"
 import Button from "../../components/Button"
 import CardWrapper from "../../components/CardWrapper"
@@ -17,6 +17,7 @@ import globalStyles from "../../utils/styles"
 import useServiceLogsController from "./useServiceLogsController"
 import ServiceCard from "../../components/Cards/ServiceCard"
 import Input from "../../components/Input"
+import styles from "./styles"
 
 const ServiceLogs = () => {
 
@@ -25,14 +26,22 @@ const ServiceLogs = () => {
             data,
             isLoading,
             selected,
-            search
+            search,
+            filterModalVisible,
+            fromDate,
+            toDate,
         },
         functions: {
             onReload,
             onPressCard,
             onRequests,
             onChangeStatus,
-            onSearch
+            onSearch,
+            toggleFilterModal,
+            setFromDate,
+            setToDate,
+            onApplyFilters,
+            onClearFilters,
         }
     } = useServiceLogsController()
 
@@ -51,7 +60,7 @@ const ServiceLogs = () => {
                         />
                     </View>
                     <View style={{ width: "15%" }}>
-                        <Icon source={images.filters} size={40} rounded less_rounded border={colors.white} />
+                        <Icon source={images.filters} size={40} rounded less_rounded border={colors.white} onPress={toggleFilterModal} />
                     </View>
                 </Row>
                 <View>
@@ -79,6 +88,54 @@ const ServiceLogs = () => {
                 style={{ marginTop: heightPixel(15) }}
                 renderItem={({ item }) => <ServiceCard data={item} onPress={() => onPressCard(item?.id)} />}
             />
+
+            {/* Filter Modal */}
+            <Modal
+                visible={filterModalVisible}
+                transparent
+                animationType="slide"
+                onRequestClose={toggleFilterModal}
+            >
+                <TouchableWithoutFeedback onPress={toggleFilterModal}>
+                    <View style={styles.modal_overlay}>
+                        <TouchableWithoutFeedback>
+                            <View style={styles.modal_content}>
+                                <Row align="center" gap={10} style={{ marginBottom: heightPixel(20) }}>
+                                    <Icon source={images.back} size={24} onPress={toggleFilterModal} />
+                                    <Text size={18} weight="semibold">Filter By</Text>
+                                </Row>
+
+                                <Text weight="semibold" style={{ marginBottom: heightPixel(10) }}>Filter By Date</Text>
+                                <Input
+                                    label="From"
+                                    placeholder="MM/DD/YYYY"
+                                    type="date"
+                                    value={fromDate}
+                                    onChangeText={setFromDate}
+                                />
+                                <View style={{ marginTop: heightPixel(15) }}>
+                                    <Input
+                                        label="To"
+                                        placeholder="MM/DD/YYYY"
+                                        type="date"
+                                        value={toDate}
+                                        onChangeText={setToDate}
+                                    />
+                                </View>
+
+                                <Row gap={15} style={{ marginTop: heightPixel(30) }}>
+                                    <View style={{ flex: 1 }}>
+                                        <Button text="APPLY" onPress={onApplyFilters} />
+                                    </View>
+                                    <View style={{ flex: 1 }}>
+                                        <Button text="CLEAR" type="outlined" onPress={onClearFilters} />
+                                    </View>
+                                </Row>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                </TouchableWithoutFeedback>
+            </Modal>
         </Wrapper>
     )
 }

@@ -18,7 +18,7 @@ const WithdrawAmount = () => {
             <KeyboardAvoidingWrapper>
                 <View style={styles.container}>
                     <Text size={16} weight="semibold" color={colors.white} position="center">
-                        1 Yalla Coin Is Equal To {walletData?.coin_amount || "1"}$
+                        1 Yalla Coin Is Equal To {walletData?.coin_amount || "1"} AED
                     </Text>
 
                     <Seperator size={20} />

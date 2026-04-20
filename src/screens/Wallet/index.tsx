@@ -22,12 +22,12 @@ const Wallet = () => {
                 </Text>
 
                 <Text size={18} weight="semibold" color={colors.white} style={styles.subtitle}>
-                    Total Amount In Wallet ${walletData?.my_coins * (walletData?.coin_amount || 1) || "0"}
+                    Total Amount In Wallet AED {walletData?.my_coins * (walletData?.coin_amount || 1) || "0"}
                 </Text>
 
                 <View style={{ marginTop: 50 }}>
                     <Text size={16} color={colors.white}>
-                        1 Yalla Coin Is Equal To {walletData?.coin_amount || "1"}$
+                        1 Yalla Coin Is Equal To {walletData?.coin_amount || "1"} AED
                     </Text>
                 </View>
 

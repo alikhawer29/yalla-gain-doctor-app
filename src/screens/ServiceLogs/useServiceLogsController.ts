@@ -6,12 +6,21 @@ import { useGetBookingsQuery } from '../../redux/Apis/User';
 import { STATUSES } from '../../utils/data';
 import { navigationRef } from '../../utils/navigation';
 import { NAVIGATORS, ROUTES } from '../../utils/routes';
+import useToggle from '../../hooks/useToggle';
 
 const useServiceLogsController = () => {
   const isFocused = useIsFocused();
   const [selected, setSelected] = useState(STATUSES[0]?.value);
 
   const { search, debouncedSearch, onChange: onSearch } = useSearch();
+  const [fromDate, setFromDate] = useState('');
+  const [toDate, setToDate] = useState('');
+  const [toggleFilterModal, filterModalVisible] = useToggle();
+
+  const [appliedFilters, setAppliedFilters] = useState({
+    from: '',
+    to: '',
+  });
 
   const {
     data,
@@ -20,6 +29,8 @@ const useServiceLogsController = () => {
   } = useGetBookingsQuery({
     type: selected === 'all' ? '' : selected,
     search: debouncedSearch,
+    from: appliedFilters.from || undefined,
+    to: appliedFilters.to || undefined,
   });
 
   useEffect(() => {
@@ -47,12 +58,33 @@ const useServiceLogsController = () => {
 
   const onChangeStatus = (status: string) => setSelected(status);
 
+  const onApplyFilters = () => {
+    setAppliedFilters({
+      from: fromDate,
+      to: toDate,
+    });
+    toggleFilterModal();
+  };
+
+  const onClearFilters = () => {
+    setFromDate('');
+    setToDate('');
+    setAppliedFilters({
+      from: '',
+      to: '',
+    });
+    toggleFilterModal();
+  };
   return {
     values: {
       data: data?.data || [],
       isLoading,
       selected,
       search,
+      filterModalVisible,
+      fromDate,
+      toDate,
+      appliedFilters,
     },
     functions: {
       onReload: refetch,
@@ -60,6 +92,11 @@ const useServiceLogsController = () => {
       onRequests,
       onChangeStatus,
       onSearch,
+      setFromDate,
+      setToDate,
+      onApplyFilters,
+      onClearFilters,
+      toggleFilterModal,
     },
   };
 };
