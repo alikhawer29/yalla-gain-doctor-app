@@ -1,6 +1,6 @@
 import { FieldArray, Formik } from "formik"
-import { useState } from "react"
-import { View } from "react-native"
+import { useEffect, useState } from "react"
+import { ActivityIndicator, InteractionManager, View } from "react-native"
 import { useNavigation } from "@react-navigation/native"
 import images from "../../../assets/images"
 import AuthWrapper from "../../../components/AuthWrapper"
@@ -21,7 +21,8 @@ import auth_styles from "../styles"
 import styles from "./styles"
 import useRegisterController from "./useRegisterController"
 
-const Register = () => {
+/** Heavy form (Formik, Yup, state/city lists) — mounted after transition so navigation isn’t blocked. */
+const RegisterForm = () => {
     const navigation = useNavigation()
     const [profileImageBump, setProfileImageBump] = useState(0)
     const [certImageBumps, setCertImageBumps] = useState<Record<number, number>>({})
@@ -217,6 +218,37 @@ const Register = () => {
 
         </AuthWrapper>
     )
+}
+
+const Register = () => {
+    const [formReady, setFormReady] = useState(false)
+
+    useEffect(() => {
+        const task = InteractionManager.runAfterInteractions(() => {
+            setFormReady(true)
+        })
+        return () => task.cancel()
+    }, [])
+
+    if (!formReady) {
+        return (
+            <AuthWrapper>
+                <View
+                    style={{
+                        flex: 1,
+                        minHeight: 200,
+                        justifyContent: "center",
+                        alignItems: "center",
+                        paddingTop: heightPixel(40),
+                    }}
+                >
+                    <ActivityIndicator size="large" color={colors.primary} />
+                </View>
+            </AuthWrapper>
+        )
+    }
+
+    return <RegisterForm />
 }
 
 export default Register

@@ -5,14 +5,7 @@ import { useWithdrawMutation, useGetWalletQuery } from "../../redux/Apis/User"
 import { goBack } from "../../utils/navigation"
 import { Alert } from "react-native"
 import { useModal } from "../../contexts/ModalContext"
-
-const pickWalletPayload = (raw: unknown) => {
-    if (!raw || typeof raw !== "object") return null
-    const r = raw as Record<string, unknown>
-    const inner = r.data
-    if (inner && typeof inner === "object") return inner as Record<string, unknown>
-    return r
-}
+import { pickWalletPayload } from "../../utils/walletPayload"
 
 const useWithdrawAmountController = () => {
     const dispatch = useDispatch()

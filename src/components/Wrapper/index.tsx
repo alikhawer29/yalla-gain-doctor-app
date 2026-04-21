@@ -16,6 +16,7 @@ const Wrapper: FC<IWrapper> = ({
     loading = false,
     floating = false,
     hide_bottom_bar = false,
+    refreshControl,
 }) => {
 
     const headerHeight = useHeaderHeight()
@@ -58,6 +59,7 @@ const Wrapper: FC<IWrapper> = ({
                     contentContainerStyle={[styles.scroll_content, content_container_style]}
                     showsVerticalScrollIndicator={false}
                     showsHorizontalScrollIndicator={false}
+                    refreshControl={refreshControl}
                 >
                     {renderBody()}
                 </ScrollView>

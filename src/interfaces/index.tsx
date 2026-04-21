@@ -1,4 +1,5 @@
-import { ReactNode } from "react";
+import { ReactElement, ReactNode } from "react";
+import type { UaeBeneficiary } from '../redux/Apis/User';
 import { ColorValue, DimensionValue, GestureResponderEvent, ImageResizeMode, ImageSourcePropType, ImageStyle, Insets, StyleProp, TextStyle, ViewStyle } from "react-native";
 import { IndicatorName } from "react-native-loader-kit";
 
@@ -21,6 +22,10 @@ export type AppStackParamList = {
     Notification: undefined
     PaymentLogs: undefined
     WithdrawAmount: undefined
+    Beneficiaries: undefined
+    AddBeneficiary: undefined
+    WithdrawBeneficiary: { beneficiary: UaeBeneficiary }
+    WalletTransactionLogs: undefined
 };
 
 export type AuthStackParamList = {
@@ -85,6 +90,10 @@ export type RootStackParamList = {
     ContactUs: undefined;
     Notification: undefined;
     PaymentLogs: undefined;
+    Beneficiaries: undefined;
+    AddBeneficiary: undefined;
+    WithdrawBeneficiary: { beneficiary: UaeBeneficiary };
+    WalletTransactionLogs: undefined;
 };
 
 export interface IWrapper {
@@ -95,6 +104,8 @@ export interface IWrapper {
     loading?: boolean
     floating?: boolean
     hide_bottom_bar?: boolean
+    /** When `scrollable` is true, passed to the inner `ScrollView` (e.g. pull-to-refresh). */
+    refreshControl?: ReactElement
 }
 
 export interface IAuthWrapper extends IWrapper {
@@ -152,6 +163,8 @@ export interface IButton {
     type?: "primary" | "secondary" | "outlined" | "custom",
     icon?: ImageSourcePropType,
     loading?: boolean,
+    /** Row `justifyContent` (default `center`). Use `flex-start` for left-aligned label. */
+    rowJustify?: "flex-start" | "flex-end" | "center" | "space-between" | "space-around" | "space-evenly"
 }
 
 export interface IRow {

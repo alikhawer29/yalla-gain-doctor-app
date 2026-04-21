@@ -173,7 +173,7 @@ const BookingDetails = () => {
                             <Text weight="semibold">Service Category:</Text>
                             <Text style={styles.value_text} color={colors.icon_gray}>{data?.service?.title}</Text>
                         </View>
-                        <StatusBadge status={data?.status} />
+                        <StatusBadge status={data?.status === 'completed' ? 'Past' : data?.status} />
                     </Row>
                     <Row>
                         <View style={styles.half_width_box}>
@@ -187,19 +187,27 @@ const BookingDetails = () => {
                     </Row>
                     <Row>
                         <View style={styles.half_width_box}>
-                            <Button onPress={onBookingHistory} type="outlined" text="View User Booking History" font_size={10} style={{ height: heightPixel(30), marginRight: widthPixel(30), paddingHorizontal: widthPixel(5) }} />
+                            <Button onPress={onBookingHistory}
+                                type="outlined"
+                                text="View User Booking History"
+                                font_size={11} style={{
+                                    height: heightPixel(30),
+                                    marginRight: widthPixel(30),
+                                    paddingHorizontal: widthPixel(5)
+
+                                }} />
                         </View>
                         <View style={styles.half_width_box}>
                             <Button
                                 type="outlined"
                                 text="User Progress"
-                                font_size={10}
+                                font_size={11}
                                 onPress={onUserProgress}
-                                style={{ height: heightPixel(30), marginRight: widthPixel(30), paddingHorizontal: widthPixel(5) }}
+                                style={{ marginRight: widthPixel(30), paddingHorizontal: widthPixel(5) }}
                             />
                         </View>
                     </Row>
-                    <Text size={20} weight="semibold" style={{ marginVertical: heightPixel(5) }}>Booking Details</Text>
+                    <Text size={20} weight="semibold" style={{ marginVertical: heightPixel(5), }}>Booking Details</Text>
                     <Row>
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Booking Id:</Text>

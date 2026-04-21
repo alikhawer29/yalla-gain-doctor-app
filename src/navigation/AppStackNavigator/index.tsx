@@ -12,6 +12,10 @@ import Slots from '../../screens/Slots';
 import Notification from '../../screens/Notification';
 import PaymentLogs from '../../screens/PaymentLogs';
 import WithdrawAmount from '../../screens/WithdrawAmount';
+import Beneficiaries from '../../screens/Beneficiaries';
+import AddBeneficiary from '../../screens/AddBeneficiary';
+import WithdrawBeneficiary from '../../screens/WithdrawBeneficiary';
+import WalletTransactionLogs from '../../screens/WalletTransactionLogs';
 
 const Stack = createStackNavigator<AppStackParamList>();
 
@@ -29,6 +33,10 @@ const AppStackNavigator = () => {
                         <Stack.Screen name={ROUTES.NOTIFICATION} component={Notification} options={Options} />
                         <Stack.Screen name={ROUTES.PAYMENT_LOGS} component={PaymentLogs} options={Options} />
                         <Stack.Screen name={ROUTES.WITHDRAW_AMOUNT} component={WithdrawAmount} options={Options} />
+                        <Stack.Screen name={ROUTES.BENEFICIARIES} component={Beneficiaries} options={Options} />
+                        <Stack.Screen name={ROUTES.ADD_BENEFICIARY} component={AddBeneficiary} options={Options} />
+                        <Stack.Screen name={ROUTES.WITHDRAW_BENEFICIARY} component={WithdrawBeneficiary} options={Options} />
+                        <Stack.Screen name={ROUTES.WALLET_TRANSACTION_LOGS} component={WalletTransactionLogs} options={Options} />
                     </>
                     :
                     <Stack.Screen name={NAVIGATORS.AUTH_STACK} component={AuthStackNavigator} />

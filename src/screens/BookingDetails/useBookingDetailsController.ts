@@ -295,8 +295,7 @@ const useBookingDetailsController = () => {
       showOkModal({
         type: 'error',
         title: 'Prescription',
-        message:
-          'Prescription text is required when uploading a file.',
+        message: 'Prescription text is required when uploading a file.',
       });
       return;
     }
@@ -523,6 +522,7 @@ const useBookingDetailsController = () => {
   };
 
   const onUserProgress = () => {
+    console.log('data?.data?.user?.id', data?.data?.user?.id);
     navigate(
       NAVIGATORS.BOTTOM as any,
       {

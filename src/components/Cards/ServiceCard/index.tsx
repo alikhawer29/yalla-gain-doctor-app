@@ -21,7 +21,7 @@ const ServiceCard = ({ data, onPress }) => {
                         <Icon source={images.calendar} size={14} />
                         <Text size={13}>{data?.appointment_date || data?.rescheduled_appointment_date}</Text>
                     </Row>
-                    <StatusBadge status={data?.status} />
+                    <StatusBadge status={data?.status === 'completed' ? 'Past' : data?.status} />
                 </Row>
                 <Text weight="semibold">Booking Id :<Text weight="semibold" color={colors.icon_gray}> {data?.booking_id}</Text></Text>
                 <Row>

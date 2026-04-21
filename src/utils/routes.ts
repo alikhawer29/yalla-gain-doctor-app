@@ -75,6 +75,10 @@ const ROUTES = {
   CONTACT_US: 'ContactUs',
   NOTIFICATION: 'Notification',
   PAYMENT_LOGS: 'PaymentLogs',
+  BENEFICIARIES: 'Beneficiaries',
+  ADD_BENEFICIARY: 'AddBeneficiary',
+  WITHDRAW_BENEFICIARY: 'WithdrawBeneficiary',
+  WALLET_TRANSACTION_LOGS: 'WalletTransactionLogs',
 } as const;
 
 const ROUTES_OPTIONS = [
@@ -402,6 +406,34 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Payment Logs',
+  },
+  {
+    route_name: ROUTES.BENEFICIARIES,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Beneficiaries',
+  },
+  {
+    route_name: ROUTES.ADD_BENEFICIARY,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Add Beneficiary',
+  },
+  {
+    route_name: ROUTES.WITHDRAW_BENEFICIARY,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Withdraw',
+  },
+  {
+    route_name: ROUTES.WALLET_TRANSACTION_LOGS,
+    left: 'back',
+    right: null,
+    logo: false,
+    title: 'Transaction Logs',
   },
 ] as const;
 

@@ -1,28 +1,63 @@
-import { useSelector } from "react-redux"
-import { selectUser } from "../../redux/Slices/AuthSlice"
-import { navigate } from "../../utils/navigation"
-import { ROUTES } from "../../utils/routes"
-import { useGetWalletQuery } from "../../redux/Apis/User"
+import { useCallback, useMemo, useState } from 'react';
+import { navigate } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
+import { useGetWalletQuery } from '../../redux/Apis/User';
+import {
+  getAvailableBalanceAed,
+  pickWalletPayload,
+} from '../../utils/walletPayload';
 
 const useWalletController = () => {
-    const user = useSelector(selectUser)
-    const { data: walletData, isLoading: isWalletLoading } = useGetWalletQuery(undefined)
+  const {
+    data: walletRaw,
+    isLoading: isWalletLoading,
+    refetch,
+  } = useGetWalletQuery(undefined);
+  const [refreshing, setRefreshing] = useState(false);
 
-    const handleWithdraw = () => {
-        navigate(ROUTES.WITHDRAW_AMOUNT)
+  const walletData = useMemo(() => pickWalletPayload(walletRaw), [walletRaw]);
+  const availableAed = useMemo(
+    () => getAvailableBalanceAed(walletData),
+    [walletData],
+  );
+  const coinAmount = Number(walletData?.coin_amount ?? 1) || 1;
+  const myCoins = Number(walletData?.my_coins ?? 0) || 0;
+  const balanceCurrency = walletData?.balance_currency?.trim() || 'AED';
+
+  const handleWithdraw = () => {
+    navigate(ROUTES.BENEFICIARIES);
+  };
+
+  const handleManageBeneficiaries = () => {
+    navigate(ROUTES.BENEFICIARIES);
+  };
+
+  const handleTransactionLogs = () => {
+    navigate(ROUTES.WALLET_TRANSACTION_LOGS);
+  };
+
+  const onRefreshWallet = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setRefreshing(false);
     }
+  }, [refetch]);
 
-    const handlePaymentLogs = () => {
-        navigate(ROUTES.PAYMENT_LOGS)
-    }
+  return {
+    walletData,
+    availableAed,
+    balanceCurrency,
+    myCoins,
+    coinAmount,
+    isWalletLoading,
+    refreshing,
+    onRefreshWallet,
+    handleWithdraw,
+    handleManageBeneficiaries,
+    handleTransactionLogs,
+  };
+};
 
-    return {
-        user,
-        walletData,
-        isWalletLoading,
-        handleWithdraw,
-        handlePaymentLogs
-    }
-}
-
-export default useWalletController
+export default useWalletController;

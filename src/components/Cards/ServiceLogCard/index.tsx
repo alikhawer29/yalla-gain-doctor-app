@@ -82,7 +82,11 @@ const ServiceLogCard = ({
                     <View style={styles.rightContent}>
                         <View style={[styles.statusBadge, status === "upcoming" && styles.upcomingBadge]}>
                             <Text size={10} color={colors.white} weight="semibold">
-                                {status === "upcoming" ? "Upcoming" : capitalize(status || "")}
+                                {status === "upcoming"
+                                    ? "Upcoming"
+                                    : status === "completed"
+                                        ? "Past"
+                                        : capitalize(status || "")}
                             </Text>
                         </View>
                     </View>

@@ -26,9 +26,98 @@ export type PaymentLogsApiResponse = {
   status?: boolean;
 };
 
+export type UaeLastPayout = {
+  amount?: number | string;
+  date?: string;
+  status?: string;
+  created_at?: string;
+};
+
+export type UaeBeneficiary = {
+  id: number;
+  account_holder_name?: string;
+  iban?: string;
+  iban_last4?: string;
+  currency?: string;
+  is_default_for_payout?: boolean;
+  payouts_enabled?: boolean;
+  last_payout?: UaeLastPayout | null;
+};
+
+export type CreateUaeBeneficiaryBody = {
+  account_holder_name: string;
+  iban: string;
+  line1: string;
+  tax_id: string;
+  state: string;
+};
+
+export type CreateUaeBeneficiaryApiResponse = {
+  already_exists?: boolean;
+  message?: string;
+  data?: UaeBeneficiary;
+  status?: boolean;
+};
+
+export type WithdrawUaeApiResponse = {
+  message?: string;
+  data?: {
+    status?: string;
+    amount?: number | string;
+    remaining_coins?: number | string;
+    coins_balance_after?: number | string;
+  };
+  status?: boolean;
+};
+
+export type UaeTransactionLogItem = {
+  id?: number | string;
+  amount?: number | string;
+  currency?: string;
+  status?: string;
+  type?: string;
+  date?: string;
+  created_at?: string;
+  payment_date?: string;
+  coins_deducted?: number | string;
+  coins_balance_before?: number | string;
+  coins_balance_after?: number | string;
+  stripe_payout_id?: string;
+  stripe_transfer_id?: string | null;
+  beneficiary?: {
+    account_holder_name?: string;
+    name?: string;
+    iban?: string;
+    iban_last4?: string;
+  };
+};
+
+export type UaeTransactionLogsApiResponse = {
+  /** Either an array of logs (with `meta` for pagination) or a nested envelope. */
+  data?: UaeTransactionLogItem[] | {
+    transaction_logs?: {
+      current_page: number;
+      last_page: number;
+      per_page: number;
+      total: number;
+      data: UaeTransactionLogItem[];
+    };
+    items?: UaeTransactionLogItem[];
+    data?: UaeTransactionLogItem[];
+  };
+  meta?: {
+    current_page: number;
+    last_page: number;
+    per_page: number;
+    total: number;
+  };
+  status?: boolean;
+  message?: string;
+};
+
 export const userApi = createApi({
   reducerPath: 'userApi',
-  tagTypes: ['Wallet'],
+  tagTypes: ['Wallet', 'UaeBeneficiaries', 'UaeTransactionLogs'],
   baseQuery: fetchBaseQuery({
     baseUrl: DOCTOR_TRAINER_API_BASE_URL,
     prepareHeaders: (headers, { getState }) => {
@@ -459,6 +548,66 @@ export const userApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+    getUaeBeneficiaries: builder.query<unknown, void>({
+      query: () => ({
+        url: `stripe/uae/beneficiaries`,
+        method: 'GET',
+      }),
+      providesTags: ['UaeBeneficiaries'],
+      keepUnusedDataFor: 0,
+    }),
+    createUaeBeneficiary: builder.mutation<
+      CreateUaeBeneficiaryApiResponse,
+      CreateUaeBeneficiaryBody
+    >({
+      query: body => ({
+        url: `stripe/uae/beneficiaries`,
+        method: 'POST',
+        body,
+      }),
+      invalidatesTags: ['UaeBeneficiaries', 'Wallet'],
+    }),
+    withdrawUaeBeneficiary: builder.mutation<
+      WithdrawUaeApiResponse,
+      { beneficiaryId: number; amount: number }
+    >({
+      query: ({ beneficiaryId, amount }) => ({
+        url: `stripe/uae/beneficiaries/${beneficiaryId}/withdraw`,
+        method: 'POST',
+        body: { amount },
+      }),
+      invalidatesTags: ['UaeBeneficiaries', 'Wallet', 'UaeTransactionLogs'],
+    }),
+    getUaeTransactionLogs: builder.query<
+      UaeTransactionLogsApiResponse,
+      {
+        page?: number;
+        per_page?: number;
+        status?: string;
+        from?: string;
+        to?: string;
+      }
+    >({
+      query: ({
+        page = 1,
+        per_page = 15,
+        status,
+        from,
+        to,
+      }) => ({
+        url: `stripe/uae/transaction-logs`,
+        method: 'GET',
+        params: {
+          page,
+          per_page,
+          ...(status ? { status } : {}),
+          ...(from ? { from } : {}),
+          ...(to ? { to } : {}),
+        },
+      }),
+      providesTags: ['UaeTransactionLogs'],
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -520,4 +669,8 @@ export const {
   useGetDashboardEarningsGraphQuery,
   useGetDashboardBookingsGraphQuery,
   useGetPaymentLogsQuery,
+  useGetUaeBeneficiariesQuery,
+  useCreateUaeBeneficiaryMutation,
+  useWithdrawUaeBeneficiaryMutation,
+  useGetUaeTransactionLogsQuery,
 } = userApi;
