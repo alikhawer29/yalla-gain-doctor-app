@@ -117,7 +117,7 @@ export type UaeTransactionLogsApiResponse = {
 
 export const userApi = createApi({
   reducerPath: 'userApi',
-  tagTypes: ['Wallet', 'UaeBeneficiaries', 'UaeTransactionLogs'],
+  tagTypes: ['Wallet', 'UaeBeneficiaries', 'UaeTransactionLogs', 'Notifications'],
   baseQuery: fetchBaseQuery({
     baseUrl: DOCTOR_TRAINER_API_BASE_URL,
     prepareHeaders: (headers, { getState }) => {
@@ -463,12 +463,14 @@ export const userApi = createApi({
         method: 'GET',
         params,
       }),
+      providesTags: ['Notifications'],
     }),
     readAllNotifications: builder.mutation({
       query: () => ({
         url: `../user/notification/all/read`,
         method: 'POST',
       }),
+      invalidatesTags: ['Notifications'],
     }),
     readNotification: builder.mutation({
       query: body => ({
@@ -476,6 +478,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Notifications'],
     }),
     unreadNotification: builder.mutation({
       query: body => ({
@@ -483,6 +486,7 @@ export const userApi = createApi({
         method: 'POST',
         body,
       }),
+      invalidatesTags: ['Notifications'],
     }),
     getDashboardStats: builder.query<
       {

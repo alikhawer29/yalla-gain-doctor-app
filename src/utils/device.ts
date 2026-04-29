@@ -1,11 +1,9 @@
 import { Platform } from 'react-native';
+import { getFcmDeviceToken } from '../services/push/pushNotifications';
 
-/** Backend expects e.g. ios | android */
-export function getDeviceType(): string {
+export { getFcmDeviceToken };
+
+/** Backend expects `ios` | `android` */
+export function getDeviceType(): 'ios' | 'android' {
   return Platform.OS === 'ios' ? 'ios' : 'android';
-}
-
-/** Push token when FCM/APNs is wired; placeholder until then */
-export function getDeviceToken(): string {
-  return '';
 }

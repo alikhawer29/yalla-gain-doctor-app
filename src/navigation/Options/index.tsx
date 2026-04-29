@@ -10,6 +10,7 @@ import colors from "../../utils/colors"
 import { heightPixel, widthPixel } from "../../utils/helper"
 import { goBack, navigate } from "../../utils/navigation"
 import { ROUTES, ROUTES_OPTIONS } from "../../utils/routes"
+import NotificationHeaderIcon from "./NotificationHeaderIcon"
 import { RouteProp } from "@react-navigation/native"
 import { StackNavigationOptions, StackNavigationProp } from "@react-navigation/stack"
 
@@ -65,6 +66,10 @@ const Options = (props: OptionsProps): StackNavigationOptions => {
 
   const renderRight = () => {
     const rightKey = route?.right
+    if (rightKey === "notifications") {
+      return <NotificationHeaderIcon onPress={handleRightPress} />
+    }
+
     const icon_source = rightKey && rightKey !== null ? images[rightKey as keyof typeof images] : null
     if (!icon_source) return <View style={styles.sideSpace} />
 
@@ -86,17 +91,19 @@ const Options = (props: OptionsProps): StackNavigationOptions => {
     return route?.logo ? (
       <Image style={styles.logo} source={images.logo} />
     ) : (
-      <Text
-        lines={2}
-        line_height={28}
-        style={styles.title}
-        color={colors.white}
-        weight="semibold"
-        size={22}
-        position="center"
-      >
-        {(route && 'title' in route ? route.title : undefined) || props?.route?.params?.title || ''}
-      </Text>
+      <View style={styles.titleWrap}>
+        <Text
+          lines={2}
+          line_height={28}
+          style={styles.title}
+          color={colors.white}
+          weight="semibold"
+          size={22}
+          position="center"
+        >
+          {(route && 'title' in route ? route.title : undefined) || props?.route?.params?.title || ''}
+        </Text>
+      </View>
     )
   }
 
@@ -157,6 +164,13 @@ const styles = StyleSheet.create({
     height: heightPixel(62),
     resizeMode: "contain",
     zIndex: 99,
+  },
+  titleWrap: {
+    zIndex: 99,
+    maxWidth: '80%',
+    height: heightPixel(62),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 })
 
