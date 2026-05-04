@@ -122,13 +122,14 @@ const ROUTES_OPTIONS = [
     right: 'notifications',
     logo: false,
     title: 'Chats',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.CHAT_DETAIL,
-    left: null,
+    left: 'back',
     right: null,
     logo: false,
-    title: '',
+    title: 'Chats',
     bottom_tab: false,
   },
   {

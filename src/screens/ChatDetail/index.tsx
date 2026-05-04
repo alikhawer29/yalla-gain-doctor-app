@@ -102,13 +102,13 @@ const ChatDetail = () => {
 
     const renderHeader = () => (
         <View style={styles.header_container}>
-            <Icon
+            {/* <Icon
                 source={images.back}
                 size={40}
                 rounded
                 border={colors.white}
                 onPress={handleBack}
-            />
+            /> */}
             <View style={styles.header_info}>
                 <Icon source={{ uri: image }} size={40} rounded no_padding />
                 <Text weight="semibold" size={16}>{name}</Text>

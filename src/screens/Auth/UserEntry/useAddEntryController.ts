@@ -6,6 +6,7 @@ import { LOGIN_TABS } from '../../../utils/data';
 import { formHandler, normalizeDialingCode } from '../../../utils/helper';
 import { navigate } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
+import { getDeviceType, getFcmDeviceToken } from '../../../utils/device';
 import { LOGIN_SCHEMA, USER_REGISTER_SCHEMA } from '../../../utils/validators';
 
 const PENDING_OTP_PHRASE = 'pending OTP verification';
@@ -59,9 +60,12 @@ const useAddEntryController = () => {
     async (data: any) => {
       if (selected === 'login') {
         try {
+          const device_token = await getFcmDeviceToken();
           await login({
             email: data.email,
             password: data.password,
+            device_type: getDeviceType(),
+            device_token,
           }).unwrap();
         } catch (e: any) {
           const body = e?.data ?? {};

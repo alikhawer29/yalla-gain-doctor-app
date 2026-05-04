@@ -1,17 +1,40 @@
-import React, { useState } from "react"
-import { View, FlatList, TouchableOpacity, ActivityIndicator } from "react-native"
-import Wrapper from "../../components/Wrapper"
-import Text from "../../components/Text"
-import Row from "../../components/Row"
-import Icon from "../../components/Icon"
+import React, { useMemo, useState } from "react"
+import { FlatList, TouchableOpacity, View } from "react-native"
+import { useDispatch } from "react-redux"
+import { NOTIFICATIONS_FIRST_PAGE } from "../../constants/notificationsQuery"
+import { userApi } from "../../redux/Apis/User"
 import images from "../../assets/images"
-import styles from "./styles"
-import colors from "../../utils/colors"
+import Icon from "../../components/Icon"
+import Text from "../../components/Text"
+import Wrapper from "../../components/Wrapper"
 import { useGetNotificationsQuery, useReadNotificationMutation, useUnreadNotificationMutation } from "../../redux/Apis/User"
+import colors from "../../utils/colors"
+import styles from "./styles"
+
+type NotificationFilter = "all" | "read" | "unread"
+
+const FILTER_OPTIONS: { key: NotificationFilter; label: string }[] = [
+    { key: "all", label: "All" },
+    { key: "read", label: "Read" },
+    { key: "unread", label: "Unread" },
+]
 
 const Notification = () => {
+    const dispatch = useDispatch()
     const [page, setPage] = useState(1)
-    const { data, isFetching, refetch } = useGetNotificationsQuery({ page, per_page: 20 })
+    const [filter, setFilter] = useState<NotificationFilter>("all")
+    const { data, isFetching, refetch } = useGetNotificationsQuery(
+        page === 1 ? NOTIFICATIONS_FIRST_PAGE : { page, per_page: 20 },
+    )
+
+    const list = data?.data ?? []
+
+    const filteredList = useMemo(() => {
+        if (filter === "all") return list
+        return list.filter((item: { read?: boolean }) =>
+            filter === "read" ? !!item.read : !item.read,
+        )
+    }, [list, filter])
     const [read] = useReadNotificationMutation()
     const [unread] = useUnreadNotificationMutation()
 
@@ -22,6 +45,7 @@ const Notification = () => {
             } else {
                 await read({ uuid }).unwrap()
             }
+            dispatch(userApi.util.invalidateTags(["Notifications"]))
             refetch()
         } catch (error) {
             console.error(error)
@@ -54,11 +78,42 @@ const Notification = () => {
         )
     }
 
+    const emptyMessage =
+        list.length === 0
+            ? "No notifications"
+            : filter === "read"
+              ? "No read notifications"
+              : filter === "unread"
+                ? "No unread notifications"
+                : "No notifications"
+
     return (
         <Wrapper>
             <View style={styles.container}>
+                <View style={styles.chipRow}>
+                    {FILTER_OPTIONS.map((o) => {
+                        const isActive = filter === o.key
+                        return (
+                            <TouchableOpacity
+                                key={o.key}
+                                style={[styles.chip, isActive && styles.chipActive]}
+                                onPress={() => setFilter(o.key)}
+                                activeOpacity={0.85}
+                            >
+                                <Text
+                                    color={isActive ? colors.white : colors.icon_gray}
+                                    size={13}
+                                    weight={isActive ? "semibold" : "regular"}
+                                >
+                                    {o.label}
+                                </Text>
+                            </TouchableOpacity>
+                        )
+                    })}
+                </View>
+
                 <FlatList
-                    data={data?.data || []}
+                    data={filteredList}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                     onRefresh={refetch}
@@ -67,7 +122,7 @@ const Notification = () => {
                     ListEmptyComponent={
                         !isFetching ? (
                             <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                                <Text color={colors.white}>No Notifications</Text>
+                                <Text color={colors.white}>{emptyMessage}</Text>
                             </View>
                         ) : null
                     }

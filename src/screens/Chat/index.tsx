@@ -133,7 +133,7 @@ const Chat = () => {
     }
 
     return (
-        <Wrapper bottom_bar>
+        <Wrapper hide_bottom_bar>
             {/* Header */}
             <View style={styles.header_container}>
                 <View style={styles.search_container}>

@@ -11,6 +11,7 @@ import AppWrapper from './src/components/AppWrapper';
 import { ModalProvider } from './src/contexts/ModalContext';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
 import { persistor, store } from './src/redux/Store';
+import { setupForegroundPushHandlers } from './src/services/push/pushNotifications';
 import colors from './src/utils/colors';
 import { navigationRef } from './src/utils/navigation';
 import NetworkLogger from 'react-native-network-logger';
@@ -26,7 +27,17 @@ function App() {
     setTimeout(() => {
       BootSplash.hide();
     }, 1000)
-  }, [])
+  }, []);
+
+  useEffect(() => {
+    let teardown: (() => void) | undefined;
+    setupForegroundPushHandlers().then(unsub => {
+      teardown = unsub;
+    });
+    return () => {
+      teardown?.();
+    };
+  }, []);
 
   const navTheme = {
     ...DefaultTheme,
@@ -66,7 +77,7 @@ function App() {
                   </View>
                 </TouchableOpacity> */}
 
-                <Modal
+                {/* <Modal
                   visible={showNetworkLogger}
                   animationType="slide"
                   onRequestClose={() => setShowNetworkLogger(false)}
@@ -85,7 +96,7 @@ function App() {
                     </View>
                     <NetworkLogger theme="dark" />
                   </View>
-                </Modal>
+                </Modal> */}
 
               </ModalProvider>
             </MenuProvider>

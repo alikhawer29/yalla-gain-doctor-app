@@ -10,7 +10,7 @@ import {
 } from '../../../redux/Apis/Auth';
 import { logout } from '../../../redux/Slices/AuthSlice';
 import { navigateAndSimpleReset } from '../../../utils/navigation';
-import { getDeviceToken, getDeviceType } from '../../../utils/device';
+import { getDeviceType, getFcmDeviceToken } from '../../../utils/device';
 import { ROUTES } from '../../../utils/routes';
 import { VERIFY_OTP_SCHEMA } from '../../../utils/validators';
 
@@ -48,11 +48,12 @@ const useVerifyEmailOtpController = () => {
   const onSubmit = useCallback(
     async (values: { otp: string }) => {
       try {
+        const device_token = await getFcmDeviceToken();
         await verifyOtp({
           email: params.email,
           otp: values.otp,
           device_type: getDeviceType(),
-          device_token: getDeviceToken(),
+          device_token,
         }).unwrap();
         showOkModal(
           {
