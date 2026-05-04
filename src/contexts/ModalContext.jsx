@@ -29,7 +29,6 @@ export const ModalProvider = ({ children }) => {
     });
 
     useEffect(() => {
-        console.log("Modal state changed:", { isVisible, modalType });
     }, [isVisible, modalType]);
 
     const showOkModal = (data, onConfirm, onCancel) => {
@@ -68,7 +67,6 @@ export const ModalProvider = ({ children }) => {
     };
 
     const showInputModal = (data, onConfirm, onCancel) => {
-        console.log("showInputModal called with data:", data);
         setModalType('input');
         setModalContent({
             ...data,

@@ -1,4 +1,13 @@
-import messaging, { AuthorizationStatus } from '@react-native-firebase/messaging';
+import {
+  getAPNSToken,
+  getInitialNotification,
+  getMessaging,
+  getToken,
+  onMessage,
+  onNotificationOpenedApp,
+  registerDeviceForRemoteMessages,
+  requestPermission,
+} from '@react-native-firebase/messaging';
 import notifee, { EventType } from '@notifee/react-native';
 import { AppState, type AppStateStatus, PermissionsAndroid, Platform } from 'react-native';
 import {
@@ -6,6 +15,8 @@ import {
   ensureAndroidNotificationChannel,
 } from './fcmDisplay';
 import { invalidateNotificationsList } from './invalidateNotificationsList';
+
+const messaging = getMessaging();
 
 /**
  * Optional: handle taps / cold start; extend when the API sends `data` routes.
@@ -18,6 +29,11 @@ function handleNotificationData(_data?: Record<string, string> | object): void {
 /**
  * Requests notification permission, registers for remote messages (iOS),
  * and returns the FCM registration token (empty string if unavailable).
+ *
+ * On iOS we always register with APNs and retry `getToken`: returning early when
+ * alert permission is denied left `device_token` empty so APIs that fall back to
+ * `device_type` looked like they only received `ios`. FCM can still mint a token
+ * after APNs registration; the token may also lag briefly after registration.
  */
 export async function getFcmDeviceToken(): Promise<string> {
   try {
@@ -27,19 +43,40 @@ export async function getFcmDeviceToken(): Promise<string> {
       );
     }
 
-    const authStatus = await messaging().requestPermission();
-    const enabled =
-      authStatus === AuthorizationStatus.AUTHORIZED ||
-      authStatus === AuthorizationStatus.PROVISIONAL ||
-      authStatus === AuthorizationStatus.EPHEMERAL;
+    await requestPermission(messaging);
 
     if (Platform.OS === 'ios') {
-      if (!enabled) return '';
-      await messaging().registerDeviceForRemoteMessages();
+      await registerDeviceForRemoteMessages(messaging);
+      // Native delegate sets FIRMessaging APNs token asynchronously after registration.
+      await new Promise<void>(resolve => setTimeout(resolve, 400));
+      for (let i = 0; i < 30; i++) {
+        try {
+          const apns = await getAPNSToken(messaging);
+          if (apns != null) break;
+        } catch {
+          /* not registered yet — keep polling */
+        }
+        await new Promise<void>(resolve => setTimeout(resolve, 120));
+      }
     }
 
-    const token = await messaging().getToken();
-    return token ?? '';
+    const readToken = async (): Promise<string> => {
+      try {
+        return (await getToken(messaging)) ?? '';
+      } catch {
+        return '';
+      }
+    };
+
+    let token = await readToken();
+    if (Platform.OS === 'ios' && !token) {
+      for (let attempt = 0; attempt < 15; attempt++) {
+        await new Promise<void>(resolve => setTimeout(resolve, 250));
+        token = await readToken();
+        if (token) break;
+      }
+    }
+    return token;
   } catch {
     return '';
   }
@@ -52,12 +89,12 @@ export async function getFcmDeviceToken(): Promise<string> {
 export async function setupForegroundPushHandlers(): Promise<() => void> {
   await ensureAndroidNotificationChannel();
 
-  const unsubOnMessage = messaging().onMessage(async remoteMessage => {
+  const unsubOnMessage = onMessage(messaging, async remoteMessage => {
     await displayNotificationFromRemoteMessage(remoteMessage);
     invalidateNotificationsList();
   });
 
-  const unsubOpened = messaging().onNotificationOpenedApp(remoteMessage => {
+  const unsubOpened = onNotificationOpenedApp(messaging, remoteMessage => {
     handleNotificationData(remoteMessage?.data as Record<string, string> | undefined);
     invalidateNotificationsList();
   });
@@ -68,7 +105,7 @@ export async function setupForegroundPushHandlers(): Promise<() => void> {
     }
   });
 
-  const initialRemote = await messaging().getInitialNotification();
+  const initialRemote = await getInitialNotification(messaging);
   if (initialRemote?.data) {
     handleNotificationData(initialRemote.data as Record<string, string>);
   }

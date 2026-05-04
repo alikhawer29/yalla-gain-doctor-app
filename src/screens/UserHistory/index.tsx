@@ -90,7 +90,7 @@ const UserHistory = () => {
                     ItemSeparatorComponent={() => <Seperator />}
                     refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onReload} />}
                     contentContainerStyle={globalStyles.bottom_scrollable_space_with_bottombar}
-                    ListEmptyComponent={() => <Empty message="No Request Found" />}
+                    ListEmptyComponent={() => <Empty message="No Booking Found" />}
                     style={{ marginTop: heightPixel(15) }}
                     renderItem={({ item }) => <ServiceCard data={item} onPress={() => onPressCard(item?.id)} />}
                 />

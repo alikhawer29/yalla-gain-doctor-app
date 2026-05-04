@@ -84,7 +84,7 @@ const ServiceLogs = () => {
                 ItemSeparatorComponent={() => <Seperator />}
                 refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onReload} />}
                 contentContainerStyle={globalStyles.bottom_scrollable_space}
-                ListEmptyComponent={() => <Empty message="No Request Found" />}
+                ListEmptyComponent={() => <Empty message="No Appointment Found" />}
                 style={{ marginTop: heightPixel(15) }}
                 renderItem={({ item }) => <ServiceCard data={item} onPress={() => onPressCard(item?.id)} />}
             />

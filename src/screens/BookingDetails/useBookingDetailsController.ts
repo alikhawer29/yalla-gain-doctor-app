@@ -260,7 +260,6 @@ const useBookingDetailsController = () => {
       if (isErrorWithCode(err) && err.code === errorCodes.OPERATION_CANCELED) {
         return;
       }
-      console.log('Prescription document picker error:', err);
     }
   };
   const onSavePrescription = async () => {
@@ -421,16 +420,10 @@ const useBookingDetailsController = () => {
         zoomDetails.zoom_start_url || zoomDetails.zoom_api?.start_url;
       let zakToken: string | undefined;
 
-      console.log('Zoom Details - startUrl:', startUrl);
-
       if (startUrl) {
         const zakMatch = startUrl.match(/[?&]zak=([^&]+)/);
         if (zakMatch && zakMatch[1]) {
           zakToken = decodeURIComponent(zakMatch[1]);
-          console.log(
-            'Zoom Details - ZAK token extracted successfully, length:',
-            zakToken.length,
-          );
         } else {
           console.error(
             'Zoom Details - Failed to extract ZAK token from URL:',
@@ -443,9 +436,6 @@ const useBookingDetailsController = () => {
 
       const meetingNumber =
         zoomDetails.zoom_meeting_id || zoomDetails.zoom_api?.id;
-
-      console.log('Zoom Details - Meeting number:', meetingNumber);
-      console.log('Zoom Details - Has ZAK token:', !!zakToken);
 
       if (!zakToken) {
         setIsStartingSession(false);
@@ -481,8 +471,6 @@ const useBookingDetailsController = () => {
         });
         return;
       }
-
-      console.log('Zoom Details - Navigating to Zoom meeting with ZAK token');
 
       // Navigate to Zoom meeting with zak token for host to start
       navigate(
@@ -522,7 +510,6 @@ const useBookingDetailsController = () => {
   };
 
   const onUserProgress = () => {
-    console.log('data?.data?.user?.id', data?.data?.user?.id);
     navigate(
       NAVIGATORS.BOTTOM as any,
       {

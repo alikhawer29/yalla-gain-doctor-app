@@ -66,7 +66,6 @@ const ZoomMeetingContent = () => {
         // Handle Android back button
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (hasJoinedRef.current && !isLeavingRef.current) {
-                console.log("Zoom Meeting - Back button pressed during meeting, blocking")
                 return true // Block back button during meeting
             }
             return false
@@ -87,7 +86,6 @@ const ZoomMeetingContent = () => {
                 const emitter = new NativeEventEmitter(zoomNative)
                 stateSub = emitter.addListener('onMeetingStateChange', (payload: { state: number }) => {
                     const state = payload?.state
-                    console.log("Zoom Meeting - Native meeting state:", state)
                     if (
                         state === MEETING_STATE.ENDED ||
                         state === MEETING_STATE.DISCONNECTING ||
@@ -95,13 +93,11 @@ const ZoomMeetingContent = () => {
                         state === MEETING_STATE.IDLE
                     ) {
                         if (hasJoinedRef.current && !isLeavingRef.current) {
-                            console.log("Zoom Meeting - Meeting ended via native event, navigating back")
                             handleMeetingEnd()
                         }
                     }
                 })
                 errorSub = emitter.addListener('onMeetingError', (payload: { error: number; message?: string }) => {
-                    console.log("Zoom Meeting - Native meeting error:", payload)
                 })
             } catch (e) {
                 console.warn("Zoom Meeting - Failed to subscribe to RNZoomSDK events:", e)
@@ -124,22 +120,13 @@ const ZoomMeetingContent = () => {
         if (hasJoinedRef.current && !isLeavingRef.current && joinTimeRef.current > 0) {
             const timeSinceJoin = Date.now() - joinTimeRef.current
             if (timeSinceJoin < 3000) {
-                console.log("Zoom Meeting - Ignoring app state change too soon after join (", timeSinceJoin, "ms)")
                 appStateRef.current = nextAppState
                 return
             }
         }
 
-        console.log("========================================")
-        console.log("Zoom Meeting - App state changed:", appStateRef.current, "->", nextAppState)
-        console.log("Zoom Meeting - Has joined:", hasJoinedRef.current)
-        console.log("Zoom Meeting - Is leaving:", isLeavingRef.current)
-        console.log("Zoom Meeting - Time since join:", joinTimeRef.current > 0 ? Date.now() - joinTimeRef.current : 0, "ms")
-        console.log("========================================")
-
         // When app goes to background (Zoom takes over)
         if (appStateRef.current === 'active' && nextAppState.match(/inactive|background/)) {
-            console.log("Zoom Meeting - App went to background, Zoom native UI is now active")
         }
 
         // When app comes back to foreground, assume the Zoom meeting is over
@@ -150,7 +137,6 @@ const ZoomMeetingContent = () => {
             hasJoinedRef.current &&
             !isLeavingRef.current
         ) {
-            console.log("Zoom Meeting - App returned to foreground after meeting - user left the meeting")
             handleMeetingEnd()
         }
 
@@ -159,30 +145,22 @@ const ZoomMeetingContent = () => {
 
     const handleMeetingEnd = async () => {
         if (isLeavingRef.current) {
-            console.log("Zoom Meeting - Already leaving, ignoring duplicate call")
             return
         }
 
-        console.log("Zoom Meeting - Handling meeting end")
         isLeavingRef.current = true
         setIsEndingMeeting(true)
 
         // Call the end meeting API if appointment ID is available and we haven't called it yet
         if (meetingParams?.appointment_id && !hasEndedMeetingRef.current) {
             try {
-                console.log("Zoom Meeting - Calling end meeting API for appointment:", meetingParams.appointment_id)
                 hasEndedMeetingRef.current = true
                 await endZoomMeeting(meetingParams.appointment_id).unwrap()
-                console.log("Zoom Meeting - Successfully called end meeting API")
             } catch (err: any) {
                 console.error("Zoom Meeting - Error calling end meeting API:", err)
                 // Don't block navigation if API call fails
             }
         } else {
-            console.log("Zoom Meeting - Skipping end API call:", {
-                hasAppointmentId: !!meetingParams?.appointment_id,
-                alreadyCalled: hasEndedMeetingRef.current
-            })
         }
 
         cleanup()
@@ -209,12 +187,9 @@ const ZoomMeetingContent = () => {
             let retries = 0
             const maxRetries = 15
 
-            console.log("Zoom Meeting - Waiting for SDK initialization...")
-
             while (!isInitialized && retries < maxRetries) {
                 try {
                     isInitialized = await zoom.isInitialized()
-                    console.log(`Zoom Meeting - Initialization check ${retries + 1}/${maxRetries}: ${isInitialized ? 'Initialized' : 'Not initialized yet'}`)
                     if (!isInitialized) {
                         await new Promise<void>(resolve => setTimeout(() => resolve(), 500))
                         retries++
@@ -232,8 +207,6 @@ const ZoomMeetingContent = () => {
                 setIsInitializing(false)
                 return
             }
-
-            console.log("Zoom Meeting - SDK initialized successfully, requesting permissions...")
 
             // Request camera and microphone permissions before starting meeting
             const permissionsGranted = await ensurePermissions(
@@ -254,8 +227,6 @@ const ZoomMeetingContent = () => {
                 return
             }
 
-            console.log("Zoom Meeting - Permissions granted, starting meeting as host...")
-
             // Wait to ensure SDK is fully ready
             await new Promise<void>(resolve => setTimeout(() => resolve(), 1000))
 
@@ -269,12 +240,6 @@ const ZoomMeetingContent = () => {
             // If zak_token is provided, use it; otherwise fall back to signature
             const zoomAccessToken = meetingParams.zak_token
 
-            console.log("Zoom Meeting - Token check:")
-            console.log("  - Has zak_token:", !!meetingParams.zak_token)
-            console.log("  - Has signature:", !!meetingParams.signature)
-            console.log("  - zak_token length:", meetingParams.zak_token?.length || 0)
-            console.log("  - Using token type:", meetingParams.zak_token ? "ZAK" : "signature")
-
             if (!zoomAccessToken) {
                 throw new Error("Zoom access token (ZAK token or signature) is required to start meeting")
             }
@@ -282,10 +247,6 @@ const ZoomMeetingContent = () => {
             if (!meetingParams.zak_token) {
                 console.warn("Zoom Meeting - WARNING: No ZAK token provided! Meeting may ask for passcode.")
             }
-
-            console.log("Zoom Meeting - Calling startMeeting as host...")
-            console.log("Zoom Meeting - Meeting number:", meetingNumber)
-            console.log("Zoom Meeting - Access token length:", zoomAccessToken.length)
 
             // Use startMeeting instead of joinMeeting for host
             // The doctor creates the meeting, so they need to START it, not just join
@@ -312,9 +273,6 @@ const ZoomMeetingContent = () => {
                 result = undefined
             }
 
-            console.log("Zoom Meeting - startMeeting result:", result)
-            console.log("Zoom Meeting - startMeeting error:", startMeetingError)
-
             // Check for success: result === 0 means success in Zoom SDK
             // If result is undefined but no error was thrown, it might be iOS-specific behavior
             if (startMeetingError) {
@@ -324,7 +282,6 @@ const ZoomMeetingContent = () => {
                 setIsInitializing(false)
             } else if (result === 0) {
                 // Explicit success (result === 0)
-                console.log("Zoom Meeting - Successfully started meeting as host")
                 hasJoinedRef.current = true
                 setInMeeting(true)
                 setIsInitializing(false)
@@ -344,7 +301,6 @@ const ZoomMeetingContent = () => {
                 // But to be safe, we'll show a helpful error message
                 const hasAllParams = meetingNumber && zoomAccessToken && meetingParams.password
                 if (hasAllParams && permissionsGranted) {
-                    console.log("Zoom Meeting - All params and permissions OK, assuming success (iOS behavior)")
                     hasJoinedRef.current = true
                     setInMeeting(true)
                     setIsInitializing(false)
@@ -370,7 +326,6 @@ const ZoomMeetingContent = () => {
 
     const cleanup = () => {
         try {
-            console.log("Zoom Meeting - Cleaning up")
             // The SDK will handle cleanup when the meeting ends
             // We don't need to explicitly leave since user already left via Zoom UI
         } catch (err) {
@@ -382,18 +337,15 @@ const ZoomMeetingContent = () => {
         const appointmentId = meetingParams?.appointment_id
 
         if (navigation.canGoBack()) {
-            console.log("Zoom Meeting - Navigating back to previous screen")
             navigation.goBack()
             return
         }
 
         if (appointmentId != null) {
-            console.log("Zoom Meeting - Navigating to Booking Details:", appointmentId)
             ;(navigation as any).navigate(ROUTES.BOOKING_DETAILS, { id: appointmentId })
             return
         }
 
-        console.log("Zoom Meeting - Navigating to Home")
         navigation.navigate('Home' as never)
     }
 
@@ -494,16 +446,6 @@ const ZoomMeeting = () => {
             </View>
         )
     }
-
-    console.log("Zoom Meeting - Initializing with:", {
-        hasSignature: !!meetingParams.signature,
-        hasZakToken: !!meetingParams.zak_token,
-        hasMeetingNumber: !!meetingParams.meeting_number,
-        hasPassword: !!meetingParams.password,
-        signatureLength: meetingParams.signature?.length || 0,
-        zakTokenLength: meetingParams.zak_token?.length || 0,
-        meetingNumber: meetingParams.meeting_number,
-    })
 
     return (
         <ZoomSDKProvider

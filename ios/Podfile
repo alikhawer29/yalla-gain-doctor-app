@@ -24,6 +24,9 @@ end
 target 'YallaGainDoctor' do
   config = use_native_modules!
 
+  # Swift pods (e.g. FirebaseCoreInternal) need module maps when linking GoogleUtilities as static libs.
+  pod 'GoogleUtilities', :modular_headers => true
+
   use_react_native!(
     :path => config[:reactNativePath],
     # An absolute path to your application root.

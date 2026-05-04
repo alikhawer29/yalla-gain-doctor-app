@@ -10,7 +10,6 @@ const errorLogger = () => next => action => {
 
     // Skip showing error toast for "Meeting not created yet" - this is expected for new appointments
     if (message?.toLowerCase().includes('meeting not created yet')) {
-      console.log('Skipping error toast for:', message);
       return next(action);
     }
 

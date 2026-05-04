@@ -23,7 +23,6 @@ const HelpDesk = () => {
                 title: "Rate App",
                 message: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod"
             }, (rating: number) => {
-                console.log("Rated:", rating)
             })
         },
         { icon: images.helpdesk.aboutus, title: "About Us", onPress: () => navigate(ROUTES.ABOUT_US) },

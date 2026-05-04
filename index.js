@@ -3,7 +3,7 @@
  */
 
 import '@react-native-firebase/app';
-import messaging from '@react-native-firebase/messaging';
+import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
 import notifee from '@notifee/react-native';
 import { AppRegistry } from 'react-native';
 import { startNetworkLogging } from 'react-native-network-logger';
@@ -15,7 +15,7 @@ import {
 } from './src/services/push/fcmDisplay';
 import { invalidateNotificationsList } from './src/services/push/invalidateNotificationsList';
 
-messaging().setBackgroundMessageHandler(async remoteMessage => {
+setBackgroundMessageHandler(getMessaging(), async remoteMessage => {
   await ensureAndroidNotificationChannel();
   await displayNotificationFromRemoteMessage(remoteMessage);
   invalidateNotificationsList();
