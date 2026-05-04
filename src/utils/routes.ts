@@ -350,6 +350,8 @@ const ROUTES_OPTIONS = [
     right: 'notifications',
     logo: false,
     title: 'Wallet',
+    bottom_tab: false,
+    
   },
   {
     route_name: ROUTES.WITHDRAW_AMOUNT,
@@ -357,6 +359,7 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Payment',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.FAQ,
@@ -427,6 +430,7 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Withdraw',
+    bottom_tab: false,
   },
   {
     route_name: ROUTES.WALLET_TRANSACTION_LOGS,
@@ -434,6 +438,7 @@ const ROUTES_OPTIONS = [
     right: null,
     logo: false,
     title: 'Transaction Logs',
+    bottom_tab: false,
   },
 ] as const;
 

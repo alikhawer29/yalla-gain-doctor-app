@@ -1,6 +1,6 @@
 import { useNavigation, useRoute } from "@react-navigation/native"
 import { useEffect, useState, useRef } from "react"
-import { View, StyleSheet, StatusBar, AppState, AppStateStatus, BackHandler, Platform } from "react-native"
+import { View, StyleSheet, StatusBar, AppState, AppStateStatus, BackHandler, Platform, NativeEventEmitter, NativeModules, EmitterSubscription } from "react-native"
 import { ZoomSDKProvider, useZoom } from "@zoom/meetingsdk-react-native"
 import Loader from "../../components/Loader"
 import Text from "../../components/Text"
@@ -11,6 +11,20 @@ import { goBack } from "../../utils/navigation"
 import usePermissions from "../../hooks/usePermissions"
 import { RESULTS } from "react-native-permissions"
 import { useEndZoomMeetingMutation } from "../../redux/Apis/User"
+import { ROUTES } from "../../utils/routes"
+
+// Mirrors iOS `MobileRTCMeetingState` enum exposed by the patched RNZoomSDK module.
+// See node_modules/@zoom/meetingsdk-react-native/ios/ZoomHeaders/MobileRTCConstants.h
+const MEETING_STATE = {
+    IDLE: 0,
+    CONNECTING: 1,
+    WAITING_FOR_HOST: 2,
+    IN_MEETING: 3,
+    DISCONNECTING: 4,
+    RECONNECTING: 5,
+    FAILED: 6,
+    ENDED: 7,
+} as const
 
 interface ZoomMeetingParams {
     sdk_key: string
@@ -31,6 +45,7 @@ const ZoomMeetingContent = () => {
     const [isInitializing, setIsInitializing] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [inMeeting, setInMeeting] = useState(false)
+    const [isEndingMeeting, setIsEndingMeeting] = useState(false)
     const appStateRef = useRef(AppState.currentState)
     const hasJoinedRef = useRef(false)
     const isLeavingRef = useRef(false)
@@ -57,23 +72,58 @@ const ZoomMeetingContent = () => {
             return false
         })
 
-        // Listen for app state changes
+        // Listen for app state changes (Android fallback; also iOS in some flows)
         const subscription = AppState.addEventListener('change', handleAppStateChange)
+
+        // Subscribe to the patched RNZoomSDK native events so we can auto-navigate the
+        // moment the host ends the meeting. This is the only reliable signal on iOS
+        // because the Zoom SDK presents a full-screen modal that does not trigger an
+        // AppState change when dismissed.
+        let stateSub: EmitterSubscription | null = null
+        let errorSub: EmitterSubscription | null = null
+        const zoomNative = (NativeModules as any).RNZoomSDK
+        if (zoomNative) {
+            try {
+                const emitter = new NativeEventEmitter(zoomNative)
+                stateSub = emitter.addListener('onMeetingStateChange', (payload: { state: number }) => {
+                    const state = payload?.state
+                    console.log("Zoom Meeting - Native meeting state:", state)
+                    if (
+                        state === MEETING_STATE.ENDED ||
+                        state === MEETING_STATE.DISCONNECTING ||
+                        state === MEETING_STATE.FAILED ||
+                        state === MEETING_STATE.IDLE
+                    ) {
+                        if (hasJoinedRef.current && !isLeavingRef.current) {
+                            console.log("Zoom Meeting - Meeting ended via native event, navigating back")
+                            handleMeetingEnd()
+                        }
+                    }
+                })
+                errorSub = emitter.addListener('onMeetingError', (payload: { error: number; message?: string }) => {
+                    console.log("Zoom Meeting - Native meeting error:", payload)
+                })
+            } catch (e) {
+                console.warn("Zoom Meeting - Failed to subscribe to RNZoomSDK events:", e)
+            }
+        }
 
         return () => {
             backHandler.remove()
             subscription.remove()
+            stateSub?.remove()
+            errorSub?.remove()
             cleanup()
         }
     }, [])
 
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
-        // Don't process app state changes immediately after joining - give native activity time to launch
-        // Increase delay to 10 seconds to allow Zoom UI to fully load and user to interact
+        // Give the native activity a short grace window after joining so the initial
+        // "active -> inactive -> active" burst from permission dialogs doesn't trigger
+        // the end-meeting flow.
         if (hasJoinedRef.current && !isLeavingRef.current && joinTimeRef.current > 0) {
             const timeSinceJoin = Date.now() - joinTimeRef.current
-            if (timeSinceJoin < 10000) {
-                // Too soon after join, ignore app state changes to prevent premature navigation
+            if (timeSinceJoin < 3000) {
                 console.log("Zoom Meeting - Ignoring app state change too soon after join (", timeSinceJoin, "ms)")
                 appStateRef.current = nextAppState
                 return
@@ -90,28 +140,18 @@ const ZoomMeetingContent = () => {
         // When app goes to background (Zoom takes over)
         if (appStateRef.current === 'active' && nextAppState.match(/inactive|background/)) {
             console.log("Zoom Meeting - App went to background, Zoom native UI is now active")
-            // Don't do anything here - just let the native activity take over
         }
 
-        // When app comes back to foreground (user left Zoom)
-        // Only navigate back if:
-        // 1. We've been in the meeting for at least 10 seconds (to avoid false positives during join)
-        // 2. The app was in background/inactive and is now active
-        // 3. We haven't already started leaving
+        // When app comes back to foreground, assume the Zoom meeting is over
+        // (host pressed End, participant left, or the native UI was dismissed).
         if (
             appStateRef.current.match(/inactive|background/) &&
             nextAppState === 'active' &&
             hasJoinedRef.current &&
-            !isLeavingRef.current &&
-            joinTimeRef.current > 0 &&
-            Date.now() - joinTimeRef.current > 10000
+            !isLeavingRef.current
         ) {
             console.log("Zoom Meeting - App returned to foreground after meeting - user left the meeting")
-            // User left the Zoom meeting, navigate back
-            // Add a delay to ensure React Native is ready
-            setTimeout(() => {
-                handleMeetingEnd()
-            }, 1000)
+            handleMeetingEnd()
         }
 
         appStateRef.current = nextAppState
@@ -125,6 +165,7 @@ const ZoomMeetingContent = () => {
 
         console.log("Zoom Meeting - Handling meeting end")
         isLeavingRef.current = true
+        setIsEndingMeeting(true)
 
         // Call the end meeting API if appointment ID is available and we haven't called it yet
         if (meetingParams?.appointment_id && !hasEndedMeetingRef.current) {
@@ -145,10 +186,7 @@ const ZoomMeetingContent = () => {
         }
 
         cleanup()
-
-        setTimeout(() => {
-            navigateBack()
-        }, 500)
+        navigateBack()
     }
 
     const initializeAndJoin = async () => {
@@ -341,15 +379,22 @@ const ZoomMeetingContent = () => {
     }
 
     const navigateBack = () => {
-        setTimeout(() => {
-            if (navigation.canGoBack()) {
-                console.log("Zoom Meeting - Navigating back")
-                navigation.goBack()
-            } else {
-                console.log("Zoom Meeting - Navigating to Home")
-                navigation.navigate('Home' as never)
-            }
-        }, 100)
+        const appointmentId = meetingParams?.appointment_id
+
+        if (navigation.canGoBack()) {
+            console.log("Zoom Meeting - Navigating back to previous screen")
+            navigation.goBack()
+            return
+        }
+
+        if (appointmentId != null) {
+            console.log("Zoom Meeting - Navigating to Booking Details:", appointmentId)
+            ;(navigation as any).navigate(ROUTES.BOOKING_DETAILS, { id: appointmentId })
+            return
+        }
+
+        console.log("Zoom Meeting - Navigating to Home")
+        navigation.navigate('Home' as never)
     }
 
     const onGoBack = () => {
@@ -366,6 +411,19 @@ const ZoomMeetingContent = () => {
                 <Loader mode="secondary" />
                 <Text style={styles.loadingText} color={colors.white}>
                     Joining meeting...
+                </Text>
+            </View>
+        )
+    }
+
+    // Show a clean loader while we run the end-meeting API and navigate back
+    if (isEndingMeeting) {
+        return (
+            <View style={styles.container}>
+                <StatusBar barStyle="light-content" backgroundColor={colors.black} />
+                <Loader mode="secondary" />
+                <Text style={styles.loadingText} color={colors.white}>
+                    Ending meeting...
                 </Text>
             </View>
         )
@@ -399,8 +457,10 @@ const ZoomMeetingContent = () => {
         )
     }
 
-    // Once joined, keep a minimal view mounted
-    // The Zoom native UI will take over the screen
+    // Once joined, keep a minimal view mounted behind the Zoom native UI.
+    // The Zoom SDK will overlay its own UI on top; when the host ends the meeting
+    // the patched RNZoomSDK module fires an `onMeetingStateChange` native event
+    // which triggers `handleMeetingEnd` and navigates us back automatically.
     if (inMeeting) {
         return (
             <View style={styles.meetingContainer}>
@@ -480,19 +540,6 @@ const styles = StyleSheet.create({
     meetingContainer: {
         flex: 1,
         backgroundColor: colors.black,
-        justifyContent: "flex-end",
-        padding: heightPixel(20),
-    },
-    inMeetingFooter: {
-        width: "100%",
-        alignItems: "center",
-    },
-    inMeetingText: {
-        textAlign: "center",
-        marginBottom: heightPixel(10),
-    },
-    inMeetingButton: {
-        width: "100%",
     },
 })
 

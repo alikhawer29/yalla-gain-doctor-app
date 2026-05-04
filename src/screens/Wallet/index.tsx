@@ -33,7 +33,7 @@ const Wallet = () => {
 
     return (
         <Wrapper
-            bottom_bar
+            // bottom_bar
             scrollable
             loading={isWalletLoading}
             refreshControl={
@@ -50,7 +50,7 @@ const Wallet = () => {
                 <Text size={22} weight="bold" color={colors.white} style={styles.title}>
                     Available balance
                 </Text>
-                <Text size={26} weight="bold" color={colors.white} style={styles.subtitle}>
+                <Text size={21} weight="bold" color={colors.white} style={styles.subtitle}>
                     {balanceCurrency} {availableAed.toFixed(2)}
                 </Text>
 

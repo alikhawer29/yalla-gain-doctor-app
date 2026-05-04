@@ -8,6 +8,23 @@ import { navigate } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
 import { LOGIN_SCHEMA, USER_REGISTER_SCHEMA } from '../../../utils/validators';
 
+const PENDING_OTP_PHRASE = 'pending OTP verification';
+
+const isPendingOtpVerificationResponse = (body: any) => {
+  const message = body?.message;
+  if (typeof message === 'string' && message.includes(PENDING_OTP_PHRASE)) {
+    return true;
+  }
+  const statusErrors = body?.errors?.status;
+  if (Array.isArray(statusErrors)) {
+    return statusErrors.some(
+      (s: unknown) =>
+        typeof s === 'string' && s.includes(PENDING_OTP_PHRASE),
+    );
+  }
+  return false;
+};
+
 const initial = {
   login: {
     email: '',
@@ -26,7 +43,7 @@ const initial = {
 };
 
 const useAddEntryController = () => {
-  const formik_ref = useRef(null);
+  const formik_ref = useRef<{ resetForm?: () => void } | null>(null);
 
   const [login, { isLoading: isLoginLoading }] = useLoginMutation();
   const [signup, { isLoading: isSignupLoading }] = useSignupMutation();
@@ -48,8 +65,22 @@ const useAddEntryController = () => {
           }).unwrap();
         } catch (e: any) {
           const body = e?.data ?? {};
+          const emailForOtp =
+            (typeof body?.email === 'string' && body.email) || data.email;
+
           if (body?.can_resend_otp === true && body?.email) {
-            navigate(ROUTES.VERIFY_EMAIL_OTP, { email: body.email });
+            navigate(ROUTES.VERIFY_EMAIL_OTP as any, {
+              email: body.email,
+              fromLogin: true,
+            } as any);
+          } else if (
+            isPendingOtpVerificationResponse(body) &&
+            emailForOtp
+          ) {
+            navigate(ROUTES.VERIFY_EMAIL_OTP as any, {
+              email: emailForOtp,
+              fromLogin: true,
+            } as any);
           }
         }
         return;
@@ -80,7 +111,7 @@ const useAddEntryController = () => {
           text1: 'Success',
           text2: message,
         });
-        navigate(ROUTES.VERIFY_EMAIL_OTP, { email });
+        navigate(ROUTES.VERIFY_EMAIL_OTP as any, { email } as any);
       } catch {
         // errors handled globally
       }

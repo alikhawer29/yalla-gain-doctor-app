@@ -189,7 +189,7 @@ const BookingDetails = () => {
                         <View style={styles.half_width_box}>
                             <Button onPress={onBookingHistory}
                                 type="outlined"
-                                text="View User Booking History"
+                                text="User Booking History"
                                 font_size={11} style={{
                                     height: heightPixel(30),
                                     marginRight: widthPixel(30),

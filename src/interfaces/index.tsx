@@ -37,7 +37,7 @@ export type AuthStackParamList = {
     Login: undefined
     ForgotPassword: { type: InputType }
     VerifyCode: { via: string, email: string, dialing_code: string, phone: string }
-    VerifyEmailOtp: { email: string }
+    VerifyEmailOtp: { email: string; fromLogin?: boolean }
     SetPassword: { via: string, email: string, dialing_code: string, phone: string, token: string }
 };
 

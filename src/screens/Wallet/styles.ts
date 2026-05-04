@@ -8,8 +8,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   coinImage: {
-    width: widthPixel(200),
-    height: heightPixel(200),
+    width: widthPixel(150),
+    height: heightPixel(150),
     marginTop: heightPixel(40),
   },
   title: {

@@ -27,7 +27,9 @@ const useVerifyEmailOtpController = () => {
   const formik_ref = useRef(null);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const { params } = useRoute<VerifyEmailOtpRouteProp>();
-  const [seconds, setSeconds] = useState(TIMER_SEC);
+  const initialTimerSeconds =
+    params.fromLogin === true ? 0 : TIMER_SEC;
+  const [seconds, setSeconds] = useState(initialTimerSeconds);
 
   const [verifyOtp, { isLoading }] = useVerifyOtpMutation();
   const [resendOtp, { isLoading: resendLoading }] = useResendOtpMutation();
