@@ -1,5 +1,5 @@
 import { FieldArray, Formik } from "formik"
-import { View } from "react-native"
+import { Image, View } from "react-native"
 import images from "../../assets/images"
 import Button from "../../components/Button"
 import Dropdown from "../../components/Dropdown"
@@ -142,7 +142,7 @@ const EditProfile = () => {
                                                         <View style={{ marginVertical: heightPixel(7.5) }}>
                                                             {certUri ? (
                                                                 <View style={{ marginBottom: heightPixel(7.5) }}>
-                                                                    <Icon source={{ uri: certUri }} size={180} rounded resize="cover" style={{ alignSelf: "flex-start" }} />
+                                                                    <Image source={{ uri: certUri }} style={{ height: heightPixel(200), width: "80%", borderRadius: heightPixel(10) }} resize="cover" />
                                                                     <Text size={12} color={colors.white} style={{ marginTop: 4 }}>Tap below to replace</Text>
                                                                 </View>
                                                             ) : null}

@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { getPhoneRules } from './phoneRules';
 
 export const LOGIN_SCHEMA = Yup.object().shape({
   email: Yup.string().email('Invalid email').required('Email is required'),
@@ -419,7 +420,23 @@ export const USER_REGISTER_SCHEMA = Yup.object().shape({
     .matches(/^[A-Z]{2}$/, 'Invalid country code format'),
   phone: Yup.string()
     .required('Mobile Number is required')
-    .matches(/^\d{7,15}$/, 'Phone number must be between 7 and 15 digits'),
+    .matches(/^\d+$/, 'Phone number must contain digits only')
+    .test('phone-country-length', 'Invalid phone number length for selected country', function (value) {
+      const { country_code } = this.parent;
+      if (!value) return true;
+      const { min, max } = getPhoneRules(country_code);
+      if (value.length < min) {
+        return this.createError({
+          message: `Phone number must be at least ${min} digits for the selected country`,
+        });
+      }
+      if (value.length > max) {
+        return this.createError({
+          message: `Phone number must be at most ${max} digits for the selected country`,
+        });
+      }
+      return true;
+    }),
 });
 
 export const SET_PASSWORD_SCHEMA = Yup.object().shape({

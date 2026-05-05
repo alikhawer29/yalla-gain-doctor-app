@@ -1,4 +1,4 @@
-import React, { FC, memo, useEffect, useState } from 'react';
+import React, { FC, memo, useEffect, useRef, useState } from 'react';
 import { LayoutAnimation, TextInput, TouchableOpacity, View } from 'react-native';
 import DatePicker from 'react-native-date-picker';
 import PhoneInput from "react-native-phone-number-input";
@@ -50,18 +50,22 @@ const Input: FC<IInput> = props => {
 
     const [toggleDate, dateOpen] = useToggle()
 
+    const phoneRef = useRef<PhoneInput>(null);
+
+
     return (
         <View style={styles.container}>
             {label && <Text size={16} weight="semibold" color={isFocused ? colors.white : colors.white} style={styles.label}>{label} {required && <Text size={12} weight="semibold" color={colors.danger} style={styles.label}>*</Text>}</Text>}
             {
                 type === "phone" ?
                     <PhoneInput
+                        ref={phoneRef}
                         layout='first'
                         disabled={disabled}
                         placeholder={placeholder}
                         defaultValue={value}
                         value={value}
-                        defaultCode={country}
+                        defaultCode={country as any}
                         onChangeText={onChangeText}
                         onChangeCountry={onChangeCountry}
                         containerStyle={[{ padding: 0, backgroundColor: colors.transparent, gap: heightPixel(10), width: "100%" }]}
@@ -72,7 +76,9 @@ const Input: FC<IInput> = props => {
                         countryPickerButtonStyle={{ borderWidth: heightPixel(1), borderColor: colors.white, borderRadius: heightPixel(5) }}
                         textInputProps={{
                             cursorColor: colors.primary,
-                            placeholderTextColor: colors.white
+                            placeholderTextColor: colors.white,
+                            maxLength: maxLength,
+                            keyboardType: 'number-pad',
                         }}
                         disableArrowIcon
                         countryPickerProps={{ renderFlagButton: false }}

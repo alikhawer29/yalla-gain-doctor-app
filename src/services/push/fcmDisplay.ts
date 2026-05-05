@@ -16,6 +16,7 @@ export async function ensureAndroidNotificationChannel(): Promise<void> {
 }
 
 /** Converts FCM data payload values to strings for Notifee. */
+/** Converts FCM data payload values to strings for Notifee. */
 function stringifyData(
   data?: FirebaseMessagingTypes.RemoteMessage['data'],
 ): Record<string, string> {

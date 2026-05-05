@@ -19,7 +19,7 @@ const MyProfile = () => {
     const user = useAppSelector(selectUser)
 
     const {
-        values:{ 
+        values: {
             isProfileDeleteLoading
         },
         functions: {

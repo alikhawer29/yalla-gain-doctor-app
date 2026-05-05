@@ -15,6 +15,7 @@ import Upload from "../../../components/Upload"
 import colors from "../../../utils/colors"
 import { GENDERS, LANGUAGES } from "../../../utils/data"
 import { heightPixel, normalizeDialingCode } from "../../../utils/helper"
+import { getPhoneRules } from "../../../utils/phoneRules"
 import { navigateAndSimpleReset } from "../../../utils/navigation"
 import { ROUTES } from "../../../utils/routes"
 import auth_styles from "../styles"
@@ -78,9 +79,11 @@ const RegisterForm = () => {
                             onChangeText={handleChange("phone")}
                             error={touched?.phone ? errors?.phone : ""}
                             country={data?.country_code}
+                            maxLength={getPhoneRules(data?.country_code).max}
                             onChangeCountry={e => {
                                 setFieldValue("country_code", e?.cca2)
                                 setFieldValue("dialing_code", normalizeDialingCode(e?.callingCode?.[0]))
+                                setFieldValue("phone", "")
                             }}
                         />
                         <Dropdown
