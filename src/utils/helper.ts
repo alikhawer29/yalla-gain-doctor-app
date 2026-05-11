@@ -1,5 +1,8 @@
 import { City, State } from 'country-state-city';
 import dayjs from 'dayjs';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(customParseFormat);
 import {
   Dimensions,
   Insets,
@@ -59,8 +62,45 @@ export const dateFormatter = (date: Date) => {
   return dayjs(date).format('YYYY-MM-DD');
 };
 
+/** e.g. "05/11/2026" → "May 11, 2026"; also accepts ISO and other dayjs-parsable strings. */
+export const formatLongDate = (input?: string | null) => {
+  if (input == null || input === '') return '';
+  const trimmed = String(input).trim();
+  const us = dayjs(trimmed, 'MM/DD/YYYY', true);
+  if (us.isValid()) return us.format('MMMM D, YYYY');
+  const dmy = dayjs(trimmed, 'DD/MM/YYYY', true);
+  if (dmy.isValid()) return dmy.format('MMMM D, YYYY');
+  const parsed = dayjs(trimmed);
+  return parsed.isValid() ? parsed.format('MMMM D, YYYY') : trimmed;
+};
+
 export const timeFormatter = (date: Date | string) => {
   return dayjs(date).format('hh:mm a');
+};
+
+/** "08:00:00" / "21:00:00" → "8:00 AM" / "9:00 PM" */
+export const formatTime12h = (input?: string | null): string => {
+  if (input == null || input === '') return '';
+  const trimmed = String(input).trim();
+  const strictFormats = ['HH:mm:ss', 'HH:mm', 'H:mm:ss', 'H:mm'] as const;
+  for (const fmt of strictFormats) {
+    const d = dayjs(trimmed, fmt, true);
+    if (d.isValid()) return d.format('h:mm A');
+  }
+  const loose = dayjs(trimmed);
+  return loose.isValid() ? loose.format('h:mm A') : trimmed;
+};
+
+export const formatTimeRange12h = (
+  start?: string | null,
+  end?: string | null,
+): string => {
+  const a = formatTime12h(start);
+  const b = formatTime12h(end);
+  if (!a && !b) return '';
+  if (!a) return b;
+  if (!b) return a;
+  return `${a} - ${b}`;
 };
 
 export const formatTimer = (s: number): string => {

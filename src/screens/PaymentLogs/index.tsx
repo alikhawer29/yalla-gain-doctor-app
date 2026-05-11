@@ -13,15 +13,15 @@ import Icon from '../../components/Icon';
 import images from '../../assets/images';
 import styles from './styles';
 import colors from '../../utils/colors';
-import { heightPixel, widthPixel } from '../../utils/helper';
+import { formatLongDate, heightPixel, widthPixel } from '../../utils/helper';
 import FilterModal from './FilterModal';
 import usePaymentLogsController from './usePaymentLogsController';
 import { PaymentLogItem } from '../../redux/Apis/User';
 
-const formatDisplayDate = (iso: string) => {
-    const d = dayjs(iso);
-    return d.isValid() ? d.format('DD/MM/YYYY') : iso;
-};
+// const formatDisplayDate = (iso: string) => {
+//     const d = dayjs(iso);
+//     return d.isValid() ? d.format('DD/MM/YYYY') : iso;
+// };
 
 const PaymentLogs = () => {
     const [filterVisible, setFilterVisible] = useState(false);
@@ -86,7 +86,7 @@ const PaymentLogs = () => {
             return (
                 <View style={styles.card}>
                     <View style={styles.cardRow}>
-                        <Coin label="Booking Id" value={`#${item.booking_id}`} />
+                        <Coin label="Booking Id" value={`#${item.id}`} />
                     </View>
                     <View style={styles.cardRow}>
                         <CoinWithIcon
@@ -95,7 +95,7 @@ const PaymentLogs = () => {
                         />
                     </View>
                     <View style={styles.cardRow}>
-                        <Coin label="Payment Date" value={formatDisplayDate(item.payment_date)} />
+                        <Coin label="Payment Date" value={formatLongDate(item.payment_date ?? '')} />
 
                     </View>
                     <View style={styles.cardRow}>

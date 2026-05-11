@@ -83,6 +83,16 @@ const ZoomMeetingContent = () => {
         const zoomNative = (NativeModules as any).RNZoomSDK
         if (zoomNative) {
             try {
+                // Android: real addListener/removeListeners are patched in RNZoomSDKModule.java.
+                // iOS: RCTEventEmitter already supports these; older RN needed JS stubs only on Android.
+                if (Platform.OS !== "ios") {
+                    if (!zoomNative.addListener) {
+                        zoomNative.addListener = () => {}
+                    }
+                    if (!zoomNative.removeListeners) {
+                        zoomNative.removeListeners = () => {}
+                    }
+                }
                 const emitter = new NativeEventEmitter(zoomNative)
                 stateSub = emitter.addListener('onMeetingStateChange', (payload: { state: number }) => {
                     const state = payload?.state
@@ -114,6 +124,15 @@ const ZoomMeetingContent = () => {
     }, [])
 
     const handleAppStateChange = (nextAppState: AppStateStatus) => {
+        // Android: Zoom launches a separate Activity. Pausing the React Activity fires
+        // background → active transitions that are NOT "meeting ended", which incorrectly
+        // called handleMeetingEnd() and popped the user home. Native onMeetingStateChange
+        // is patched for Android (see RNZoomSDKModule); rely on that instead.
+        if (Platform.OS === "android") {
+            appStateRef.current = nextAppState
+            return
+        }
+
         // Give the native activity a short grace window after joining so the initial
         // "active -> inactive -> active" burst from permission dialogs doesn't trigger
         // the end-meeting flow.
@@ -123,10 +142,6 @@ const ZoomMeetingContent = () => {
                 appStateRef.current = nextAppState
                 return
             }
-        }
-
-        // When app goes to background (Zoom takes over)
-        if (appStateRef.current === 'active' && nextAppState.match(/inactive|background/)) {
         }
 
         // When app comes back to foreground, assume the Zoom meeting is over

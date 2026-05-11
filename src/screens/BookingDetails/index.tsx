@@ -1,4 +1,4 @@
-import { View } from "react-native"
+import { View, RefreshControl } from "react-native"
 import Button from "../../components/Button"
 import Image from "../../components/Image"
 import Loader from "../../components/Loader"
@@ -7,7 +7,12 @@ import ScreenLoader from "../../components/ScreenLoader"
 import StatusBadge from "../../components/StatusBadge"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
-import { heightPixel, widthPixel } from "../../utils/helper"
+import {
+    formatLongDate,
+    formatTimeRange12h,
+    heightPixel,
+    widthPixel,
+} from "../../utils/helper"
 import styles from "./styles"
 import useBookingDetailsController from "./useBookingDetailsController"
 import Input from "../../components/Input"
@@ -22,6 +27,7 @@ const BookingDetails = () => {
             data,
             isUpdateLoading,
             isLoading,
+            isRefreshing,
             editMode,
             prescription,
             prescriptionFile,
@@ -39,6 +45,7 @@ const BookingDetails = () => {
             onBookingHistory,
             onPickPrescriptionFile,
             onUserProgress,
+            onRefreshBooking,
         }
     } = useBookingDetailsController()
 
@@ -95,32 +102,12 @@ const BookingDetails = () => {
                 return (
                     <View style={{ gap: heightPixel(10) }}>
                         {
-                            // handler?.editMode ? (
-                            //     <>
-                            //         <Button
-                            //             text="Save"
-                            //             onPress={handler?.onSavePrescription}
-                            //         />
-                            //         <Button
-                            //             text="Cancel"
-                            //             type="outlined"
-                            //             onPress={handler?.onEdit}
-                            //         />
-                            //     </>
-                            // ) : (
-                            //     <>
-                            //         <Button
-                            //             text="Edit"
-                            //             onPress={handler?.onEdit}
-                            //         />
                             <Button
                                 text="Start Session"
                                 onPress={handler?.onStartSession}
                                 type="outlined"
                                 loading={handler?.isStartingSession || false}
                             />
-                            // </>
-                            // )
                         }
                     </View >
                 )
@@ -165,7 +152,17 @@ const BookingDetails = () => {
     return (
         <>
             {isUpdateLoading && <ScreenLoader />}
-            <Wrapper scrollable>
+            <Wrapper
+                scrollable
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isRefreshing}
+                        onRefresh={onRefreshBooking}
+                        colors={[colors.primary]}
+                        tintColor={colors.primary}
+                    />
+                }
+            >
                 <Image style={styles.image} source={{ uri: data?.service?.image }} resize="cover" />
                 <View style={{ gap: heightPixel(15) }}>
                     <Row justify="space-between">
@@ -178,7 +175,12 @@ const BookingDetails = () => {
                     <Row>
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Appointment Time:</Text>
-                            <Text style={styles.value_text} color={colors.icon_gray}>{data?.appointment_start_time} - {data?.appointment_end_time}</Text>
+                            <Text style={styles.value_text} color={colors.icon_gray}>
+                                {formatTimeRange12h(
+                                    data?.appointment_start_time,
+                                    data?.appointment_end_time,
+                                )}
+                            </Text>
                         </View>
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Service Charges:</Text>
@@ -211,11 +213,11 @@ const BookingDetails = () => {
                     <Row>
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Booking Id:</Text>
-                            <Text style={styles.value_text} color={colors.icon_gray}>{data?.booking_id}</Text>
+                            <Text style={styles.value_text} color={colors.icon_gray}>#{data?.id}</Text>
                         </View>
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Booking Date:</Text>
-                            <Text style={styles.value_text} color={colors.icon_gray}>{data?.created_at}</Text>
+                            <Text style={styles.value_text} color={colors.icon_gray}>{formatLongDate(data?.created_at ?? '')}</Text>
                         </View>
                     </Row>
                     <Row>
@@ -232,11 +234,11 @@ const BookingDetails = () => {
 
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Appointment Date:</Text>
-                            <Text style={styles.value_text} color={colors.icon_gray}>{data?.appointment_date}</Text>
+                            <Text style={styles.value_text} color={colors.icon_gray}>{formatLongDate(data?.appointment_date ?? '')}</Text>
                         </View>
                     </Row>
                     <Row>
-                        <View style={styles.half_width_box}>
+                        <View style={styles.full_width_box}>
                             <Text weight="semibold">Email Address:</Text>
                             <Text style={styles.value_text} lines={1} color={colors.icon_gray}>{data?.email}</Text>
                         </View>
@@ -284,12 +286,15 @@ const BookingDetails = () => {
                             <Row>
                                 <View style={styles.half_width_box}>
                                     <Text weight="semibold">Session Date:</Text>
-                                    <Text style={styles.value_text} color={colors.icon_gray}>{data?.rescheduled_appointment_date}</Text>
+                                    <Text style={styles.value_text} color={colors.icon_gray}>{formatLongDate(data?.rescheduled_appointment_date ?? '')}</Text>
                                 </View>
                                 <View style={styles.half_width_box}>
                                     <Text weight="semibold">Session Time:</Text>
                                     <Text style={styles.value_text} color={colors.icon_gray}>
-                                        {data?.rescheduled_appointment_start_time} - {data?.rescheduled_appointment_end_time}
+                                        {formatTimeRange12h(
+                                            data?.rescheduled_appointment_start_time,
+                                            data?.rescheduled_appointment_end_time,
+                                        )}
                                     </Text>
                                 </View>
                             </Row>

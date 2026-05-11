@@ -1,25 +1,16 @@
-import { FlatList, View } from "react-native"
 import { useNavigation } from "@react-navigation/native"
-import { LineChart } from "react-native-chart-kit"
-import fonts from "../../assets/fonts"
+import { FlatList, RefreshControl, View } from "react-native"
 import images from "../../assets/images"
-import InfoCard from "../../components/Cards/InfoCard"
-import ProgressCard from "../../components/Cards/ProgressCard"
-import TrackingCard from "../../components/Cards/TrackingCard"
-import VideoCard from "../../components/Cards/VideoCard"
-import WorkoutCard from "../../components/Cards/WorkoutCard"
+import Button from "../../components/Button"
 import ServiceLogCard from "../../components/Cards/ServiceLogCard"
+import Empty from "../../components/Empty"
+import Image from "../../components/Image"
 import ProfileHeader from "../../components/ProfileHeader"
-import Row from "../../components/Row"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
-import Button from "../../components/Button"
 import colors from "../../utils/colors"
+import { formatLongDate, heightPixel } from "../../utils/helper"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
-import { PROGRESS_TRACKING, RECOMMENDED_VIDEOS, WORKOUT_PLANS } from "../../utils/data"
-import { font, heightPixel, vw, widthPixel } from "../../utils/helper"
-import Image from "../../components/Image"
-import Empty from "../../components/Empty"
 import useServiceLogsController from "../ServiceLogs/useServiceLogsController"
 
 const Home = () => {
@@ -39,15 +30,11 @@ const Home = () => {
     const {
         values: {
             data,
-            isLoading,
-            selected,
-            search
+            isPullRefreshing,
         },
         functions: {
-            onReload,
+            onPullRefresh,
             onPressCard,
-            onChangeStatus,
-            onSearch
         }
     } = useServiceLogsController()
 
@@ -56,7 +43,18 @@ const Home = () => {
     }
 
     return (
-        <Wrapper bottom_bar scrollable>
+        <Wrapper
+            bottom_bar
+            scrollable
+            refreshControl={
+                <RefreshControl
+                    refreshing={isPullRefreshing}
+                    onRefresh={onPullRefresh}
+                    colors={[colors.primary]}
+                    tintColor={colors.primary}
+                />
+            }
+        >
             <View style={{ gap: heightPixel(10) }}>
                 <ProfileHeader />
                 <View style={{ gap: heightPixel(10), marginVertical: heightPixel(15) }}>
@@ -69,8 +67,8 @@ const Home = () => {
                         data={data}
                         renderItem={({ item }) => (
                             <ServiceLogCard
-                                date={item?.appointment_date}
-                                bookingId={item?.booking_id}
+                                date={formatLongDate(item?.appointment_date ?? '')}
+                                bookingId={`#${item?.id}`}
                                 amount={item?.service?.charges || 0}
                                 status={item?.status}
                                 onPress={() => onPressCard(item?.id)}

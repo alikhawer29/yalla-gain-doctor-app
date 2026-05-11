@@ -2,6 +2,35 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../../Store';
 import { DOCTOR_TRAINER_API_BASE_URL } from '../../../utils/data';
 
+export type HealthProgressBmiPoint = {
+  month: number;
+  label: string;
+  bmi: number;
+};
+
+export type HealthProgressCaloriesPoint = {
+  day: string;
+  calories: number;
+};
+
+export type HealthProgressData = {
+  user_id?: number;
+  year?: number;
+  total_steps?: number;
+  total_calories?: number;
+  bmi_monthly_graph?: HealthProgressBmiPoint[];
+  calories_graph?: {
+    filter?: string;
+    data?: HealthProgressCaloriesPoint[];
+  };
+};
+
+export type HealthProgressApiResponse = {
+  data?: HealthProgressData;
+  status?: boolean;
+  message?: string;
+};
+
 export type PaymentLogItem = {
   id: number;
   booking_id: string;
@@ -612,6 +641,24 @@ export const userApi = createApi({
       providesTags: ['UaeTransactionLogs'],
       keepUnusedDataFor: 0,
     }),
+    getHealthProgress: builder.query<
+      HealthProgressApiResponse,
+      {
+        userId: string | number;
+        calories_filter: 'weekly' | 'monthly';
+        year?: number;
+      }
+    >({
+      query: ({ userId, calories_filter, year }) => ({
+        url: `user/${userId}/health-progress`,
+        method: 'GET',
+        params: {
+          calories_filter,
+          ...(year != null ? { year } : {}),
+        },
+      }),
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -677,4 +724,5 @@ export const {
   useCreateUaeBeneficiaryMutation,
   useWithdrawUaeBeneficiaryMutation,
   useGetUaeTransactionLogsQuery,
+  useGetHealthProgressQuery,
 } = userApi;

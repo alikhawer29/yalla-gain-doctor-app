@@ -8,7 +8,7 @@
     "lint": "eslint .",
     "start": "react-native start",
     "test": "jest",
-    "postinstall": "patch-package"
+    "postinstall": "patch-package && node scripts/apply-zoom-android-patch.js"
   },
   "dependencies": {
     "@notifee/react-native": "^9.1.8",
@@ -23,7 +23,7 @@
     "@react-navigation/native": "^7.1.18",
     "@react-navigation/stack": "^7.4.9",
     "@reduxjs/toolkit": "^2.9.0",
-    "@zoom/meetingsdk-react-native": "^6.6.0",
+    "@zoom/meetingsdk-react-native": "6.6.0",
     "country-state-city": "^3.2.1",
     "formik": "^2.4.6",
     "react": "19.1.1",

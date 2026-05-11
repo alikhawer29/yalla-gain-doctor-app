@@ -1,6 +1,5 @@
 import { useIsFocused } from '@react-navigation/native';
 import { useEffect, useState } from 'react';
-import { CommonActions } from '@react-navigation/native';
 import useSearch from '../../hooks/useSearch';
 import { useGetBookingsQuery } from '../../redux/Apis/User';
 import { STATUSES } from '../../utils/data';
@@ -22,6 +21,8 @@ const useServiceLogsController = () => {
     to: '',
   });
 
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
+
   const {
     data,
     isFetching: isLoading,
@@ -37,7 +38,7 @@ const useServiceLogsController = () => {
     if (isFocused) {
       refetch();
     }
-  }, [isFocused]);
+  }, [isFocused, refetch]);
 
   const onPressCard = (id: number) => {
     if (navigationRef.isReady()) {
@@ -75,10 +76,21 @@ const useServiceLogsController = () => {
     });
     toggleFilterModal();
   };
+
+  const onPullRefresh = async () => {
+    setIsPullRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsPullRefreshing(false);
+    }
+  };
+
   return {
     values: {
       data: data?.data || [],
       isLoading,
+      isPullRefreshing,
       selected,
       search,
       filterModalVisible,
@@ -88,6 +100,7 @@ const useServiceLogsController = () => {
     },
     functions: {
       onReload: refetch,
+      onPullRefresh,
       onPressCard,
       onRequests,
       onChangeStatus,

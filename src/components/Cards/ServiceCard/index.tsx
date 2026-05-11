@@ -9,6 +9,7 @@ import Icon from "../../Icon"
 import Row from "../../Row"
 import StatusBadge from "../../StatusBadge"
 import Text from "../../Text"
+import { formatLongDate } from "../../../utils/helper"
 
 dayjs.extend(customParseFormat)
 
@@ -19,11 +20,11 @@ const ServiceCard = ({ data, onPress }) => {
                 <Row justify="space-between">
                     <Row align="center" gap={10}>
                         <Icon source={images.calendar} size={14} />
-                        <Text size={13}>{data?.appointment_date || data?.rescheduled_appointment_date}</Text>
+                        <Text size={13}>{formatLongDate((data?.appointment_date || data?.rescheduled_appointment_date) ?? '')}</Text>
                     </Row>
                     <StatusBadge status={data?.status === 'completed' ? 'Past' : data?.status} />
                 </Row>
-                <Text weight="semibold">Booking Id :<Text weight="semibold" color={colors.icon_gray}> {data?.booking_id}</Text></Text>
+                <Text weight="semibold">Booking Id :<Text weight="semibold" color={colors.icon_gray}> #{data?.id}</Text></Text>
                 <Row>
                     <Row style={{ flex: 0.5 }} align="center" gap={5}>
                         <Text weight="semibold">Charges :<Text weight="semibold" color={colors.icon_gray}> {data?.amount_paid}</Text><Text size={12} weight="semibold" color={colors.icon_gray}> Coins</Text></Text>

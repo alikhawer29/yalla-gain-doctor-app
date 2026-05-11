@@ -1,0 +1,174 @@
+// Self-contained build.gradle for @zoom/meetingsdk-react-native 6.6.0
+// Replaces the original which references a missing versions.gradle file.
+// - jcenter() removed (Gradle 9 drops it)
+// - zoomsdk pinned to 6.6.0 (6.7.2 has Compose API incompatibilities)
+// - All library versions inlined so no external versions.gradle is needed.
+
+buildscript {
+  def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : '1.9.24'
+
+  repositories {
+    google()
+    mavenCentral()
+  }
+
+  dependencies {
+    classpath 'com.android.tools.build:gradle:8.10.0'
+    classpath "org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlin_version"
+  }
+}
+
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+
+def getExtOrDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : project.properties['ZoomMeetingSDK_' + name]
+}
+
+def getExtOrIntegerDefault(name) {
+  return rootProject.ext.has(name) ? rootProject.ext.get(name) : (project.properties['ZoomMeetingSDK_' + name]).toInteger()
+}
+
+android {
+  compileSdk 36
+  buildToolsVersion "35.0.0"
+
+  defaultConfig {
+    minSdkVersion 28
+    targetSdkVersion 36
+    versionCode 1
+    versionName "1.0"
+    ndkVersion = "24.0.8215888"
+  }
+
+  viewBinding {
+    enabled = true
+  }
+
+  buildTypes {
+    release {
+      minifyEnabled false
+    }
+  }
+  lintOptions {
+    disable 'GradleCompatible'
+  }
+  compileOptions {
+    sourceCompatibility JavaVersion.VERSION_11
+    targetCompatibility JavaVersion.VERSION_11
+  }
+  kotlinOptions {
+    jvmTarget = "11"
+  }
+  namespace 'com.reactnativezoom.sdk'
+}
+
+repositories {
+  google()
+  mavenCentral()
+
+  def found = false
+  def defaultDir = null
+  def androidSourcesName = 'React Native sources'
+
+  if (rootProject.ext.has('reactNativeAndroidRoot')) {
+    defaultDir = rootProject.ext.get('reactNativeAndroidRoot')
+  } else {
+    defaultDir = new File(projectDir, '/../../../node_modules/react-native/android')
+  }
+
+  if (defaultDir.exists()) {
+    maven {
+      url defaultDir.toString()
+      name androidSourcesName
+    }
+    logger.info(":${project.name}:reactNativeAndroidRoot ${defaultDir.canonicalPath}")
+    found = true
+  } else {
+    def parentDir = rootProject.projectDir
+    1.upto(5, {
+      if (found) return true
+      parentDir = parentDir.parentFile
+      def androidPrebuiltBinaryDir = new File(parentDir, 'node_modules/react-native/android')
+      def androidSourcesDir = new File(parentDir, 'node_modules/react-native')
+      if (androidPrebuiltBinaryDir.exists()) {
+        maven { url androidPrebuiltBinaryDir.toString(); name androidSourcesName }
+        logger.info(":${project.name}:reactNativeAndroidRoot ${androidPrebuiltBinaryDir.canonicalPath}")
+        found = true
+      } else if (androidSourcesDir.exists()) {
+        maven { url androidSourcesDir.toString(); name androidSourcesName }
+        logger.info(":${project.name}:reactNativeAndroidRoot ${androidSourcesDir.canonicalPath}")
+        found = true
+      }
+    })
+  }
+
+  if (!found) {
+    throw new GradleException(
+      "${project.name}: unable to locate React Native android sources. " +
+      "Ensure you have you installed React Native as a dependency in your project and try again."
+    )
+  }
+}
+
+def kotlin_version = rootProject.ext.has('kotlinVersion') ? rootProject.ext.get('kotlinVersion') : '1.9.24'
+
+dependencies {
+  api 'com.facebook.react:react-android:+'
+
+  implementation 'androidx.security:security-crypto:1.1.0-alpha06'
+  implementation 'androidx.multidex:multidex:2.0.1'
+  implementation 'androidx.appcompat:appcompat:1.7.0'
+  implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+  implementation 'androidx.recyclerview:recyclerview:1.3.2'
+  implementation 'androidx.fragment:fragment-ktx:1.8.2'
+  implementation 'androidx.core:core-ktx:1.13.1'
+  implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.8.3'
+  implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.8.3'
+  implementation 'androidx.lifecycle:lifecycle-service:2.8.3'
+  implementation 'androidx.lifecycle:lifecycle-livedata-ktx:2.8.3'
+  implementation 'androidx.work:work-runtime-ktx:2.9.1'
+  implementation 'androidx.window:window:1.3.0'
+  implementation 'androidx.window:window-java:1.3.0'
+  implementation 'androidx.webkit:webkit:1.12.1'
+  implementation 'androidx.camera:camera-core:1.3.4'
+  implementation 'androidx.camera:camera-camera2:1.3.4'
+  implementation 'androidx.camera:camera-lifecycle:1.3.4'
+  implementation 'androidx.camera:camera-view:1.3.4'
+  implementation 'androidx.profileinstaller:profileinstaller:1.3.1'
+
+  // Compose — keep at 1.7.x to stay compatible with app's compose-bom:2024.09.00
+  implementation 'androidx.compose.material3:material3:1.3.0'
+  implementation 'androidx.compose.material3:material3-window-size-class:1.3.0'
+  implementation 'androidx.compose.ui:ui-tooling-preview:1.7.3'
+  implementation 'androidx.constraintlayout:constraintlayout-compose:1.0.1'
+  implementation 'androidx.activity:activity-compose:1.9.2'
+  implementation 'androidx.lifecycle:lifecycle-runtime-compose:2.8.3'
+  implementation 'androidx.navigation:navigation-compose:2.7.7'
+  implementation 'androidx.lifecycle:lifecycle-viewmodel-compose:2.8.3'
+
+  implementation 'com.google.android.material:material:1.12.0'
+  implementation 'com.google.code.gson:gson:2.10.1'
+  implementation 'com.google.mlkit:text-recognition:16.0.0'
+
+  implementation 'com.github.bumptech.glide:glide:4.16.0'
+  implementation 'com.github.bumptech.glide:annotations:4.16.0'
+
+  implementation 'io.coil-kt:coil:2.6.0'
+  implementation 'io.coil-kt:coil-gif:2.6.0'
+
+  implementation 'com.airbnb.android:lottie:6.4.0'
+
+  implementation 'io.reactivex.rxjava2:rxandroid:2.1.1'
+
+  implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk8:$kotlin_version"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-core-jvm:1.8.1"
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-swing:1.8.1"
+  implementation 'org.jetbrains:annotations:23.0.0'
+  implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
+
+  // Zoom SDK 6.6.0 — compatible Compose version, avoids 6.7.2 Compose API mismatch
+  implementation 'us.zoom.meetingsdk:zoomsdk:6.6.0'
+}

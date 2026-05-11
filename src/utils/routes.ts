@@ -104,8 +104,8 @@ const ROUTES_OPTIONS = [
   },
   {
     route_name: ROUTES.PROGRESS_TRACKING,
-    left: 'drawer',
-    right: 'notifications',
+    left: 'back',
+    right: null,
     logo: false,
     title: 'Progress Tracking',
   },
@@ -352,7 +352,6 @@ const ROUTES_OPTIONS = [
     logo: false,
     title: 'Wallet',
     bottom_tab: false,
-    
   },
   {
     route_name: ROUTES.WITHDRAW_AMOUNT,

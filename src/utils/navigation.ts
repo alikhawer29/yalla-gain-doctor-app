@@ -41,6 +41,23 @@ export const navigateToMyProfileTab = () => {
     );
 };
 
+/** Drawer → Progress Tracking stack (screen was never mounted under Bottom tabs). */
+export const navigateToProgressTracking = (id?: string | number) => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.dispatch(
+        CommonActions.navigate({
+            name: NAVIGATORS.DRAWER as keyof CombinedParamList,
+            params: {
+                screen: NAVIGATORS.PROGRESS_TRACKING_STACK,
+                params: {
+                    screen: ROUTES.PROGRESS_TRACKING,
+                    params: id != null ? { id } : undefined,
+                },
+            },
+        } as never),
+    );
+};
+
 export const navigateAndSimpleReset = <RouteName extends keyof CombinedParamList>(
     name: RouteName,
     index: number = 0,

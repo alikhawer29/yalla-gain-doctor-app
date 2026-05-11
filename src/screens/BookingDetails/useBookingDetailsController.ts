@@ -17,8 +17,8 @@ import {
   useCreateZoomMeetingMutation,
   useLazyGetZoomDetailsQuery,
 } from '../../redux/Apis/User';
-import { navigate } from '../../utils/navigation';
-import { ROUTES, NAVIGATORS } from '../../utils/routes';
+import { navigate, navigateToProgressTracking } from '../../utils/navigation';
+import { ROUTES } from '../../utils/routes';
 import useToggle from '../../hooks/useToggle';
 import { RootStackParamList } from '../../interfaces';
 import { RouteProp } from '@react-navigation/native';
@@ -67,6 +67,7 @@ const useBookingDetailsController = () => {
     type: string;
   } | null>(null);
   const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
   const { data, refetch, isLoading, isSuccess } = useGetBookingByIdQuery(
     params?.id as string | number,
@@ -510,18 +511,17 @@ const useBookingDetailsController = () => {
   };
 
   const onUserProgress = () => {
-    navigate(
-      NAVIGATORS.BOTTOM as any,
-      {
-        screen: NAVIGATORS.PROGRESS_TRACKING_STACK,
-        params: {
-          screen: ROUTES.PROGRESS_TRACKING,
-          params: {
-            id: data?.data?.user?.id,
-          },
-        },
-      } as any,
-    );
+    navigateToProgressTracking(data?.data?.user?.id);
+  };
+
+  const onRefreshBooking = async () => {
+    if (!params?.id) return;
+    setIsPullRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsPullRefreshing(false);
+    }
   };
 
   return {
@@ -534,6 +534,7 @@ const useBookingDetailsController = () => {
         isCreatingZoomMeeting ||
         isStartingSession,
       isLoading,
+      isRefreshing: isPullRefreshing,
       editMode,
       prescription,
       prescriptionFile,
@@ -550,6 +551,7 @@ const useBookingDetailsController = () => {
       onBookingHistory,
       onPickPrescriptionFile,
       onUserProgress,
+      onRefreshBooking,
     },
   };
 };
