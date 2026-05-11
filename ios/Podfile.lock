@@ -109,7 +109,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - meetingsdk-react-native (6.7.2):
+  - meetingsdk-react-native (6.6.0):
     - React-Core
     - ZoomMeetingSDK (= 6.6.0)
   - nanopb (3.30910.0):
@@ -2747,7 +2747,7 @@ PODS:
     - RNFBApp
     - SocketRocket
     - Yoga
-  - RNGestureHandler (2.31.1):
+  - RNGestureHandler (2.31.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -3016,7 +3016,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNWorklets (0.6.1):
+  - RNWorklets (0.7.4):
     - boost
     - DoubleConversion
     - fast_float
@@ -3043,10 +3043,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets (= 0.6.1)
+    - RNWorklets/worklets (= 0.7.4)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets (0.6.1):
+  - RNWorklets/worklets (0.7.4):
     - boost
     - DoubleConversion
     - fast_float
@@ -3073,10 +3073,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets/apple (= 0.6.1)
+    - RNWorklets/worklets/apple (= 0.7.4)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets/apple (0.6.1):
+  - RNWorklets/worklets/apple (0.7.4):
     - boost
     - DoubleConversion
     - fast_float
@@ -3427,7 +3427,7 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   hermes-engine: 8642d8f14a548ab718ec112e9bebdfdd154138b5
   LoaderKit: f0348704893b1f95d723038184171a5a026041ed
-  meetingsdk-react-native: 24960907ccfe5cbc55fa910a13e490ec87be0a18
+  meetingsdk-react-native: eef5511189d6363aeb209c09b66eaf4fef544443
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NVActivityIndicatorView-ObjC: a2394f53d84c32f71823743a2030e0378d40332f
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
@@ -3505,13 +3505,13 @@ SPEC CHECKSUMS:
   RNCAsyncStorage: 302f2fac014fd450046c120567ca364632da682b
   RNFBApp: 8d1edeee2c5d71802978ce645b8260e8324fb192
   RNFBMessaging: 529676384abe288d7cddd5e74d5f3aa381066264
-  RNGestureHandler: ef91d0340bc8e179c323608dd1dd7a16a7e187ac
+  RNGestureHandler: 6e505168ae5134d4b89afc0d724fac76acdae298
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
   RNPermissions: 969c32c78b15731e3b6f6cb6b2ebd60d89b58235
   RNReanimated: c76d99de4022813a27dc3745d8d2de4230ac5fef
   RNScreens: 7179cc1ba31b4e18ed29f10abf20c24a7961cf4c
   RNSVG: 963192f99dc2014b9aef2aa4f0ae621cb92fbe5e
-  RNWorklets: daa0a3e7946a9c4042f3a962c87a12dc5bc0badd
+  RNWorklets: d0114f9d0c47b1678c93ae8ed32e5c4948e5cca7
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: edeb9900b9e5bb5b27b9a6a2d5914e4fe4033c1b
   ZoomMeetingSDK: e1ce033e8dc31cf946ef0a09971e2a8ec4e26cd0

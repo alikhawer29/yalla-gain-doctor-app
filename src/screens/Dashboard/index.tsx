@@ -106,7 +106,7 @@ const Dashboard = () => {
                                 {isStatsLoading ? (
                                     <ActivityIndicator color={colors.primary} />
                                 ) : (
-                                    <Text size={30} weight="bold" color={colors.white}>{total_bookings}</Text>
+                                    <Text size={23} weight="bold" color={colors.white}>{total_bookings}</Text>
                                 )}
                             </View>
                         </Row>
@@ -150,7 +150,7 @@ const Dashboard = () => {
                                 {isStatsLoading ? (
                                     <ActivityIndicator color={colors.primary} />
                                 ) : (
-                                    <Text size={30} weight="bold" color={colors.white}>{total_earnings}</Text>
+                                    <Text size={23} weight="bold" color={colors.white}>{total_earnings}</Text>
                                 )}
                                 <View style={styles.yallaCoinRow}>
                                     <Icon source={images.coin} size={12} />

@@ -74,18 +74,16 @@ const ZoomMeetingContent = () => {
         // Listen for app state changes (Android fallback; also iOS in some flows)
         const subscription = AppState.addEventListener('change', handleAppStateChange)
 
-        // Subscribe to the patched RNZoomSDK native events so we can auto-navigate the
-        // moment the host ends the meeting. This is the only reliable signal on iOS
-        // because the Zoom SDK presents a full-screen modal that does not trigger an
-        // AppState change when dismissed.
+        // Subscribe to RNZoomSDK native events for meeting state changes.
+        // Android: addListener/removeListeners stubs are required before creating the emitter.
+        // iOS: RNZoomSDK.m is patched to declare these events in supportedEvents and emit
+        //      them from the MobileRTCMeetingServiceDelegate callback, so no stubs needed.
         let stateSub: EmitterSubscription | null = null
         let errorSub: EmitterSubscription | null = null
         const zoomNative = (NativeModules as any).RNZoomSDK
         if (zoomNative) {
             try {
-                // Android: real addListener/removeListeners are patched in RNZoomSDKModule.java.
-                // iOS: RCTEventEmitter already supports these; older RN needed JS stubs only on Android.
-                if (Platform.OS !== "ios") {
+                if (Platform.OS === "android") {
                     if (!zoomNative.addListener) {
                         zoomNative.addListener = () => {}
                     }
@@ -107,8 +105,7 @@ const ZoomMeetingContent = () => {
                         }
                     }
                 })
-                errorSub = emitter.addListener('onMeetingError', (payload: { error: number; message?: string }) => {
-                })
+                errorSub = emitter.addListener('onMeetingError', (_payload: { error: number; message?: string }) => {})
             } catch (e) {
                 console.warn("Zoom Meeting - Failed to subscribe to RNZoomSDK events:", e)
             }
@@ -351,13 +348,16 @@ const ZoomMeetingContent = () => {
     const navigateBack = () => {
         const appointmentId = meetingParams?.appointment_id
 
-        if (navigation.canGoBack()) {
-            navigation.goBack()
+        // Always go to Booking Details when we have an appointment ID so the
+        // user lands on the correct screen after the meeting ends (on iOS
+        // canGoBack() is true but goBack() would show a black/wrong screen).
+        if (appointmentId != null) {
+            ;(navigation as any).navigate(ROUTES.BOOKING_DETAILS, { id: appointmentId })
             return
         }
 
-        if (appointmentId != null) {
-            ;(navigation as any).navigate(ROUTES.BOOKING_DETAILS, { id: appointmentId })
+        if (navigation.canGoBack()) {
+            navigation.goBack()
             return
         }
 
