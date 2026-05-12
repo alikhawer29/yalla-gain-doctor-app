@@ -64,7 +64,7 @@ function App() {
                   <Toast />
                 </NavigationContainer>
 
-                <TouchableOpacity
+                {/* <TouchableOpacity
                   style={styles.floatingButton}
                   onPress={() => setShowNetworkLogger(true)}
                 >
@@ -75,9 +75,9 @@ function App() {
                       <View style={styles.wifiBar3} />
                     </View>
                   </View>
-                </TouchableOpacity>
+                </TouchableOpacity> */}
 
-                <Modal
+                {/* <Modal
                   visible={showNetworkLogger}
                   animationType="slide"
                   onRequestClose={() => setShowNetworkLogger(false)}
@@ -96,7 +96,7 @@ function App() {
                     </View>
                     <NetworkLogger theme="dark" />
                   </View>
-                </Modal>
+                </Modal> */}
 
               </ModalProvider>
             </MenuProvider>

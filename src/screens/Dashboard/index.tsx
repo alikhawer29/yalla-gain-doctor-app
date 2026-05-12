@@ -9,7 +9,7 @@ import Wrapper from '../../components/Wrapper';
 import Icon from '../../components/Icon';
 import Dropdown from '../../components/Dropdown';
 import colors from '../../utils/colors';
-import { font, heightPixel, vw, widthPixel } from '../../utils/helper';
+import { font, heightPixel, PAGE_WIDTH, vw, widthPixel } from '../../utils/helper';
 import styles from './styles';
 import useDashboardController from './useDashboardController';
 
@@ -18,6 +18,37 @@ const formatYAxisInteger = (yLabel: string) => {
     const n = parseFloat(String(yLabel).replace(/,/g, ''));
     if (!Number.isFinite(n)) return yLabel;
     return String(Math.round(n));
+};
+
+/** react-native-chart-kit uses `style.paddingRight` as the Y-axis / left gutter width. */
+const LINE_CHART_Y_GUTTER = widthPixel(24);
+const LINE_CHART_PADDING_BOTTOM = heightPixel(14);
+const LINE_CHART_PADDING_TOP = heightPixel(6);
+
+/** Y labels use textAnchor end at (gutter − offset); wider digits need a wider gutter or they clip on the left. */
+const lineChartYAxisGutter = (values: number[]) => {
+    const nums = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
+    const hi = nums.length ? Math.max(0, ...nums) : 0;
+    if (hi >= 100) return widthPixel(44);
+    if (hi >= 10) return widthPixel(40);
+    if (hi >= 2) return widthPixel(15);
+    return LINE_CHART_Y_GUTTER;
+};
+
+const miniBarChartWidth = Math.max(widthPixel(100), Math.round(vw * 48 - widthPixel(42)));
+const miniBarChartHeight = heightPixel(48);
+
+/** Fewer horizontal ticks when the range is small so rounded labels are not duplicated (e.g. 0,1,1,2,2). */
+const lineChartSegmentsForData = (values: number[]) => {
+    const nums = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
+    if (nums.length === 0) return 1;
+    const max = Math.max(0, ...nums);
+    const min = Math.min(0, ...nums);
+    const range = max - min;
+    if (range === 0) return 1;
+    if (range <= 2) return Math.max(1, Math.ceil(range));
+    if (range <= 5) return Math.ceil(range);
+    return 4;
 };
 
 const Dashboard = () => {
@@ -84,6 +115,10 @@ const Dashboard = () => {
         datasets: bookingsLineData.datasets,
     };
 
+    const earningsLineValues = earningsChartPayload.datasets[0]?.data ?? [];
+    const bookingsLineValues = bookingsChartPayload.datasets[0]?.data ?? [];
+    const lineChartWidth = PAGE_WIDTH - widthPixel(30);
+
     return (
         <Wrapper bottom_bar scrollable>
             <View style={styles.container}>
@@ -112,15 +147,15 @@ const Dashboard = () => {
                         </Row>
                         <View
                             style={{
-                                height: heightPixel(60),
-                                marginLeft: -widthPixel(40),
-                                marginBottom: -heightPixel(10),
+                                height: miniBarChartHeight,
+                                alignSelf: 'stretch',
+                                overflow: 'hidden',
                             }}
                         >
                             <BarChart
                                 data={miniBarData}
-                                width={vw * 45}
-                                height={heightPixel(80)}
+                                width={miniBarChartWidth}
+                                height={miniBarChartHeight}
                                 yAxisLabel=""
                                 yAxisSuffix=""
                                 chartConfig={{
@@ -130,9 +165,13 @@ const Dashboard = () => {
                                     fillShadowGradientOpacity: 1,
                                 }}
                                 withHorizontalLabels={false}
+                                withVerticalLabels={false}
                                 withInnerLines={false}
                                 showBarTops={false}
-                                style={{ paddingRight: 0 }}
+                                style={{
+                                    paddingRight: widthPixel(2),
+                                    paddingTop: heightPixel(2),
+                                }}
                                 flatColor={true}
                             />
                         </View>
@@ -162,15 +201,15 @@ const Dashboard = () => {
                         </Row>
                         <View
                             style={{
-                                height: heightPixel(60),
-                                marginLeft: -widthPixel(40),
-                                marginBottom: -heightPixel(10),
+                                height: miniBarChartHeight,
+                                alignSelf: 'stretch',
+                                overflow: 'hidden',
                             }}
                         >
                             <BarChart
                                 data={miniBarData}
-                                width={vw * 45}
-                                height={heightPixel(80)}
+                                width={miniBarChartWidth}
+                                height={miniBarChartHeight}
                                 yAxisLabel=""
                                 yAxisSuffix=""
                                 chartConfig={{
@@ -180,9 +219,13 @@ const Dashboard = () => {
                                     fillShadowGradientOpacity: 1,
                                 }}
                                 withHorizontalLabels={false}
+                                withVerticalLabels={false}
                                 withInnerLines={false}
                                 showBarTops={false}
-                                style={{ paddingRight: 0 }}
+                                style={{
+                                    paddingRight: widthPixel(2),
+                                    paddingTop: heightPixel(2),
+                                }}
                                 flatColor={true}
                             />
                         </View>
@@ -207,7 +250,7 @@ const Dashboard = () => {
                             />
                         </View>
                     </Row>
-                    <View style={{ marginLeft: -widthPixel(20), minHeight: heightPixel(220) }}>
+                    <View style={{ minHeight: heightPixel(220) }}>
                         {isEarningsGraphLoading ? (
                             <ActivityIndicator
                                 color={colors.primary}
@@ -216,7 +259,7 @@ const Dashboard = () => {
                         ) : (
                             <LineChart
                                 data={earningsChartPayload}
-                                width={vw * 100 - widthPixel(20)}
+                                width={lineChartWidth}
                                 height={heightPixel(220)}
                                 chartConfig={fullChartConfig}
                                 formatYLabel={formatYAxisInteger}
@@ -227,6 +270,13 @@ const Dashboard = () => {
                                 yAxisLabel=""
                                 yAxisSuffix=""
                                 fromZero={true}
+                                segments={lineChartSegmentsForData(earningsLineValues)}
+                                yLabelsOffset={widthPixel(4)}
+                                style={{
+                                    paddingRight: lineChartYAxisGutter(earningsLineValues),
+                                    paddingTop: LINE_CHART_PADDING_TOP,
+                                    paddingBottom: LINE_CHART_PADDING_BOTTOM,
+                                }}
                             />
                         )}
                     </View>
@@ -250,7 +300,7 @@ const Dashboard = () => {
                             />
                         </View>
                     </Row>
-                    <View style={{ marginLeft: -widthPixel(20), minHeight: heightPixel(220) }}>
+                    <View style={{ minHeight: heightPixel(220) }}>
                         {isBookingsGraphLoading ? (
                             <ActivityIndicator
                                 color={colors.primary}
@@ -259,7 +309,7 @@ const Dashboard = () => {
                         ) : (
                             <LineChart
                                 data={bookingsChartPayload}
-                                width={vw * 100 - widthPixel(20)}
+                                width={lineChartWidth}
                                 height={heightPixel(220)}
                                 chartConfig={fullChartConfig}
                                 formatYLabel={formatYAxisInteger}
@@ -270,6 +320,13 @@ const Dashboard = () => {
                                 yAxisLabel=""
                                 yAxisSuffix=""
                                 fromZero={true}
+                                segments={lineChartSegmentsForData(bookingsLineValues)}
+                                yLabelsOffset={widthPixel(4)}
+                                style={{
+                                    paddingRight: lineChartYAxisGutter(bookingsLineValues),
+                                    // paddingTop: LINE_CHART_PADDING_TOP,
+                                    paddingBottom: LINE_CHART_PADDING_BOTTOM,
+                                }}
                             />
                         )}
                     </View>

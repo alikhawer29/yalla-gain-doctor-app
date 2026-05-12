@@ -13,6 +13,7 @@ const styles = StyleSheet.create({
     width: '48%',
     height: heightPixel(150),
     justifyContent: 'space-between',
+    overflow: 'hidden',
   },
   topCardValue: {
     fontSize: heightPixel(24),

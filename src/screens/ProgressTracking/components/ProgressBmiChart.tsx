@@ -25,6 +25,9 @@ const PAD_R = 12;
 const PAD_TOP = 16;
 const PAD_BOTTOM = 36;
 const GRID_SEGMENTS = 4;
+const DOT_R = 5;
+/** Keep dot stroke fully inside the card (circle extends above the bar top). */
+const MIN_BAR_TOP = PAD_TOP + DOT_R + 4;
 
 function formatYTick(val: number, maxScale: number): string {
   if (val <= 0) return '0';
@@ -62,15 +65,17 @@ const ProgressBmiChart = ({ width, height = 240, data }: Props) => {
       const centerX = CHART_LEFT + step * i + step / 2;
       const h = maxScaleInner <= 0 ? 0 : (v / maxScaleInner) * innerH;
       const barHeight = Math.max(h, v > 0 ? 3 : 1);
+      const rawTop = baselineY - barHeight;
+      const y = Math.max(MIN_BAR_TOP, rawTop);
+      const drawHeight = baselineY - y;
       const x = centerX - barW / 2;
-      const y = baselineY - barHeight;
       const rx = Math.min(barW / 2, 10);
       const active = maxRaw > 0 && hi === i;
       return {
         x,
         y,
         w: barW,
-        h: barHeight,
+        h: drawHeight,
         rx,
         fill: active ? colors.primary : GRAY_BAR,
         cx: centerX,
@@ -148,7 +153,7 @@ const ProgressBmiChart = ({ width, height = 240, data }: Props) => {
             x={b.x}
             y={b.y}
             width={b.w}
-            height={baselineY - b.y}
+            height={b.h}
             rx={b.rx}
             ry={b.rx}
             fill={b.fill}

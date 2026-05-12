@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   Dimensions,
@@ -29,14 +29,27 @@ type ProgressTrackingNavigationProp = StackNavigationProp<
   'ProgressTracking'
 >;
 
-/** Whole numbers on calories Y axis (chart-kit defaults to long decimals). */
-const formatCaloriesYAxis = (yLabel: string) => {
-  const n = parseFloat(String(yLabel).replace(/,/g, ''));
-  if (!Number.isFinite(n)) return yLabel;
-  return String(Math.round(n));
+/** Center card + summary: preserve small fractional kcal (API uses floats). */
+const formatCaloriesForDisplay = (kcal: number): string => {
+  if (!Number.isFinite(kcal)) return '0';
+  if (kcal === 0) return '0';
+  const a = Math.abs(kcal);
+  if (a < 1) {
+    return new Intl.NumberFormat(undefined, {
+      maximumFractionDigits: 2,
+      minimumFractionDigits: 0,
+    }).format(kcal);
+  }
+  if (a < 100) {
+    return new Intl.NumberFormat(undefined, {
+      maximumFractionDigits: 1,
+      minimumFractionDigits: 0,
+    }).format(kcal);
+  }
+  return Math.round(kcal).toLocaleString();
 };
 
-const chartConfig = {
+const chartConfigBase = {
   backgroundGradientFrom: colors.blackish_gray,
   backgroundGradientFromOpacity: 0,
   backgroundGradientTo: colors.blackish_gray,
@@ -44,8 +57,6 @@ const chartConfig = {
   color: (opacity = 1) => `rgba(17, 128, 118, ${opacity})`,
   /** Must be `(opacity) => …` — returning a plain color breaks X/Y label rendering in chart-kit. */
   labelColor: (opacity = 1) => `rgba(255, 255, 255, ${opacity})`,
-  decimalPlaces: 0,
-  formatYLabel: formatCaloriesYAxis,
   propsForBackgroundLines: {
     strokeWidth: 1,
     stroke: colors.gray,
@@ -84,6 +95,33 @@ const ProgressTracking = () => {
       onChangeCaloriesFilter,
     },
   } = useProgressTrackingController();
+
+  const maxCaloriesInChart = Math.max(
+    0,
+    ...(caloriesLineData.datasets[0]?.data ?? []),
+  );
+
+  const caloriesLineChartConfig = useMemo(() => {
+    const decimalPlaces =
+      maxCaloriesInChart <= 0
+        ? 0
+        : maxCaloriesInChart < 1
+          ? 2
+          : maxCaloriesInChart < 50
+            ? 1
+            : 0;
+    return {
+      ...chartConfigBase,
+      decimalPlaces,
+      formatYLabel: (yLabel: string) => {
+        const n = parseFloat(String(yLabel).replace(/,/g, ''));
+        if (!Number.isFinite(n)) return yLabel;
+        if (decimalPlaces === 2) return String(Number(n.toFixed(2)));
+        if (decimalPlaces === 1) return String(Number(n.toFixed(1)));
+        return String(Math.round(n));
+      },
+    };
+  }, [maxCaloriesInChart]);
 
   const onViewAvatarDetail = () => {
     navigation.navigate(ROUTES.AVATAR_DETAIL as never, {
@@ -220,7 +258,7 @@ const ProgressTracking = () => {
                 color={colors.primary}>
                 <View style={{ alignItems: 'center' }}>
                   <Text weight="semibold" size={18}>
-                    {totalCalories.toLocaleString()}
+                    {formatCaloriesForDisplay(totalCalories)}
                   </Text>
                   <Text size={14}>Cal</Text>
                 </View>
@@ -257,7 +295,8 @@ const ProgressTracking = () => {
                   data={caloriesLineData}
                   width={caloriesChartW}
                   height={heightPixel(240)}
-                  chartConfig={chartConfig}
+                  chartConfig={caloriesLineChartConfig}
+                  formatYLabel={caloriesLineChartConfig.formatYLabel}
                   bezier
                   withDots
                   withVerticalLines={false}

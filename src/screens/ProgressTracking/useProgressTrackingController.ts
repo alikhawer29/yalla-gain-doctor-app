@@ -57,12 +57,16 @@ const useProgressTrackingController = () => {
   }, [health?.calories_graph?.data, caloriesFilter]);
 
   const totalSteps = Math.round(Number(health?.total_steps) || 0);
-  const totalCalories = Math.round(Number(health?.total_calories) || 0);
+  const totalCaloriesRaw = Number(health?.total_calories);
+  const totalCalories = Number.isFinite(totalCaloriesRaw) ? totalCaloriesRaw : 0;
 
   const caloriesProgressPct = useMemo(() => {
     const goal = 3000;
     if (totalCalories <= 0) return 0;
-    return Math.min(100, Math.round((totalCalories / goal) * 100));
+    const pct = Math.min(100, (totalCalories / goal) * 100);
+    /** Keep a tiny visible arc for positive totals far below the daily goal. */
+    if (pct > 0 && pct < 0.5) return 0.5;
+    return Math.round(pct);
   }, [totalCalories]);
 
   const yearOptions = useMemo(
