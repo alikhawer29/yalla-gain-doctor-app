@@ -197,7 +197,7 @@ const ProgressTracking = () => {
                     resize="contain"
                   />
                   <View style={{ alignItems: 'center' }}>
-                    <Text weight="semibold" size={24}>
+                    <Text weight="semibold" size={23}>
                       {totalSteps.toLocaleString()}
                     </Text>
                     <Text size={12} color={colors.icon_gray}>

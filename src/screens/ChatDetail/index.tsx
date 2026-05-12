@@ -12,7 +12,11 @@ import {
 import { useFocusEffect } from '@react-navigation/native';
 import { useHeaderHeight } from '@react-navigation/elements';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import dayjs from 'dayjs';
+import {
+    chatMessageLocalDayKey,
+    formatChatDateSeparatorLocal,
+    formatChatTimeLocal,
+} from '../../utils/chatTime';
 import images from '../../assets/images';
 import Icon from '../../components/Icon';
 import Image from '../../components/Image';
@@ -121,21 +125,25 @@ const ChatDetail = () => {
         </View>
     );
 
-    const renderDateSeparator = (date: string) => (
+    const renderDateSeparator = (date: string, time: string) => (
         <View style={styles.date_separator}>
             <Text size={12} color={colors.icon_gray}>
-                {dayjs(date).format('MMMM DD, YYYY')}
+                {formatChatDateSeparatorLocal(date, time, date)}
             </Text>
         </View>
     );
 
     const renderMessage = ({ item, index }: { item: IChatMessage; index: number }) => {
         const isMine = item.is_mine;
-        const showDate = index === 0 || messages[index - 1]?.date !== item.date;
+        const prev = index > 0 ? messages[index - 1] : null;
+        const showDate =
+            index === 0 ||
+            chatMessageLocalDayKey(prev?.date, prev?.time) !==
+                chatMessageLocalDayKey(item.date, item.time);
 
         return (
             <View>
-                {showDate && renderDateSeparator(item.date)}
+                {showDate && renderDateSeparator(item.date, item.time)}
                 <View
                     style={[
                         styles.message_container,
@@ -203,7 +211,9 @@ const ChatDetail = () => {
                         ) : null}
                         <Row style={styles.message_time} justify={isMine ? 'flex-start' : 'flex-end'}>
                             <Icon source={images.clock} size={10} tint_color={colors.icon_gray} />
-                            <Text size={10} color={colors.icon_gray}>{item.time}</Text>
+                            <Text size={10} color={colors.icon_gray}>
+                                {formatChatTimeLocal(item.date, item.time, item.time)}
+                            </Text>
                         </Row>
                     </View>
                 </View>

@@ -2,6 +2,7 @@ import { FC, memo } from "react";
 import { View } from "react-native";
 import images from "../../../assets/images";
 import { IChatCard } from "../../../interfaces";
+import { formatChatTimeLocal } from "../../../utils/chatTime";
 import colors from "../../../utils/colors";
 import Badge from "../../Badge";
 import CardWrapper from "../../CardWrapper";
@@ -48,7 +49,13 @@ const ChatCard: FC<IChatCard> = ({
                         {last_message?.time && (
                             <Row align="center" gap={6}>
                                 <Icon source={images.clock} size={11} tint_color={colors.icon_gray} />
-                                <Text lines={2} size={10} color={colors.icon_gray}>{last_message.time}</Text>
+                                <Text lines={2} size={10} color={colors.icon_gray}>
+                                    {formatChatTimeLocal(
+                                        last_message.date,
+                                        last_message.time,
+                                        last_message.time,
+                                    )}
+                                </Text>
                             </Row>
                         )}
                     </Row>
