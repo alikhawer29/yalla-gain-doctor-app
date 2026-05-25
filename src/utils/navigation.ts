@@ -1,11 +1,130 @@
 // navigation.ts
-import { CommonActions, createNavigationContainerRef } from '@react-navigation/native';
+import {
+    CommonActions,
+    StackActions,
+    createNavigationContainerRef,
+    type NavigationState,
+    type PartialState,
+} from '@react-navigation/native';
+import { InteractionManager } from 'react-native';
 import { AppStackParamList, AuthStackParamList, RootStackParamList } from '../interfaces';
 import { NAVIGATORS, ROUTES } from './routes';
 
 type CombinedParamList = RootStackParamList & AuthStackParamList & AppStackParamList;
 
 export const navigationRef = createNavigationContainerRef<CombinedParamList>();
+
+type DrawerNavigation = {
+    navigate: (name: string, params?: object) => void;
+};
+
+const findDrawerState = (
+    state: NavigationState | PartialState<NavigationState> | undefined,
+): NavigationState | undefined => {
+    if (!state?.routes) return undefined;
+    for (const route of state.routes) {
+        if (route.name === NAVIGATORS.DRAWER) {
+            return route.state as NavigationState | undefined;
+        }
+        const nested = findDrawerState(
+            route.state as NavigationState | PartialState<NavigationState> | undefined,
+        );
+        if (nested) return nested;
+    }
+    return undefined;
+};
+
+const homeTabParams = {
+    screen: NAVIGATORS.HOME_STACK,
+    params: { screen: ROUTES.HOME },
+};
+
+const categoriesParams = { screen: ROUTES.CATEGORIES };
+
+/** Force drawer to ServiceStack → Categories when navigate merge leaves the current drawer screen active. */
+const focusDrawerOnServiceStack = () => {
+    if (!navigationRef.isReady()) return;
+
+    const drawerState = findDrawerState(navigationRef.getRootState());
+    if (!drawerState?.key || !drawerState.routes?.length) return;
+
+    const serviceIndex = drawerState.routes.findIndex(
+        r => r.name === NAVIGATORS.SERVICE_STACK,
+    );
+    if (serviceIndex < 0 || drawerState.index === serviceIndex) return;
+
+    navigationRef.dispatch({
+        ...CommonActions.reset({
+            index: serviceIndex,
+            routes: drawerState.routes.map(route => ({
+                name: route.name,
+                ...(route.name === NAVIGATORS.SERVICE_STACK
+                    ? { state: { index: 0, routes: [{ name: ROUTES.CATEGORIES }] } }
+                    : {}),
+            })),
+        }),
+        target: drawerState.key,
+    });
+};
+
+const dispatchDrawerToCategories = (drawerNavigation?: DrawerNavigation) => {
+    if (drawerNavigation) {
+        drawerNavigation.navigate(NAVIGATORS.SERVICE_STACK, categoriesParams);
+        return;
+    }
+
+    if (!navigationRef.isReady()) return;
+    navigationRef.dispatch(
+        CommonActions.navigate({
+            name: NAVIGATORS.DRAWER as keyof CombinedParamList,
+            params: {
+                screen: NAVIGATORS.SERVICE_STACK,
+                params: categoriesParams,
+            },
+        } as never),
+    );
+};
+
+/** Pop Add Service / Details off the stack without remounting the navigator (avoids header glitch). */
+const popServiceStackToCategories = () => {
+    if (!navigationRef.isReady()) return;
+
+    const drawerState = findDrawerState(navigationRef.getRootState());
+    const serviceRoute = drawerState?.routes?.find(r => r.name === NAVIGATORS.SERVICE_STACK);
+    const stackState = serviceRoute?.state as NavigationState | undefined;
+    if (!stackState?.key || (stackState.index ?? 0) === 0) return;
+
+    navigationRef.dispatch({
+        ...StackActions.popToTop(),
+        target: stackState.key,
+    });
+};
+
+/** Switch bottom tab navigator to Home when already on BottomTabNavigator. */
+const focusHomeBottomTab = () => {
+    if (!navigationRef.isReady()) return;
+
+    const drawerState = findDrawerState(navigationRef.getRootState());
+    const bottomRoute = drawerState?.routes?.find(r => r.name === NAVIGATORS.BOTTOM);
+    const tabState = bottomRoute?.state as NavigationState | undefined;
+    if (!tabState?.key || !tabState.routes?.length) return;
+
+    const homeIndex = tabState.routes.findIndex(r => r.name === NAVIGATORS.HOME_STACK);
+    if (homeIndex < 0 || tabState.index === homeIndex) return;
+
+    navigationRef.dispatch({
+        ...CommonActions.reset({
+            index: homeIndex,
+            routes: tabState.routes.map(route => ({
+                name: route.name,
+                ...(route.name === NAVIGATORS.HOME_STACK
+                    ? { state: { index: 0, routes: [{ name: ROUTES.HOME }] } }
+                    : {}),
+            })),
+        }),
+        target: tabState.key,
+    });
+};
 
 export const navigate = <RouteName extends keyof CombinedParamList>(
     name: RouteName,
@@ -52,6 +171,78 @@ export const navigateToProgressTracking = (id?: string | number) => {
                 params: {
                     screen: ROUTES.PROGRESS_TRACKING,
                     params: id != null ? { id } : undefined,
+                },
+            },
+        } as never),
+    );
+};
+
+/**
+ * Drawer / global → Bottom tabs → Home.
+ * Pass drawer `navigation` from DrawerBar (same pattern as Dashboard / Service Logs).
+ */
+export const navigateToHomeTab = (drawerNavigation?: DrawerNavigation) => {
+    if (drawerNavigation) {
+        drawerNavigation.navigate(NAVIGATORS.BOTTOM, homeTabParams);
+    } else if (navigationRef.isReady()) {
+        navigationRef.dispatch(
+            CommonActions.navigate({
+                name: NAVIGATORS.DRAWER as keyof CombinedParamList,
+                params: {
+                    screen: NAVIGATORS.BOTTOM,
+                    params: homeTabParams,
+                },
+            } as never),
+        );
+    }
+
+    requestAnimationFrame(() => {
+        focusHomeBottomTab();
+        requestAnimationFrame(focusHomeBottomTab);
+    });
+};
+
+/** Bottom tab → My Services list. */
+export const navigateToMyServicesTab = () => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.dispatch(
+        CommonActions.navigate({
+            name: NAVIGATORS.DRAWER as keyof CombinedParamList,
+            params: {
+                screen: NAVIGATORS.BOTTOM,
+                params: {
+                    screen: NAVIGATORS.MY_SERVICES_STACK,
+                    params: { screen: ROUTES.MY_SERVICES },
+                },
+            },
+        } as never),
+    );
+};
+
+/** Drawer → Categories. Pass drawer `navigation` from DrawerBar. */
+export const navigateToAddServiceCategories = (drawerNavigation?: DrawerNavigation) => {
+    dispatchDrawerToCategories(drawerNavigation);
+
+    InteractionManager.runAfterInteractions(() => {
+        focusDrawerOnServiceStack();
+        popServiceStackToCategories();
+    });
+};
+
+/** Open service details from My Services; back returns to My Services tab. */
+export const navigateToServiceDetailsFromMyServices = (
+    id: number,
+    title: string,
+) => {
+    if (!navigationRef.isReady()) return;
+    navigationRef.dispatch(
+        CommonActions.navigate({
+            name: NAVIGATORS.DRAWER as keyof CombinedParamList,
+            params: {
+                screen: NAVIGATORS.SERVICE_STACK,
+                params: {
+                    screen: ROUTES.SERVICE_DETAILS,
+                    params: { id, title, fromMyServices: true },
                 },
             },
         } as never),

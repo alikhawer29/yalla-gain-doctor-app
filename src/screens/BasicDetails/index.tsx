@@ -8,15 +8,13 @@ import colors from "../../utils/colors"
 import { heightPixel, widthPixel } from "../../utils/helper"
 
 const BasicDetails = () => {
+
+    const BASIC_DETAILS = `Our application is designed to offer a smooth, modern, and intuitive experience for every user. From powerful features to a clean interface, everything is built with simplicity and convenience in mind. We focus on performance, accessibility, and continuous improvement to ensure the best possible experience across all devices. Your satisfaction remains our top priority as we continue enhancing the platform with new updates and features. Your satisfaction remains our top priority as we continue enhancing the platform with new updates and features. Your satisfaction remains our top priority as we continue enhancing the platform with new updates and features.`
     return (
         <Wrapper scrollable>
             <View style={{ paddingBottom: heightPixel(30) }}>
                 <Text color={colors.white} size={15} weight="regular" style={{ marginTop: 20 }}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor.
-                </Text>
-
-                <Text color={colors.white} size={15} weight="regular" style={{ marginTop: 20 }}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor.
+                    {BASIC_DETAILS}
                 </Text>
 
                 <Image

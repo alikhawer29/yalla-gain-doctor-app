@@ -10,7 +10,6 @@ import Options from '../Options';
 import ServiceDetails from '../../screens/ServiceDetails';
 import Slots from '../../screens/Slots';
 import Notification from '../../screens/Notification';
-import PaymentLogs from '../../screens/PaymentLogs';
 import WithdrawAmount from '../../screens/WithdrawAmount';
 import Beneficiaries from '../../screens/Beneficiaries';
 import AddBeneficiary from '../../screens/AddBeneficiary';
@@ -31,7 +30,6 @@ const AppStackNavigator = () => {
                         <Stack.Screen name={NAVIGATORS.DRAWER} component={DrawerNavigator} />
                         <Stack.Screen name={ROUTES.SLOTS} component={Slots} options={Options} />
                         <Stack.Screen name={ROUTES.NOTIFICATION} component={Notification} options={Options} />
-                        <Stack.Screen name={ROUTES.PAYMENT_LOGS} component={PaymentLogs} options={Options} />
                         <Stack.Screen name={ROUTES.WITHDRAW_AMOUNT} component={WithdrawAmount} options={Options} />
                         <Stack.Screen name={ROUTES.BENEFICIARIES} component={Beneficiaries} options={Options} />
                         <Stack.Screen name={ROUTES.ADD_BENEFICIARY} component={AddBeneficiary} options={Options} />

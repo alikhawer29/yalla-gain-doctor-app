@@ -1,4 +1,5 @@
-import { useState } from "react"
+import { useFocusEffect } from "@react-navigation/native"
+import { useCallback, useState } from "react"
 import { FlatList, RefreshControl, View } from "react-native"
 import images from "../../assets/images"
 import Button from "../../components/Button"
@@ -19,14 +20,22 @@ const Categories = () => {
     const {
         values: {
             data,
-            isLoading
+            isLoading,
+            search,
         },
         functions: {
-            onReload
-        }
+            onReload,
+            onSearch,
+        },
     } = useCategoriesController()
 
     const [selected, setSelected] = useState<number | null>(null)
+
+    useFocusEffect(
+        useCallback(() => {
+            setSelected(null)
+        }, []),
+    )
 
     const onPressCard = (id: number) => {
         setSelected(id)
@@ -45,8 +54,8 @@ const Categories = () => {
                     placeholder="Search Service"
                     height={40}
                     icon={images.search}
-                // value={search}
-                // onChangeText={onSearch}
+                    value={search}
+                    onChangeText={onSearch}
                 />
                 <Text size={20} weight="semibold">Choose Service Category</Text>
             </View>

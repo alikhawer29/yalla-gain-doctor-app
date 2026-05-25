@@ -177,9 +177,10 @@ export const userApi = createApi({
       }),
     }),
     getServiceCategories: builder.query({
-      query: () => ({
+      query: (params?: { search?: string }) => ({
         url: `service-categories`,
         method: 'GET',
+        params,
       }),
       keepUnusedDataFor: 0,
     }),

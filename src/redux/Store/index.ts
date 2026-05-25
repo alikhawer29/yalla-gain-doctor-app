@@ -7,6 +7,7 @@ import { authApi } from '../Apis/Auth';
 import { userApi } from '../Apis/User';
 import { chatApi } from '../Apis/Chat';
 import authReducer from '../Slices/AuthSlice';
+import navigationReducer from '../Slices/NavigationSlice';
 import spotifyReducer from '../Slices/SpotifySlice';
 import { chatbotApi } from '../Apis/Chatbot';
 import { movementCorrectionApi } from '../Apis/MovementCorrection';
@@ -19,6 +20,7 @@ const persistConfig = {
 
 const rootReducer = combineReducers({
   auth: authReducer,
+  navigation: navigationReducer,
   spotify: spotifyReducer,
   [authApi.reducerPath]: authApi.reducer,
   [userApi.reducerPath]: userApi.reducer,

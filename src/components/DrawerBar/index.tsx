@@ -7,6 +7,7 @@ import { useGetWalletQuery } from "../../redux/Apis/User"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
+import { navigateToAddServiceCategories, navigateToHomeTab } from "../../utils/navigation"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import Button from "../Button"
 import Icon from "../Icon"
@@ -17,12 +18,7 @@ import styles from "./styles"
 const DRAWER_ROUTES: any[] = [
     {
         title: "Home",
-        route: NAVIGATORS.BOTTOM,
-        // Must target Home tab explicitly — empty params keep current tab (e.g. My Services)
-        nestedParams: {
-            screen: NAVIGATORS.HOME_STACK,
-            params: { screen: ROUTES.HOME },
-        },
+        action: "home" as const,
         icon: images.drawer_icons.home
     },
     {
@@ -32,8 +28,7 @@ const DRAWER_ROUTES: any[] = [
     },
     {
         title: "Add New Service",
-        route: NAVIGATORS.SERVICE_STACK as any,
-        child: ROUTES.CATEGORIES,
+        action: "add_service" as const,
         icon: images.drawer_icons.consult_trainer
     },
     {
@@ -43,8 +38,7 @@ const DRAWER_ROUTES: any[] = [
     },
     {
         title: "Payment Logs",
-        route: ROUTES.PAYMENT_LOGS as any,
-        useParentNav: true,
+        route: NAVIGATORS.PAYMENT_LOGS_STACK as any,
         icon: images.helpdesk.wallet
     },
     {
@@ -108,6 +102,16 @@ const DrawerBar = (props: any) => {
                         align="center"
                         style={[styles.drawer_item, { backgroundColor: item?.title === "Home" ? colors.primary : colors.transparent }]}
                         onPress={() => {
+                            if (item.action === "home") {
+                                navigateToHomeTab(props.navigation);
+                                props.navigation.closeDrawer();
+                                return;
+                            }
+                            if (item.action === "add_service") {
+                                navigateToAddServiceCategories(props.navigation);
+                                props.navigation.closeDrawer();
+                                return;
+                            }
                             props.navigation.closeDrawer();
                             if (item.useParentNav) {
                                 props.navigation.getParent()?.navigate(item.route as never, (item?.child ? { screen: item?.child } : undefined) as never);

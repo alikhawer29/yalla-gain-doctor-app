@@ -3,8 +3,8 @@ import { useCallback, useEffect, useLayoutEffect } from "react";
 import { useModal } from "../../contexts/ModalContext";
 import { AppStackParamList } from "../../interfaces";
 import { useDeleteMyServiceMutation, useGetMyServicesQuery } from "../../redux/Apis/User";
-import { navigate } from "../../utils/navigation";
-import { NAVIGATORS, ROUTES } from "../../utils/routes";
+import { navigate, navigateToMyServicesTab } from "../../utils/navigation";
+import { ROUTES } from "../../utils/routes";
 
 type ServiceDetailsRouteProp = RouteProp<AppStackParamList, 'ServiceDetails'>;
 
@@ -32,13 +32,7 @@ const useServiceDetailsController = () => {
     }, [params])
 
     const goToMyServices = useCallback(() => {
-        navigate(
-            NAVIGATORS.BOTTOM as any,
-            {
-                screen: NAVIGATORS.MY_SERVICES_STACK,
-                params: { screen: ROUTES.MY_SERVICES },
-            } as any,
-        )
+        navigateToMyServicesTab()
     }, [])
 
     const onRemove = useCallback(() => {

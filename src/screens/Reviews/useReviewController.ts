@@ -8,9 +8,12 @@ const useReviewController = () => {
 
     const { data, isLoading, refetch } = useGetReviewsQuery({ rating: selected === "all" ? "" : selected })
 
+    const reviewSummary =
+        data != null && typeof data === "object" && !Array.isArray(data) ? data : null
+
     return {
         values: {
-            data: data || [],
+            data: reviewSummary,
             selected,
             isLoading
         },

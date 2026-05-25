@@ -1,17 +1,24 @@
+import useSearch from "../../hooks/useSearch"
 import { useGetServiceCategoriesQuery } from "../../redux/Apis/User"
 
 const useCategoriesController = () => {
 
-    const { data, refetch, isLoading } = useGetServiceCategoriesQuery({})
+    const { search, debouncedSearch, onChange: onSearch } = useSearch()
+
+    const { data, refetch, isLoading } = useGetServiceCategoriesQuery(
+        debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {},
+    )
 
     return {
         values: {
             data: data?.data || [],
-            isLoading
+            isLoading,
+            search,
         },
         functions: {
-            onReload: refetch
-        }
+            onReload: refetch,
+            onSearch,
+        },
     }
 }
 

@@ -13,6 +13,7 @@ import ServiceStackNavigator from '../ServiceStackNavigator';
 import WorkoutStackNavigator from '../WorkoutStackNavigator';
 import WalletStackNavigator from '../WalletStackNavigator';
 import ProgressTrackingStackNavigator from '../ProgressTrackingStackNavigator';
+import PaymentLogsStackNavigator from '../PaymentLogsStackNavigator';
 
 const Drawer = createDrawerNavigator();
 
@@ -23,6 +24,7 @@ const DrawerNavigator = () => {
             <Drawer.Screen name={NAVIGATORS.DASHBOARD_STACK} component={DashboardStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.SERVICE_STACK} component={ServiceStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.BOOKING_STACK} component={BookingStackNavigator} />
+            <Drawer.Screen name={NAVIGATORS.PAYMENT_LOGS_STACK} component={PaymentLogsStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.REVIEWS_STACK} component={ReviewsStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.HELP_DESK_STACK} component={HelpDeskStackNavigator} />
             <Drawer.Screen name={NAVIGATORS.WORKOUT_STACK} component={WorkoutStackNavigator} />

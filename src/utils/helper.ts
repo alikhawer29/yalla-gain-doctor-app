@@ -127,6 +127,18 @@ const isFileLike = (val: any) =>
   'uri' in val &&
   (val.uri || val.name);
 
+/** True when FormData from Manage Slots includes at least one `slots[n][…]` entry. */
+export const formDataHasSlotEntries = (
+  formData: FormData | null | undefined,
+): boolean => {
+  if (!formData) return false;
+  const parts = (formData as { _parts?: [string, unknown][] })._parts;
+  if (!Array.isArray(parts) || parts.length === 0) return false;
+  return parts.some(
+    ([key]) => typeof key === 'string' && /^slots\[\d+\]/.test(key),
+  );
+};
+
 export const formHandler = (data: any) => {
   let formdata = new FormData();
 

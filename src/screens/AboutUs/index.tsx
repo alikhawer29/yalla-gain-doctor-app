@@ -9,21 +9,16 @@ import styles from "./styles"
 import colors from "../../utils/colors"
 
 const AboutUs = () => {
-    const LOREM = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor. Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. Nam fermentum, nulla luctus pharetra vulputate, felis tellus mollis orci, sed rhoncus pronin sapien nunc accuan eget. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo."
-
+    const ABOUT_US = `Welcome to our platform, where innovation meets simplicity. Our mission is to provide a seamless and user-friendly experience that helps users stay connected, productive, and empowered every day. We are committed to delivering high-quality services with reliability, security, and performance at the core of everything we build. Our team continuously works to improve features and create solutions that truly make a difference. Thank you for being part of our journey. Your trust and support inspire us to keep growing and delivering the best possible experience for our community.`
     return (
         <Wrapper scrollable>
             <View style={styles.container}>
                 <Text color={colors.white} style={styles.text} size={15}>
-                    {LOREM}
+                    {ABOUT_US}
                 </Text>
 
                 <Text color={colors.white} style={styles.text} size={15}>
-                    {LOREM}
-                </Text>
-
-                <Text color={colors.white} style={styles.text} size={15}>
-                    {LOREM}
+                    {ABOUT_US}
                 </Text>
 
                 <View style={styles.footerContainer}>

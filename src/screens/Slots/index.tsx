@@ -1,6 +1,6 @@
-import { useRoute } from "@react-navigation/native";
-import React, { useEffect, useState } from "react";
-import { FlatList, TouchableOpacity, View } from "react-native";
+import { useFocusEffect, useRoute } from "@react-navigation/native";
+import React, { useCallback, useEffect, useState } from "react";
+import { Alert, FlatList, TouchableOpacity, View } from "react-native";
 import images from "../../assets/images";
 import Button from "../../components/Button";
 import CardWrapper from "../../components/CardWrapper";
@@ -294,12 +294,29 @@ const Slots = () => {
     };
 
     const { params } = useRoute()
+    const isAddServiceFlow = Boolean(params?.onAdd)
 
     const { showOkModal } = useModal()
-    const { data, isLoading: isGettingSlotsLoading } = useGetServiceSlotsQuery(params?.id, { skip: !params?.id })
+    const { data, isLoading: isGettingSlotsLoading } = useGetServiceSlotsQuery(params?.id, {
+        skip: !params?.id || isAddServiceFlow,
+    })
     const [submit, { isLoading, isSuccess }] = useUpdateServiceSlotsMutation()
 
+    useFocusEffect(
+        useCallback(() => {
+            if (isAddServiceFlow) {
+                setSlotsData(INITIAL_SLOTS.map(day => ({
+                    ...day,
+                    slots: day.slots.map(() => ({ start_time: "", end_time: "" })),
+                })))
+                setErrors([])
+                setAutoFillForWeek(false)
+            }
+        }, [isAddServiceFlow]),
+    )
+
     useEffect(() => {
+        if (isAddServiceFlow) return
         if (data && data?.data?.length) {
             const apiSlots = data.data;
 
@@ -351,17 +368,25 @@ const Slots = () => {
             })
         })
 
+        if (count === 0) {
+            Alert.alert(
+                'Slots required',
+                'Enable at least one day and set start and end times for your service.',
+            );
+            return;
+        }
+
         if (params?.onAdd) {
-            params.onAdd && params.onAdd(formData);
-            goBack()
+            params.onAdd?.(formData);
+            goBack();
         } else {
             submit({
                 id: params?.id,
-                body: formData
+                body: formData,
             });
         }
 
-        setSlotsData(INITIAL_SLOTS)
+        setSlotsData(INITIAL_SLOTS);
 
     };
 

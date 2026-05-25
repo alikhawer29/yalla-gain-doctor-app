@@ -21,7 +21,7 @@ const HelpDesk = () => {
         {
             icon: images.helpdesk.rate, title: "Rate App", onPress: () => showRatingModal({
                 title: "Rate App",
-                message: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod"
+                message: "We value your feedback! Share your experience with the app and let us know how we can improve your journey."
             }, (rating: number) => {
             })
         },

@@ -17,7 +17,7 @@ export type AppStackParamList = {
     AuthStackNavigator: undefined
     DrawerNavigator: undefined
     Chatbot: undefined
-    ServiceDetails: { id: number, title: string }
+    ServiceDetails: { id: number; title: string; fromMyServices?: boolean }
     Slots: { id: number }
     Notification: undefined
     PaymentLogs: undefined
@@ -70,7 +70,7 @@ export type RootStackParamList = {
     Categories: undefined,
     AddService: { id?: number, service_title?: string, service_id?: number },
     MyServices: undefined,
-    ServiceDetails: { id: number, title: string }
+    ServiceDetails: { id: number; title: string; fromMyServices?: boolean }
     Slots: undefined,
     BookingRequests: undefined,
     BookingDetails: { id: string | number },

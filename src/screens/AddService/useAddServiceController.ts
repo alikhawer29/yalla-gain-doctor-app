@@ -1,30 +1,36 @@
-import { RouteProp, useNavigation, useRoute } from "@react-navigation/native"
-import { useEffect, useLayoutEffect, useRef } from "react"
+import { RouteProp, useIsFocused, useRoute } from "@react-navigation/native"
+import { useEffect, useMemo, useRef } from "react"
 import { useModal } from "../../contexts/ModalContext"
 import usePicker from "../../hooks/usePicker"
 import { RootStackParamList } from "../../interfaces"
 import { useCreateServiceCategoryMutation, useGetMyServicesQuery } from "../../redux/Apis/User"
+import { useAppDispatch } from "../../hooks"
+import { bumpServiceStack } from "../../redux/Slices/NavigationSlice"
 import { formHandler } from "../../utils/helper"
-import { navigate } from "../../utils/navigation"
-import { NAVIGATORS, ROUTES } from "../../utils/routes"
-import { ADD_SERVICE_SCHEMA } from "../../utils/validators"
+import { navigate, navigateToMyServicesTab } from "../../utils/navigation"
+import { ROUTES } from "../../utils/routes"
+import { ADD_SERVICE_SCHEMA, CREATE_SERVICE_SCHEMA } from "../../utils/validators"
 
 const initial = {
     title: "",
     charges: "",
     description: "",
-    image: null
+    image: null,
+    slots: null as FormData | null,
 }
 
 type AddServiceRouteProp = RouteProp<RootStackParamList, 'AddService'>
 
 const useAddServiceController = () => {
 
-    const navigation = useNavigation()
+    const dispatch = useAppDispatch()
+    const isFocused = useIsFocused()
     const { image, openGallery } = usePicker()
     const { showOkModal } = useModal()
     const formik_ref = useRef(null)
+    const didResetNewFormRef = useRef(false)
     const { params } = useRoute<AddServiceRouteProp>()
+    const is_edit = !!params?.service_id
 
     const { data, isSuccess: isServiceSuccess } = useGetMyServicesQuery({ id: params?.service_id }, { skip: !params?.service_id })
     const [submit, { isLoading, isSuccess }] = useCreateServiceCategoryMutation()
@@ -40,13 +46,10 @@ const useAddServiceController = () => {
     }, [isServiceSuccess, data])
 
     const goToMyServices = () => {
-        navigate(
-            NAVIGATORS.BOTTOM as any,
-            {
-                screen: NAVIGATORS.MY_SERVICES_STACK,
-                params: { screen: ROUTES.MY_SERVICES },
-            } as any,
-        )
+        if (!params?.service_id) {
+            dispatch(bumpServiceStack())
+        }
+        navigateToMyServicesTab()
     }
 
     useEffect(() => {
@@ -64,6 +67,12 @@ const useAddServiceController = () => {
             formik_ref?.current?.setFieldValue('image', image)
         }
     }, [image])
+
+    useEffect(() => {
+        if (!isFocused || is_edit || didResetNewFormRef.current) return
+        didResetNewFormRef.current = true
+        formik_ref?.current?.resetForm({ values: { ...initial } })
+    }, [isFocused, is_edit, params?.id])
 
     const onSubmit = (values: any) => {
 
@@ -96,18 +105,28 @@ const useAddServiceController = () => {
     }
 
     const onManageSlots = () => {
-        navigate(ROUTES.SLOTS, { onAdd: (data) => formik_ref?.current?.setFieldValue('slots', data) })
+        navigate(ROUTES.SLOTS, {
+            onAdd: (data: FormData) => {
+                formik_ref?.current?.setFieldValue('slots', data)
+                formik_ref?.current?.setFieldTouched('slots', true, false)
+            },
+        })
     }
 
+    const schema = useMemo(
+        () => (is_edit ? ADD_SERVICE_SCHEMA : CREATE_SERVICE_SCHEMA),
+        [is_edit],
+    )
+
     return {
-        schema: ADD_SERVICE_SCHEMA,
+        schema,
         refs: {
             formik_ref
         },
         values: {
             initial,
             isLoading,
-            is_edit: !!params?.service_id
+            is_edit
         },
         functions: {
             onSubmit,

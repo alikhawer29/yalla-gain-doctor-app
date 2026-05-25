@@ -1,6 +1,7 @@
 import { Formik } from "formik"
 import Button from "../../components/Button"
 import Input from "../../components/Input"
+import Text from "../../components/Text"
 import Upload from "../../components/Upload"
 import Wrapper from "../../components/Wrapper"
 import useAddServiceController from "./useAddServiceController"
@@ -39,7 +40,7 @@ const AddService = () => {
                 validationSchema={schema}
                 onSubmit={onSubmit}
             >
-                {({ values: data, handleSubmit, handleChange, errors, touched, setFieldValue }) => (
+                {({ values: data, handleSubmit, handleChange, errors, touched, setFieldValue, submitCount }) => (
                     <KeyboardAvoidingWrapper>
                         <Input
                             label="Title"
@@ -78,10 +79,20 @@ const AddService = () => {
                         }
                         <Upload required text={data?.image?.name || "Upload Service Image"} onPress={openGallery} style={{ marginVertical: heightPixel(7.5) }} error={touched.image ? errors.image : undefined} />
                         <View style={{ gap: heightPixel(10), marginTop: heightPixel(15) }}>
-                            {
-                                !is_edit &&
-                                <Button text="Manage Slots For This Service" type="outlined" onPress={onManageSlots} />
-                            }
+                            {!is_edit && (
+                                <>
+                                    <Button
+                                        text="Manage Slots For This Service"
+                                        type="outlined"
+                                        onPress={onManageSlots}
+                                    />
+                                    {(touched.slots || submitCount > 0) && errors.slots ? (
+                                        <Text size={12} color={colors.danger}>
+                                            {String(errors.slots)}
+                                        </Text>
+                                    ) : null}
+                                </>
+                            )}
                             <Button text={is_edit ? "Update" : "Save"} onPress={handleSubmit} loading={isLoading} />
                         </View>
                     </KeyboardAvoidingWrapper>

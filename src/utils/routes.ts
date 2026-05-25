@@ -17,6 +17,7 @@ const NAVIGATORS = {
   BOOKING_STACK: 'BookingStackNavigator',
   DASHBOARD_STACK: 'DashboardStackNavigator',
   WALLET_STACK: 'WalletStackNavigator',
+  PAYMENT_LOGS_STACK: 'PaymentLogsStackNavigator',
 } as const;
 
 const ROUTES = {
@@ -405,7 +406,7 @@ const ROUTES_OPTIONS = [
   },
   {
     route_name: ROUTES.PAYMENT_LOGS,
-    left: 'back',
+    left: 'drawer',
     right: null,
     logo: false,
     title: 'Payment Logs',

@@ -134,7 +134,7 @@ const ProgressTracking = () => {
   return (
     <Wrapper scrollable bottom_bar>
       <Row gap={5}>
-        <View style={{ flex: 1 }}>
+        {/* <View style={{ flex: 1 }}>
           <CardWrapper height={300} padding={10} color={colors.blackish_gray}>
             <TouchableOpacity
               onPress={onViewAvatarDetail}
@@ -146,7 +146,7 @@ const ProgressTracking = () => {
               />
             </TouchableOpacity>
           </CardWrapper>
-        </View>
+        </View> */}
         <View style={{ flex: 1 }}>
           <CardWrapper height={300} padding={10} color={colors.blackish_gray}>
             <TouchableOpacity

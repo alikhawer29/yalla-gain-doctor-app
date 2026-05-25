@@ -42,48 +42,55 @@ const Home = () => {
         ; (navigation as any).navigate(NAVIGATORS.BOOKING_STACK, { screen: ROUTES.SERVICE_LOGS })
     }
 
-    return (
-        <Wrapper
-            bottom_bar
-            scrollable
-            refreshControl={
-                <RefreshControl
-                    refreshing={isPullRefreshing}
-                    onRefresh={onPullRefresh}
-                    colors={[colors.primary]}
-                    tintColor={colors.primary}
-                />
-            }
-        >
-            <View style={{ gap: heightPixel(10) }}>
-                <ProfileHeader />
-                <View style={{ gap: heightPixel(10), marginVertical: heightPixel(15) }}>
-                    <Image source={images.home} style={{ height: heightPixel(180), borderRadius: heightPixel(10) }} />
-                    <Text>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor. Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus</Text>
-                </View>
-                <View style={{ gap: heightPixel(10) }}>
-                    <Text weight="semibold" size={20}>Service Logs</Text>
-                    <FlatList
-                        data={data}
-                        renderItem={({ item }) => (
-                            <ServiceLogCard
-                                date={formatLongDate(item?.appointment_date ?? '')}
-                                bookingId={`#${item?.id}`}
-                                amount={item?.service?.charges || 0}
-                                status={item?.status}
-                                onPress={() => onPressCard(item?.id)}
-                            />
-                        )}
-                        showsVerticalScrollIndicator={false}
-                        ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
-                        ListEmptyComponent={() => <Empty message="No Service Logs Found" />}
-                        keyExtractor={(item) => item?.id?.toString()}
-                        style={{ maxHeight: heightPixel(225) }}
-                    />
-                    <Button text="View All" type="outlined" onPress={handleViewAll} style={{ marginTop: heightPixel(10) }} />
-                </View>
+    const listHeader = (
+        <View style={{ gap: heightPixel(10) }}>
+            <ProfileHeader />
+            <View style={{ gap: heightPixel(10), marginVertical: heightPixel(15) }}>
+                <Image source={images.home} style={{ height: heightPixel(180), borderRadius: heightPixel(10) }} />
+                <Text>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor. Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus</Text>
             </View>
+            <Text weight="semibold" size={20}>Service Logs</Text>
+        </View>
+    )
 
+    const listFooter = (
+        <Button
+            text="View All"
+            type="outlined"
+            onPress={handleViewAll}
+            style={{ marginTop: heightPixel(10) }}
+        />
+    )
+
+    return (
+        <Wrapper bottom_bar>
+            <FlatList
+                data={data}
+                renderItem={({ item }) => (
+                    <ServiceLogCard
+                        date={formatLongDate(item?.appointment_date ?? '')}
+                        bookingId={`#${item?.id}`}
+                        amount={item?.service?.charges || 0}
+                        status={item?.status}
+                        onPress={() => onPressCard(item?.id)}
+                    />
+                )}
+                ListHeaderComponent={listHeader}
+                ListFooterComponent={listFooter}
+                ListEmptyComponent={<Empty message="No Service Logs Found" />}
+                showsVerticalScrollIndicator={false}
+                ItemSeparatorComponent={() => <View style={{ height: heightPixel(10) }} />}
+                keyExtractor={(item) => item?.id?.toString()}
+                contentContainerStyle={{ gap: heightPixel(10), flexGrow: 1 }}
+                refreshControl={
+                    <RefreshControl
+                        refreshing={isPullRefreshing}
+                        onRefresh={onPullRefresh}
+                        colors={[colors.primary]}
+                        tintColor={colors.primary}
+                    />
+                }
+            />
         </Wrapper>
     )
 }

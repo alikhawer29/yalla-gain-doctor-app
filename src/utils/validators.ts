@@ -477,6 +477,25 @@ export const ADD_SERVICE_SCHEMA = Yup.object().shape({
     .required('Image is required'),
 });
 
+/** Create flow: service cannot be saved without at least one availability slot. */
+export const CREATE_SERVICE_SCHEMA = ADD_SERVICE_SCHEMA.shape({
+  slots: Yup.mixed()
+    .required('Please add at least one availability slot')
+    .test(
+      'has-slots',
+      'Please add at least one availability slot',
+      value => {
+        if (!value || typeof value !== 'object') return false;
+        const parts = (value as { _parts?: [string, unknown][] })._parts;
+        if (!Array.isArray(parts) || parts.length === 0) return false;
+        return parts.some(
+          ([key]) =>
+            typeof key === 'string' && /^slots\[\d+\]/.test(key),
+        );
+      },
+    ),
+});
+
 export const EXERCISE_SCHEMA = Yup.object().shape({
   exercise: Yup.string().required('Exercise is required'),
 });

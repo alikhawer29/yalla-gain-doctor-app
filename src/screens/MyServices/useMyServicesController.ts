@@ -1,7 +1,6 @@
 import { useIsFocused } from "@react-navigation/native"
 import { useGetMyServicesQuery } from "../../redux/Apis/User"
-import { navigate } from "../../utils/navigation"
-import { NAVIGATORS, ROUTES } from "../../utils/routes"
+import { navigateToServiceDetailsFromMyServices } from "../../utils/navigation"
 import { useEffect } from "react"
 
 const useMyServicesController = () => {
@@ -16,7 +15,7 @@ const useMyServicesController = () => {
     }, [isFocused])
 
     const onPressCard = (id: number, title: string) => {
-        navigate(NAVIGATORS.SERVICE_STACK, { screen: ROUTES.SERVICE_DETAILS, params: { id, title } })
+        navigateToServiceDetailsFromMyServices(id, title)
     }
 
     return {
