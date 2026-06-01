@@ -295,13 +295,12 @@ const Dashboard = () => {
                             />
                         </View>
                     </Row>
-                    <View style={[styles.chartWrap, { minHeight: heightPixel(220) }]}>
-                        {isEarningsGraphLoading ? (
-                            <ActivityIndicator
-                                color={colors.primary}
-                                style={{ marginTop: heightPixel(80) }}
-                            />
-                        ) : (
+                    {isEarningsGraphLoading ? (
+                        <View style={styles.chartLoaderWrap}>
+                            <ActivityIndicator color={colors.primary} />
+                        </View>
+                    ) : (
+                        <View style={[styles.chartWrap, { minHeight: heightPixel(220) }]}>
                             <LineChart
                                 data={earningsChartPayload}
                                 width={earningsChartLayout.width}
@@ -325,8 +324,8 @@ const Dashboard = () => {
                                     paddingBottom: LINE_CHART_PADDING_BOTTOM,
                                 }}
                             />
-                        )}
-                    </View>
+                        </View>
+                    )}
                 </View>
 
                 <View style={styles.graphCard}>
@@ -348,13 +347,12 @@ const Dashboard = () => {
                             />
                         </View>
                     </Row>
-                    <View style={[styles.chartWrap, { minHeight: heightPixel(220) }]}>
-                        {isBookingsGraphLoading ? (
-                            <ActivityIndicator
-                                color={colors.primary}
-                                style={{ marginTop: heightPixel(80) }}
-                            />
-                        ) : (
+                    {isBookingsGraphLoading ? (
+                        <View style={styles.chartLoaderWrap}>
+                            <ActivityIndicator color={colors.primary} />
+                        </View>
+                    ) : (
+                        <View style={[styles.chartWrap, { minHeight: heightPixel(220) }]}>
                             <LineChart
                                 data={bookingsChartPayload}
                                 width={bookingsChartLayout.width}
@@ -378,8 +376,8 @@ const Dashboard = () => {
                                     paddingBottom: LINE_CHART_PADDING_BOTTOM,
                                 }}
                             />
-                        )}
-                    </View>
+                        </View>
+                    )}
                 </View>
             </View>
         </Wrapper>

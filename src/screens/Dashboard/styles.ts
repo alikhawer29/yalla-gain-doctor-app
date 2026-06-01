@@ -32,6 +32,12 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     alignItems: 'flex-start',
   },
+  chartLoaderWrap: {
+    width: '100%',
+    minHeight: heightPixel(220),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
   iconContainer: {
     width: heightPixel(40),
     height: heightPixel(40),
