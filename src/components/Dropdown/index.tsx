@@ -25,6 +25,8 @@ const Dropdown = props => {
     required = false,
     isLoading = false,
     listMode = 'SCROLLVIEW',
+    textStyle: textStyleOverride,
+    labelProps: labelPropsOverride,
   } = props;
 
   useEffect(() => {
@@ -68,7 +70,7 @@ const Dropdown = props => {
         placeholderStyle={styles.placeholder}
         onSelectItem={onChangeText}
         dropDownContainerStyle={styles.dropdown}
-        textStyle={styles.text}
+        textStyle={[styles.text, textStyleOverride]}
         listMode={listMode}
         multiple={multiple}
         mode="BADGE"
@@ -76,7 +78,7 @@ const Dropdown = props => {
         disabled={disabled}
         zIndex={zIndex}
         zIndexInverse={zIndexInverse}
-        labelProps={{ allowFontScaling: false }}
+        labelProps={{ allowFontScaling: false, numberOfLines: 1, ...labelPropsOverride }}
         arrowIconStyle={{ tintColor: colors.white }}
         loading={isLoading}
         listItemLabelStyle={styles.listItemLabel}

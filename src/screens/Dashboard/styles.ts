@@ -23,8 +23,14 @@ const styles = StyleSheet.create({
   graphCard: {
     backgroundColor: colors.grayish_black,
     borderRadius: widthPixel(15),
-    padding: widthPixel(15),
+    padding: widthPixel(10),
     marginTop: heightPixel(15),
+    overflow: 'hidden',
+  },
+  chartWrap: {
+    width: '100%',
+    overflow: 'hidden',
+    alignItems: 'flex-start',
   },
   iconContainer: {
     width: heightPixel(40),
@@ -36,7 +42,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   dropdownContainer: {
-    width: widthPixel(110),
+    minWidth: widthPixel(128),
+    width: widthPixel(128),
+    flexShrink: 0,
+  },
+  filterDropdownText: {
+    flexShrink: 0,
   },
   yallaCoinRow: {
     flexDirection: 'row',

@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import {
   useGetDashboardBookingsGraphQuery,
   useGetDashboardEarningsGraphQuery,
@@ -32,9 +32,10 @@ function labelForRow(row: GraphRow): string {
   return '';
 }
 
-/** Show every other X label (1, _, 3, _) so monthly charts are readable. */
-function maskEveryOtherXLabel(labels: string[]): string[] {
-  return labels.map((label, i) => (i % 2 === 0 ? label : ''));
+/** Thin X-axis labels so monthly/yearly charts do not clip at the edges. */
+function maskXLabels(labels: string[], step: number): string[] {
+  const n = Math.max(1, step);
+  return labels.map((label, i) => (i % n === 0 ? label : ''));
 }
 
 function rowsToLineChart(
@@ -50,11 +51,12 @@ function rowsToLineChart(
     };
   }
   let labels = list.map(labelForRow);
-  if (
-    (filter === 'monthly' && labels.length > 7) ||
-    (filter === 'yearly' && labels.length > 6)
-  ) {
-    labels = maskEveryOtherXLabel(labels);
+  if (filter === 'monthly' && labels.length > 10) {
+    labels = maskXLabels(labels, 3);
+  } else if (filter === 'yearly' && labels.length > 6) {
+    labels = maskXLabels(labels, 2);
+  } else if (filter === 'weekly' && labels.length > 7) {
+    labels = maskXLabels(labels, 2);
   }
   return {
     labels,
@@ -68,26 +70,37 @@ function rowsToLineChart(
 
 const useDashboardController = () => {
   const [earningsFilter, setEarningsFilter] =
-    useState<DashboardGraphFilter>('weekly');
+    useState<DashboardGraphFilter>('yearly');
   const [bookingsFilter, setBookingsFilter] =
-    useState<DashboardGraphFilter>('weekly');
+    useState<DashboardGraphFilter>('yearly');
 
-  const { data: statsRes, isLoading: isStatsLoading } =
-    useGetDashboardStatsQuery(undefined, {
-      refetchOnMountOrArgChange: true,
-    });
+  const {
+    data: statsRes,
+    isLoading: isStatsLoading,
+    refetch: refetchStats,
+  } = useGetDashboardStatsQuery(undefined, {
+    refetchOnMountOrArgChange: true,
+  });
 
-  const { data: earningsRes, isLoading: isEarningsGraphLoading } =
-    useGetDashboardEarningsGraphQuery(
-      { filter: earningsFilter },
-      { refetchOnMountOrArgChange: true },
-    );
+  const {
+    data: earningsRes,
+    isLoading: isEarningsGraphLoading,
+    refetch: refetchEarnings,
+  } = useGetDashboardEarningsGraphQuery(
+    { filter: earningsFilter },
+    { refetchOnMountOrArgChange: true },
+  );
 
-  const { data: bookingsRes, isLoading: isBookingsGraphLoading } =
-    useGetDashboardBookingsGraphQuery(
-      { filter: bookingsFilter },
-      { refetchOnMountOrArgChange: true },
-    );
+  const {
+    data: bookingsRes,
+    isLoading: isBookingsGraphLoading,
+    refetch: refetchBookings,
+  } = useGetDashboardBookingsGraphQuery(
+    { filter: bookingsFilter },
+    { refetchOnMountOrArgChange: true },
+  );
+
+  const [isRefreshing, setIsRefreshing] = useState(false);
 
   const total_bookings = statsRes?.data?.total_bookings ?? 0;
   const total_earnings = statsRes?.data?.total_earnings ?? 0;
@@ -116,6 +129,19 @@ const useDashboardController = () => {
     }
   };
 
+  const onRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await Promise.all([
+        refetchStats(),
+        refetchEarnings(),
+        refetchBookings(),
+      ]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetchStats, refetchEarnings, refetchBookings]);
+
   return {
     values: {
       total_bookings,
@@ -128,10 +154,12 @@ const useDashboardController = () => {
       isStatsLoading,
       isEarningsGraphLoading,
       isBookingsGraphLoading,
+      isRefreshing,
     },
     functions: {
       onEarningsFilterChange,
       onBookingsFilterChange,
+      onRefresh,
     },
   };
 };

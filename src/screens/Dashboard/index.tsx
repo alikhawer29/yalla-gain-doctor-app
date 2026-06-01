@@ -1,4 +1,4 @@
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, RefreshControl, View } from 'react-native';
 import { BarChart, LineChart } from 'react-native-chart-kit';
 import fonts from '../../assets/fonts';
 import images from '../../assets/images';
@@ -20,19 +20,25 @@ const formatYAxisInteger = (yLabel: string) => {
     return String(Math.round(n));
 };
 
-/** react-native-chart-kit uses `style.paddingRight` as the Y-axis / left gutter width. */
-const LINE_CHART_Y_GUTTER = widthPixel(24);
-const LINE_CHART_PADDING_BOTTOM = heightPixel(14);
-const LINE_CHART_PADDING_TOP = heightPixel(6);
+const LINE_CHART_PADDING_BOTTOM = heightPixel(16);
+const LINE_CHART_PADDING_TOP = heightPixel(8);
 
-/** Y labels use textAnchor end at (gutter − offset); wider digits need a wider gutter or they clip on the left. */
-const lineChartYAxisGutter = (values: number[]) => {
+/** Inner width of graph card (wrapper padding + card padding). */
+const CHART_AREA_WIDTH =
+    PAGE_WIDTH - widthPixel(10) * 2 - widthPixel(15) * 2;
+
+/** react-native-chart-kit: `style.paddingRight` = left gutter for Y-axis tick labels. */
+const lineChartYAxisGutter = (values: number[], segments: number) => {
     const nums = values.filter((v) => typeof v === 'number' && Number.isFinite(v));
-    const hi = nums.length ? Math.max(0, ...nums) : 0;
-    if (hi >= 100) return widthPixel(44);
-    if (hi >= 10) return widthPixel(40);
-    if (hi >= 2) return widthPixel(15);
-    return LINE_CHART_Y_GUTTER;
+    const max = nums.length ? Math.max(0, ...nums) : 0;
+    const min = 0;
+    const seg = Math.max(1, segments);
+    let maxDigits = 1;
+    for (let i = 0; i <= seg; i++) {
+        const tick = Math.round(min + ((max - min) * i) / seg);
+        maxDigits = Math.max(maxDigits, String(tick).length);
+    }
+    return widthPixel(12 + maxDigits * 13);
 };
 
 const miniBarChartWidth = Math.max(widthPixel(100), Math.round(vw * 48 - widthPixel(42)));
@@ -51,6 +57,25 @@ const lineChartSegmentsForData = (values: number[]) => {
     return 4;
 };
 
+const buildLineChartLayout = (
+    values: number[],
+    filter: 'weekly' | 'monthly' | 'yearly',
+) => {
+    const segments = lineChartSegmentsForData(values);
+    const yGutter = lineChartYAxisGutter(values, segments);
+    const xInset =
+        filter === 'monthly' ? widthPixel(18) : filter === 'yearly' ? widthPixel(14) : widthPixel(10);
+    const chartWidth = CHART_AREA_WIDTH - xInset;
+
+    return {
+        segments,
+        width: chartWidth,
+        yGutter,
+        xLabelsOffset: widthPixel(8),
+        yLabelsOffset: widthPixel(10),
+    };
+};
+
 const Dashboard = () => {
     const {
         values: {
@@ -64,8 +89,9 @@ const Dashboard = () => {
             isStatsLoading,
             isEarningsGraphLoading,
             isBookingsGraphLoading,
+            isRefreshing,
         },
-        functions: { onEarningsFilterChange, onBookingsFilterChange },
+        functions: { onEarningsFilterChange, onBookingsFilterChange, onRefresh },
     } = useDashboardController();
 
     const miniBarData = {
@@ -117,10 +143,28 @@ const Dashboard = () => {
 
     const earningsLineValues = earningsChartPayload.datasets[0]?.data ?? [];
     const bookingsLineValues = bookingsChartPayload.datasets[0]?.data ?? [];
-    const lineChartWidth = PAGE_WIDTH - widthPixel(30);
+    const earningsChartLayout = buildLineChartLayout(
+        earningsLineValues,
+        earningsFilter,
+    );
+    const bookingsChartLayout = buildLineChartLayout(
+        bookingsLineValues,
+        bookingsFilter,
+    );
 
     return (
-        <Wrapper bottom_bar scrollable>
+        <Wrapper
+            bottom_bar
+            scrollable
+            refreshControl={
+                <RefreshControl
+                    refreshing={isRefreshing}
+                    onRefresh={onRefresh}
+                    colors={[colors.primary]}
+                    tintColor={colors.primary}
+                />
+            }
+        >
             <View style={styles.container}>
                 <ProfileHeader />
 
@@ -247,10 +291,11 @@ const Dashboard = () => {
                                 onChangeText={onEarningsFilterChange}
                                 options={graphFilterOptions}
                                 height={40}
+                                textStyle={styles.filterDropdownText}
                             />
                         </View>
                     </Row>
-                    <View style={{ minHeight: heightPixel(220) }}>
+                    <View style={[styles.chartWrap, { minHeight: heightPixel(220) }]}>
                         {isEarningsGraphLoading ? (
                             <ActivityIndicator
                                 color={colors.primary}
@@ -259,7 +304,7 @@ const Dashboard = () => {
                         ) : (
                             <LineChart
                                 data={earningsChartPayload}
-                                width={lineChartWidth}
+                                width={earningsChartLayout.width}
                                 height={heightPixel(220)}
                                 chartConfig={fullChartConfig}
                                 formatYLabel={formatYAxisInteger}
@@ -270,10 +315,12 @@ const Dashboard = () => {
                                 yAxisLabel=""
                                 yAxisSuffix=""
                                 fromZero={true}
-                                segments={lineChartSegmentsForData(earningsLineValues)}
-                                yLabelsOffset={widthPixel(4)}
+                                segments={earningsChartLayout.segments}
+                                xLabelsOffset={earningsChartLayout.xLabelsOffset}
+                                yLabelsOffset={earningsChartLayout.yLabelsOffset}
                                 style={{
-                                    paddingRight: lineChartYAxisGutter(earningsLineValues),
+                                    paddingRight: earningsChartLayout.yGutter,
+                                    paddingLeft: widthPixel(4),
                                     paddingTop: LINE_CHART_PADDING_TOP,
                                     paddingBottom: LINE_CHART_PADDING_BOTTOM,
                                 }}
@@ -297,10 +344,11 @@ const Dashboard = () => {
                                 onChangeText={onBookingsFilterChange}
                                 options={graphFilterOptions}
                                 height={40}
+                                textStyle={styles.filterDropdownText}
                             />
                         </View>
                     </Row>
-                    <View style={{ minHeight: heightPixel(220) }}>
+                    <View style={[styles.chartWrap, { minHeight: heightPixel(220) }]}>
                         {isBookingsGraphLoading ? (
                             <ActivityIndicator
                                 color={colors.primary}
@@ -309,7 +357,7 @@ const Dashboard = () => {
                         ) : (
                             <LineChart
                                 data={bookingsChartPayload}
-                                width={lineChartWidth}
+                                width={bookingsChartLayout.width}
                                 height={heightPixel(220)}
                                 chartConfig={fullChartConfig}
                                 formatYLabel={formatYAxisInteger}
@@ -320,11 +368,13 @@ const Dashboard = () => {
                                 yAxisLabel=""
                                 yAxisSuffix=""
                                 fromZero={true}
-                                segments={lineChartSegmentsForData(bookingsLineValues)}
-                                yLabelsOffset={widthPixel(4)}
+                                segments={bookingsChartLayout.segments}
+                                xLabelsOffset={bookingsChartLayout.xLabelsOffset}
+                                yLabelsOffset={bookingsChartLayout.yLabelsOffset}
                                 style={{
-                                    paddingRight: lineChartYAxisGutter(bookingsLineValues),
-                                    // paddingTop: LINE_CHART_PADDING_TOP,
+                                    paddingRight: bookingsChartLayout.yGutter,
+                                    paddingLeft: widthPixel(4),
+                                    paddingTop: LINE_CHART_PADDING_TOP,
                                     paddingBottom: LINE_CHART_PADDING_BOTTOM,
                                 }}
                             />

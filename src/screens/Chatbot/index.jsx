@@ -7,6 +7,8 @@ import {
     TextInput,
     View
 } from "react-native";
+import { useHeaderHeight } from "@react-navigation/elements";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import fonts from "../../assets/fonts";
 import images from "../../assets/images";
 import ChatItemCard from "../../components/Cards/ChatItemCard";
@@ -34,7 +36,9 @@ const Chatbot = () => {
         }
     } = useChatbotController()
 
-    const keyboardHeight = useKeyboard()
+    const headerHeight = useHeaderHeight();
+    const insets = useSafeAreaInsets();
+    const keyboardHeight = useKeyboard();
     const isNewAndroid = Platform.OS === "android" && Platform.Version >= 35;
 
     const renderItem = ({ item }) => (
@@ -50,19 +54,39 @@ const Chatbot = () => {
     return (
         <Wrapper>
             <KeyboardAvoidingView
-                style={[styles.container, {
-                    marginBottom: isNewAndroid ? keyboardHeight : 0
-                }]}
+                style={[
+                    styles.container,
+                    isNewAndroid && keyboardHeight > 0
+                        ? { marginBottom: keyboardHeight }
+                        : null,
+                ]}
                 behavior={Platform.OS === "ios" ? "padding" : undefined}
+                keyboardVerticalOffset={
+                    Platform.OS === "ios" ? headerHeight : 0
+                }
             >
                 <FlatList
                     ref={flatlist_ref}
+                    style={styles.list}
                     data={data}
                     renderItem={renderItem}
                     keyExtractor={(item) => item.id}
                     ItemSeparatorComponent={<Seperator />}
+                    keyboardShouldPersistTaps="handled"
+                    keyboardDismissMode="on-drag"
+                    contentContainerStyle={styles.list_content}
                 />
-                <View style={styles.input_container}>
+                <View
+                    style={[
+                        styles.input_container,
+                        {
+                            paddingBottom: Math.max(
+                                insets.bottom,
+                                heightPixel(12),
+                            ),
+                        },
+                    ]}
+                >
                     <TextInput
                         style={styles.input}
                         placeholder="Type a message..."
@@ -70,7 +94,13 @@ const Chatbot = () => {
                         onChangeText={onChangeInput}
                         placeholderTextColor={colors.icon_gray}
                     />
-                    <Icon rounded color={colors.primary} onPress={onSendMessage} source={images.send} size={50} />
+                    <Icon
+                        rounded
+                        color={colors.primary}
+                        onPress={onSendMessage}
+                        source={images.send}
+                        size={50}
+                    />
                 </View>
             </KeyboardAvoidingView>
         </Wrapper>
@@ -79,13 +109,21 @@ const Chatbot = () => {
 
 const styles = StyleSheet.create({
     container: {
-        flex: 1
+        flex: 1,
+    },
+    list: {
+        flex: 1,
+    },
+    list_content: {
+        flexGrow: 1,
+        paddingBottom: heightPixel(8),
     },
     input_container: {
         flexDirection: "row",
+        alignItems: "flex-end",
         backgroundColor: colors.transparent,
         gap: 10,
-        paddingVertical: heightPixel(30),
+        paddingTop: heightPixel(10),
     },
     input: {
         flex: 1,
@@ -95,9 +133,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 15,
         backgroundColor: colors.blackish_gray,
         color: colors.white,
-        height: heightPixel(50),
-        fontFamily: fonts.sfpro.regular
-    }
+        minHeight: heightPixel(50),
+        maxHeight: heightPixel(100),
+        paddingVertical: heightPixel(12),
+        fontFamily: fonts.sfpro.regular,
+    },
 });
 
 export default Chatbot;
