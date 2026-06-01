@@ -1,10 +1,5 @@
-import React, { useMemo, useState } from 'react';
-import {
-  ActivityIndicator,
-  Dimensions,
-  TouchableOpacity,
-  View,
-} from 'react-native';
+import React, { useMemo } from 'react';
+import { ActivityIndicator, TouchableOpacity, View } from 'react-native';
 import { LineChart } from 'react-native-chart-kit';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -70,10 +65,6 @@ const chartConfigBase = {
 const ProgressTracking = () => {
   const navigation = useNavigation<ProgressTrackingNavigationProp>();
   const route = useRoute();
-  const winW = Dimensions.get('window').width;
-  const [bmiChartWidth, setBmiChartWidth] = useState(
-    Math.max(winW - widthPixel(40), 120),
-  );
 
   const {
     values: {
@@ -186,25 +177,16 @@ const ProgressTracking = () => {
               </View>
             </View>
 
-            <View
-              onLayout={e =>
-                setBmiChartWidth(
-                  Math.max(e.nativeEvent.layout.width, 120),
-                )
-              }>
-              {isBootstrapping ? (
-                <ActivityIndicator
-                  color={colors.primary}
-                  style={{ marginVertical: heightPixel(40) }}
-                />
-              ) : (
-                <ProgressBmiChart
-                  width={bmiChartWidth}
-                  height={heightPixel(260)}
-                  data={bmiChartData}
-                />
-              )}
-            </View>
+            {isBootstrapping ? (
+              <View style={styles.chartLoaderWrap}>
+                <ActivityIndicator color={colors.primary} />
+              </View>
+            ) : (
+              <ProgressBmiChart
+                height={heightPixel(250)}
+                data={bmiChartData}
+              />
+            )}
             {isError ? (
               <Text size={12} color={colors.icon_gray}>
                 Could not load BMI graph. Pull to refresh or try again later.

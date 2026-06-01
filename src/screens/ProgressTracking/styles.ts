@@ -1,4 +1,5 @@
 import { StyleSheet } from 'react-native';
+import colors from '../../utils/colors';
 import { heightPixel, widthPixel } from '../../utils/helper';
 
 const styles = StyleSheet.create({
@@ -24,8 +25,9 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
   },
   yearDropdown: {
-    width: widthPixel(100),
-    minWidth: widthPixel(88),
+    width: widthPixel(128),
+    minWidth: widthPixel(128),
+    flexShrink: 0,
   },
   caloriesDropdown: {
     width: widthPixel(120),
@@ -50,6 +52,29 @@ const styles = StyleSheet.create({
   centerMsg: {
     paddingVertical: heightPixel(24),
     alignItems: 'center',
+  },
+  bmiChartWrap: {
+    width: '100%',
+    overflow: 'hidden',
+    alignItems: 'flex-start',
+    backgroundColor: colors.blackish_gray,
+    borderRadius: widthPixel(12),
+  },
+  bmiChartEmpty: {
+    minHeight: heightPixel(220),
+    borderRadius: widthPixel(12),
+    backgroundColor: colors.blackish_gray,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: widthPixel(16),
+  },
+  chartLoaderWrap: {
+    width: '100%',
+    minHeight: heightPixel(220),
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: colors.blackish_gray,
+    borderRadius: widthPixel(12),
   },
 });
 
