@@ -134,11 +134,13 @@ const BookingDetails = () => {
                                         text={prescription ? "Edit" : "Upload Prescription"}
                                         onPress={handler?.onEdit}
                                     />
-                                    <Button
-                                        text="Report Booking"
-                                        onPress={handler?.onReport}
-                                        type="outlined"
-                                    />
+                                    {Number(data?.is_reported) !== 1 ? (
+                                        <Button
+                                            text="Report Booking"
+                                            onPress={handler?.onReport}
+                                            type="outlined"
+                                        />
+                                    ) : null}
                                 </>
                             )
                         }

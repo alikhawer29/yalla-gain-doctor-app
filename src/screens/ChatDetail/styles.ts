@@ -77,63 +77,36 @@ const styles = StyleSheet.create({
     // paddingHorizontal: widthPixel(50),
     paddingVertical: heightPixel(20),
   },
-  attachment_strip: {
-    maxHeight: heightPixel(130),
-    paddingHorizontal: widthPixel(15),
-    paddingBottom: heightPixel(8),
-    flexGrow: 0,
+  input_inline_attachments: {
+    maxHeight: heightPixel(56),
+    marginBottom: heightPixel(8),
   },
-  attachment_strip_content: {
-    alignItems: 'flex-end',
-    paddingRight: widthPixel(15),
-    paddingTop: heightPixel(4),
-  },
-  attachment_preview_cell: {
-    marginRight: widthPixel(12),
+  input_inline_attachments_content: {
     alignItems: 'center',
-    maxWidth: widthPixel(100),
+    gap: widthPixel(8),
   },
-  attachment_thumb_wrap: {
+  input_inline_thumb_wrap: {
     position: 'relative',
-    width: heightPixel(72),
-    height: heightPixel(72),
-    borderRadius: heightPixel(10),
+    width: heightPixel(48),
+    height: heightPixel(48),
+    borderRadius: heightPixel(8),
     overflow: 'hidden',
-    backgroundColor: colors.blackish_gray,
-    borderWidth: 1,
-    borderColor: colors.primary,
+    backgroundColor: colors.black,
   },
-  attachment_thumb: {
+  input_inline_thumb: {
     width: '100%',
     height: '100%',
   },
-  attachment_thumb_remove: {
+  input_inline_thumb_remove: {
     position: 'absolute',
-    top: heightPixel(4),
-    right: heightPixel(4),
+    top: heightPixel(2),
+    right: heightPixel(2),
     zIndex: 2,
-    // backgroundColor: 'rgba(0,0,0,0.65)',
-    borderRadius: heightPixel(12),
   },
-  attachment_thumb_caption: {
-    marginTop: heightPixel(4),
-    maxWidth: widthPixel(96),
-  },
-  attachment_chip: {
+  input_row: {
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: widthPixel(6),
-    paddingHorizontal: widthPixel(10),
-    paddingVertical: heightPixel(6),
-    marginRight: widthPixel(8),
-    backgroundColor: colors.blackish_gray,
-    borderRadius: heightPixel(8),
-    borderWidth: 1,
-    borderColor: colors.primary,
-    maxWidth: widthPixel(200),
-  },
-  attachment_chip_name: {
-    flexShrink: 1,
+    alignItems: 'flex-end',
+    width: '100%',
   },
   message_files: {
     marginTop: heightPixel(6),
@@ -151,32 +124,57 @@ const styles = StyleSheet.create({
     borderRadius: heightPixel(10),
     backgroundColor: colors.blackish_gray,
   },
+  message_image_hint: {
+    marginTop: heightPixel(4),
+  },
+  image_viewer_backdrop: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.92)',
+  },
+  image_viewer_content: {
+    flex: 1,
+    width: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: widthPixel(16),
+  },
+  image_viewer_image: {
+    width: '100%',
+    height: '80%',
+  },
+  image_viewer_hint: {
+    marginTop: heightPixel(16),
+    textAlign: 'center',
+  },
   input_container: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
     paddingHorizontal: widthPixel(15),
     paddingVertical: heightPixel(15),
     gap: widthPixel(10),
   },
   input_wrapper: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: colors.blackish_gray,
     borderRadius: heightPixel(10),
     borderWidth: 1,
     borderColor: colors.primary,
-    paddingHorizontal: widthPixel(15),
+    paddingHorizontal: widthPixel(12),
+    paddingVertical: heightPixel(8),
   },
   input: {
     flex: 1,
-    height: heightPixel(50),
+    minHeight: heightPixel(40),
+    maxHeight: heightPixel(100),
     color: colors.white,
     fontFamily: fonts.sfpro.regular,
+    paddingTop: heightPixel(8),
+    paddingBottom: heightPixel(8),
   },
   input_icons: {
     flexDirection: 'row',
-    alignItems: 'center',
+    alignItems: 'flex-end',
+    paddingBottom: heightPixel(8),
     gap: widthPixel(10),
   },
   send_button: {
@@ -186,6 +184,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primary,
     justifyContent: 'center',
     alignItems: 'center',
+    flexShrink: 0,
+    marginBottom: heightPixel(2),
   },
   avatar_container: {
     width: heightPixel(39),

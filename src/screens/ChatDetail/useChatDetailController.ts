@@ -7,7 +7,7 @@ import {
 } from 'react';
 import { FlatList } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
-import { pick, types as DocumentTypes } from '@react-native-documents/picker';
+import { launchImageLibrary } from 'react-native-image-picker';
 import { useSelector } from 'react-redux';
 import { useGetChatQuery, useSendMessageMutation } from '../../redux/Apis/Chat';
 import { RootStackParamList, IChatMessage } from '../../interfaces';
@@ -55,6 +55,7 @@ const useChatDetailController = () => {
     const [input, setInput] = useState('');
     const [attachments, setAttachments] = useState<ChatAttachment[]>([]);
     const [messages, setMessages] = useState<IChatMessage[]>([]);
+    const [imageViewerUri, setImageViewerUri] = useState<string | null>(null);
 
     const { data: chatData, isLoading, refetch } = useGetChatQuery(chatId);
     const [sendMessage, { isLoading: isSending }] = useSendMessageMutation();
@@ -118,26 +119,32 @@ const useChatDetailController = () => {
 
     const pickAttachments = useCallback(async () => {
         try {
-            const res = await pick({
-                allowMultiSelection: true,
-                type: [
-                    DocumentTypes.images,
-                    DocumentTypes.pdf,
-                    DocumentTypes.plainText,
-                    DocumentTypes.doc,
-                    DocumentTypes.docx,
-                ],
+            const result = await launchImageLibrary({
+                mediaType: 'photo',
+                selectionLimit: 10,
+                includeExtra: true,
             });
-            if (!res?.length) return;
-            const next: ChatAttachment[] = res.map((file) => ({
-                uri: file.uri,
-                name: file.name ?? 'file',
-                type: file.type ?? 'application/octet-stream',
-            }));
+            if (result.didCancel || !result.assets?.length) return;
+
+            const next: ChatAttachment[] = result.assets
+                .filter((asset) => !!asset.uri)
+                .map((asset, index) => ({
+                    uri: asset.uri!,
+                    name: asset.fileName ?? `image_${Date.now()}_${index}.jpg`,
+                    type: asset.type ?? 'image/jpeg',
+                }));
             setAttachments((prev) => [...prev, ...next]);
         } catch {
             /* user cancelled or picker error */
         }
+    }, []);
+
+    const openImageViewer = useCallback((uri: string) => {
+        setImageViewerUri(uri);
+    }, []);
+
+    const closeImageViewer = useCallback(() => {
+        setImageViewerUri(null);
     }, []);
 
     const removeAttachment = useCallback((index: number) => {
@@ -216,6 +223,7 @@ const useChatDetailController = () => {
             /** First load with no cached data — show inline spinner, not full-screen loader */
             isMessagesInitialLoading: isLoading && !chatData,
             isSending,
+            imageViewerUri,
         },
         functions: {
             handleSendMessage,
@@ -223,6 +231,8 @@ const useChatDetailController = () => {
             onChangeInput,
             pickAttachments,
             removeAttachment,
+            openImageViewer,
+            closeImageViewer,
             groupMessagesByDate,
             refetch,
         },

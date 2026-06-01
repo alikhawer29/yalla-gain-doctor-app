@@ -3,8 +3,9 @@ import {
     ActivityIndicator,
     FlatList,
     KeyboardAvoidingView,
-    Linking,
+    Modal,
     Platform,
+    Pressable,
     ScrollView,
     TextInput,
     View,
@@ -31,10 +32,8 @@ import useChatDetailController from './useChatDetailController';
 import styles from './styles';
 import { heightPixel } from '../../utils/helper';
 import useKeyboard from '../../hooks/useKeyboard';
-import {
-    fileEntryToRichDisplay,
-    pendingAttachmentIsImage,
-} from './chatMediaHelpers';
+import { downloadChatDocument } from '../../utils/chatFileDownload';
+import { fileEntryToRichDisplay } from './chatMediaHelpers';
 
 const ChatDetail = () => {
     const {
@@ -48,6 +47,7 @@ const ChatDetail = () => {
             attachments,
             isMessagesInitialLoading,
             isSending,
+            imageViewerUri,
         },
         functions: {
             handleSendMessage,
@@ -55,6 +55,8 @@ const ChatDetail = () => {
             onChangeInput,
             pickAttachments,
             removeAttachment,
+            openImageViewer,
+            closeImageViewer,
         },
     } = useChatDetailController();
 
@@ -173,38 +175,47 @@ const ChatDetail = () => {
                                             <Touchable
                                                 key={`${item.id}-f-${fi}`}
                                                 style={styles.message_image_touch}
-                                                onPress={() =>
-                                                    Linking.openURL(displayUrl).catch(
-                                                        () => { },
-                                                    )
-                                                }
+                                                onPress={() => openImageViewer(displayUrl)}
                                             >
                                                 <Image
                                                     source={{ uri: displayUrl }}
                                                     style={styles.message_image}
                                                     resize="cover"
                                                 />
+                                                <Text
+                                                    size={10}
+                                                    color={colors.icon_gray}
+                                                    style={styles.message_image_hint}
+                                                >
+                                                    Tap to view
+                                                </Text>
                                             </Touchable>
                                         );
                                     }
                                     return (
-                                        <Text
+                                        <Touchable
                                             key={`${item.id}-f-${fi}`}
-                                            size={12}
-                                            color={colors.primary}
-                                            underline={!!url}
-                                            lines={1}
                                             onPress={
                                                 url
                                                     ? () =>
-                                                        Linking.openURL(
-                                                            displayUrl || url,
-                                                        ).catch(() => { })
+                                                        downloadChatDocument(
+                                                            url,
+                                                            label,
+                                                        )
                                                     : undefined
                                             }
+                                            disabled={!url}
                                         >
-                                            {label}
-                                        </Text>
+                                            <Text
+                                                size={12}
+                                                color={colors.primary}
+                                                underline={!!url}
+                                                lines={2}
+                                            >
+                                                {label}
+                                                {url ? '\nTap to download' : ''}
+                                            </Text>
+                                        </Touchable>
                                     );
                                 })}
                             </View>
@@ -223,63 +234,6 @@ const ChatDetail = () => {
 
     const renderInput = () => (
         <View style={styles.input_section}>
-            {attachments.length > 0 ? (
-                <ScrollView
-                    horizontal
-                    showsHorizontalScrollIndicator={false}
-                    style={styles.attachment_strip}
-                    contentContainerStyle={styles.attachment_strip_content}
-                >
-                    {attachments.map((a, idx) =>
-                        pendingAttachmentIsImage(a) ? (
-                            <View
-                                key={`${a.uri}-${idx}`}
-                                style={styles.attachment_preview_cell}
-                            >
-                                <View style={styles.attachment_thumb_wrap}>
-                                    <Image
-                                        source={{ uri: a.uri }}
-                                        style={styles.attachment_thumb}
-                                        resize="cover"
-                                    />
-                                    <View style={styles.attachment_thumb_remove}>
-                                        <Icon
-                                            source={images.cross}
-                                            size={14}
-                                            tint_color={colors.danger}
-                                            onPress={() => removeAttachment(idx)}
-                                        />
-                                    </View>
-                                </View>
-                                <Text
-                                    size={10}
-                                    color={colors.icon_gray}
-                                    lines={1}
-                                    style={styles.attachment_thumb_caption}
-                                >
-                                    {a.name}
-                                </Text>
-                            </View>
-                        ) : (
-                            <View key={`${a.uri}-${idx}`} style={styles.attachment_chip}>
-                                <Text
-                                    size={12}
-                                    lines={1}
-                                    style={styles.attachment_chip_name}
-                                >
-                                    {a.name}
-                                </Text>
-                                <Icon
-                                    source={images.cross}
-                                    size={16}
-                                    // tint_color={colors.icon_gray}
-                                    onPress={() => removeAttachment(idx)}
-                                />
-                            </View>
-                        ),
-                    )}
-                </ScrollView>
-            ) : null}
             <View
                 style={[
                     styles.input_container,
@@ -291,21 +245,56 @@ const ChatDetail = () => {
                 ]}
             >
                 <View style={styles.input_wrapper}>
-                    <TextInput
-                        style={styles.input}
-                        placeholder="Type message ..."
-                        placeholderTextColor={colors.icon_gray}
-                        value={input}
-                        onChangeText={onChangeInput}
-                        multiline={false}
-                    />
-                    <View style={styles.input_icons}>
-                        <Icon
-                            source={images.gallery}
-                            size={20}
-                            tint_color={colors.icon_gray}
-                            onPress={isSending ? undefined : pickAttachments}
+                    {attachments.length > 0 ? (
+                        <ScrollView
+                            horizontal
+                            showsHorizontalScrollIndicator={false}
+                            style={styles.input_inline_attachments}
+                            contentContainerStyle={styles.input_inline_attachments_content}
+                        >
+                            {attachments.map((a, idx) => (
+                                <View
+                                    key={`${a.uri}-${idx}`}
+                                    style={styles.input_inline_thumb_wrap}
+                                >
+                                    <Image
+                                        source={{ uri: a.uri }}
+                                        style={styles.input_inline_thumb}
+                                        resize="cover"
+                                    />
+                                    <Pressable
+                                        style={styles.input_inline_thumb_remove}
+                                        onPress={() => removeAttachment(idx)}
+                                    >
+                                        <Icon
+                                            source={images.cross}
+                                            size={12}
+                                            tint_color={colors.danger}
+                                        />
+                                    </Pressable>
+                                </View>
+                            ))}
+                        </ScrollView>
+                    ) : null}
+                    <View style={styles.input_row}>
+                        <TextInput
+                            style={styles.input}
+                            placeholder="Type message ..."
+                            placeholderTextColor={colors.icon_gray}
+                            value={input}
+                            onChangeText={onChangeInput}
+                            multiline
+                            scrollEnabled
+                            textAlignVertical="top"
                         />
+                        <View style={styles.input_icons}>
+                            <Icon
+                                source={images.gallery}
+                                size={20}
+                                tint_color={colors.icon_gray}
+                                onPress={isSending ? undefined : pickAttachments}
+                            />
+                        </View>
                     </View>
                 </View>
                 <Touchable
@@ -331,6 +320,32 @@ const ChatDetail = () => {
 
     return (
         <Wrapper no_padding hide_bottom_bar>
+            <Modal
+                visible={!!imageViewerUri}
+                transparent
+                animationType="fade"
+                onRequestClose={closeImageViewer}
+            >
+                <Pressable
+                    style={styles.image_viewer_backdrop}
+                    onPress={closeImageViewer}
+                >
+                    <View style={styles.image_viewer_content} pointerEvents="none">
+                        <Image
+                            source={{ uri: imageViewerUri ?? '' }}
+                            style={styles.image_viewer_image}
+                            resize="contain"
+                        />
+                        <Text
+                            size={14}
+                            color={colors.white}
+                            style={styles.image_viewer_hint}
+                        >
+                            Tap to close
+                        </Text>
+                    </View>
+                </Pressable>
+            </Modal>
             {renderHeader()}
             <KeyboardAvoidingView
                 style={[styles.container, keyboardAvoidStyle]}
