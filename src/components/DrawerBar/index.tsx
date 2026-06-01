@@ -5,6 +5,7 @@ import { useModal } from "../../contexts/ModalContext"
 import { useAppDispatch, useAppSelector } from "../../hooks"
 import { useGetWalletQuery } from "../../redux/Apis/User"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
+import { bumpServiceStack } from "../../redux/Slices/NavigationSlice"
 import colors from "../../utils/colors"
 import { heightPixel } from "../../utils/helper"
 import { navigateToAddServiceCategories, navigateToHomeTab } from "../../utils/navigation"
@@ -108,6 +109,7 @@ const DrawerBar = (props: any) => {
                                 return;
                             }
                             if (item.action === "add_service") {
+                                dispatch(bumpServiceStack());
                                 navigateToAddServiceCategories(props.navigation);
                                 props.navigation.closeDrawer();
                                 return;

@@ -18,7 +18,12 @@ export type AppStackParamList = {
     DrawerNavigator: undefined
     Chatbot: undefined
     ServiceDetails: { id: number; title: string; fromMyServices?: boolean }
-    Slots: { id: number }
+    Slots: {
+        id?: number
+        title?: string
+        fromMyServices?: boolean
+        onAdd?: (data: FormData) => void
+    }
     Notification: undefined
     PaymentLogs: undefined
     WithdrawAmount: undefined

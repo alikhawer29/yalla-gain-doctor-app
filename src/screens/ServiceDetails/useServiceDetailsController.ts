@@ -92,7 +92,11 @@ const useServiceDetailsController = () => {
     }
 
     const onEditSlots = () => {
-        navigate(ROUTES.SLOTS, { id: params?.id })
+        navigate(ROUTES.SLOTS, {
+            id: params?.id,
+            title: params?.title || data?.data?.title || 'Service Details',
+            fromMyServices: params?.fromMyServices,
+        })
     }
 
     return {

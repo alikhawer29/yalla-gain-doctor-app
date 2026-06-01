@@ -47,7 +47,7 @@ const Home = () => {
             <ProfileHeader />
             <View style={{ gap: heightPixel(10), marginVertical: heightPixel(15) }}>
                 <Image source={images.home} style={{ height: heightPixel(180), borderRadius: heightPixel(10) }} />
-                <Text>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo. Proin sodales pulvinar sic tempor. Sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus</Text>
+                <Text>Welcome to Yalla Gain. Manage your appointments, connect with patients, track consultations, and provide personalized health and fitness guidance. Stay organized, monitor your service activity, and help your patients achieve their wellness goals with confidence.</Text>
             </View>
             <Text weight="semibold" size={20}>Service Logs</Text>
         </View>

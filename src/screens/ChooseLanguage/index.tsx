@@ -14,7 +14,7 @@ const ChooseLanguage = () => {
         <Wrapper>
             <View>
                 <Text color={colors.white} size={15} weight="regular" style={{ marginTop: 20 }}>
-                    Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aenean euismod bibendum laoreet. Proin gravida dolor sit amet lacus accumsan et viverra justo commodo.
+                    Choose your preferred language to personalize your experience. All menus, notifications, and app content will be displayed in the selected language. You can change your language preference at any time from the settings.
                 </Text>
 
                 <View style={{ marginTop: 40 }}>

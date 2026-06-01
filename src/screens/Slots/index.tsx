@@ -1,5 +1,5 @@
-import { useFocusEffect, useRoute } from "@react-navigation/native";
-import React, { useCallback, useEffect, useState } from "react";
+import { RouteProp, useFocusEffect, useRoute } from "@react-navigation/native";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Alert, FlatList, TouchableOpacity, View } from "react-native";
 import images from "../../assets/images";
 import Button from "../../components/Button";
@@ -15,7 +15,8 @@ import { useModal } from "../../contexts/ModalContext";
 import { useGetServiceSlotsQuery, useUpdateServiceSlotsMutation } from "../../redux/Apis/User";
 import colors from "../../utils/colors";
 import { heightPixel, timeFormatter, timeToISOString, widthPixel } from "../../utils/helper";
-import { goBack } from "../../utils/navigation";
+import { AppStackParamList } from "../../interfaces";
+import { goBack, navigateBackToServiceDetails } from "../../utils/navigation";
 
 const INITIAL_SLOTS = [
     { day: "Monday", enabled: false, slots: [{ start_time: "", end_time: "" }] },
@@ -293,14 +294,15 @@ const Slots = () => {
         });
     };
 
-    const { params } = useRoute()
+    const { params } = useRoute<RouteProp<AppStackParamList, 'Slots'>>()
     const isAddServiceFlow = Boolean(params?.onAdd)
 
     const { showOkModal } = useModal()
     const { data, isLoading: isGettingSlotsLoading } = useGetServiceSlotsQuery(params?.id, {
         skip: !params?.id || isAddServiceFlow,
     })
-    const [submit, { isLoading, isSuccess }] = useUpdateServiceSlotsMutation()
+    const [submit, { isLoading, isSuccess, reset: resetSubmit }] = useUpdateServiceSlotsMutation()
+    const slotsSuccessShownRef = useRef(false)
 
     useFocusEffect(
         useCallback(() => {
@@ -343,11 +345,30 @@ const Slots = () => {
         }
     }, [data]);
 
-    useEffect(() => {
-        if (isSuccess) {
-            showOkModal({ type: "success", title: "Successfully", message: "Slots Has Been Saved Successfully!" }, () => goBack(), () => goBack())
+    const afterSlotsSaved = useCallback(() => {
+        if (params?.id && !isAddServiceFlow) {
+            navigateBackToServiceDetails(
+                params.id,
+                params.title ?? 'Service Details',
+                params.fromMyServices,
+            );
+            return;
         }
-    }, [isSuccess])
+        goBack();
+    }, [params?.id, params?.title, params?.fromMyServices, isAddServiceFlow]);
+
+    useEffect(() => {
+        if (!isSuccess || slotsSuccessShownRef.current) return;
+        slotsSuccessShownRef.current = true;
+        showOkModal(
+            { type: "success", title: "Successfully", message: "Slots Has Been Saved Successfully!" },
+            () => {
+                slotsSuccessShownRef.current = false;
+                resetSubmit();
+                afterSlotsSaved();
+            },
+        );
+    }, [isSuccess, afterSlotsSaved, showOkModal, resetSubmit])
 
     const handleSubmit = () => {
 

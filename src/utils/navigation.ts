@@ -6,7 +6,6 @@ import {
     type NavigationState,
     type PartialState,
 } from '@react-navigation/native';
-import { InteractionManager } from 'react-native';
 import { AppStackParamList, AuthStackParamList, RootStackParamList } from '../interfaces';
 import { NAVIGATORS, ROUTES } from './routes';
 
@@ -41,32 +40,6 @@ const homeTabParams = {
 
 const categoriesParams = { screen: ROUTES.CATEGORIES };
 
-/** Force drawer to ServiceStack → Categories when navigate merge leaves the current drawer screen active. */
-const focusDrawerOnServiceStack = () => {
-    if (!navigationRef.isReady()) return;
-
-    const drawerState = findDrawerState(navigationRef.getRootState());
-    if (!drawerState?.key || !drawerState.routes?.length) return;
-
-    const serviceIndex = drawerState.routes.findIndex(
-        r => r.name === NAVIGATORS.SERVICE_STACK,
-    );
-    if (serviceIndex < 0 || drawerState.index === serviceIndex) return;
-
-    navigationRef.dispatch({
-        ...CommonActions.reset({
-            index: serviceIndex,
-            routes: drawerState.routes.map(route => ({
-                name: route.name,
-                ...(route.name === NAVIGATORS.SERVICE_STACK
-                    ? { state: { index: 0, routes: [{ name: ROUTES.CATEGORIES }] } }
-                    : {}),
-            })),
-        }),
-        target: drawerState.key,
-    });
-};
-
 const dispatchDrawerToCategories = (drawerNavigation?: DrawerNavigation) => {
     if (drawerNavigation) {
         drawerNavigation.navigate(NAVIGATORS.SERVICE_STACK, categoriesParams);
@@ -85,19 +58,45 @@ const dispatchDrawerToCategories = (drawerNavigation?: DrawerNavigation) => {
     );
 };
 
-/** Pop Add Service / Details off the stack without remounting the navigator (avoids header glitch). */
-const popServiceStackToCategories = () => {
+/** Reset service stack to Categories only (works when Service Details is index 0). */
+const resetServiceStackToCategories = () => {
     if (!navigationRef.isReady()) return;
 
     const drawerState = findDrawerState(navigationRef.getRootState());
-    const serviceRoute = drawerState?.routes?.find(r => r.name === NAVIGATORS.SERVICE_STACK);
-    const stackState = serviceRoute?.state as NavigationState | undefined;
-    if (!stackState?.key || (stackState.index ?? 0) === 0) return;
+    if (!drawerState?.routes?.length) return;
 
-    navigationRef.dispatch({
-        ...StackActions.popToTop(),
-        target: stackState.key,
-    });
+    const serviceIndex = drawerState.routes.findIndex(
+        r => r.name === NAVIGATORS.SERVICE_STACK,
+    );
+    if (serviceIndex < 0) return;
+
+    const serviceRoute = drawerState.routes[serviceIndex];
+    const stackKey = (serviceRoute.state as NavigationState | undefined)?.key;
+
+    if (stackKey) {
+        navigationRef.dispatch({
+            ...CommonActions.reset({
+                index: 0,
+                routes: [{ name: ROUTES.CATEGORIES }],
+            }),
+            target: stackKey,
+        });
+    }
+
+    if (drawerState.index !== serviceIndex && drawerState.key) {
+        navigationRef.dispatch({
+            ...CommonActions.reset({
+                index: serviceIndex,
+                routes: drawerState.routes.map(route => ({
+                    name: route.name,
+                    ...(route.name === NAVIGATORS.SERVICE_STACK
+                        ? { state: { index: 0, routes: [{ name: ROUTES.CATEGORIES }] } }
+                        : {}),
+                })),
+            }),
+            target: drawerState.key,
+        });
+    }
 };
 
 /** Switch bottom tab navigator to Home when already on BottomTabNavigator. */
@@ -219,13 +218,12 @@ export const navigateToMyServicesTab = () => {
     );
 };
 
-/** Drawer → Categories. Pass drawer `navigation` from DrawerBar. */
+/** Drawer → Categories (fresh add-service flow). Pass drawer `navigation` from DrawerBar. */
 export const navigateToAddServiceCategories = (drawerNavigation?: DrawerNavigation) => {
     dispatchDrawerToCategories(drawerNavigation);
 
-    InteractionManager.runAfterInteractions(() => {
-        focusDrawerOnServiceStack();
-        popServiceStackToCategories();
+    requestAnimationFrame(() => {
+        resetServiceStackToCategories();
     });
 };
 
@@ -234,7 +232,24 @@ export const navigateToServiceDetailsFromMyServices = (
     id: number,
     title: string,
 ) => {
+    navigateBackToServiceDetails(id, title, true);
+};
+
+/** After editing slots (App stack) → pop Slots and open Service Details in drawer. */
+export const navigateBackToServiceDetails = (
+    id: number,
+    title: string,
+    fromMyServices?: boolean,
+) => {
     if (!navigationRef.isReady()) return;
+
+    const root = navigationRef.getRootState();
+    const onSlotsScreen = root.routes[root.index]?.name === ROUTES.SLOTS;
+
+    if (onSlotsScreen) {
+        navigationRef.dispatch(StackActions.pop());
+    }
+
     navigationRef.dispatch(
         CommonActions.navigate({
             name: NAVIGATORS.DRAWER as keyof CombinedParamList,
@@ -242,7 +257,11 @@ export const navigateToServiceDetailsFromMyServices = (
                 screen: NAVIGATORS.SERVICE_STACK,
                 params: {
                     screen: ROUTES.SERVICE_DETAILS,
-                    params: { id, title, fromMyServices: true },
+                    params: {
+                        id,
+                        title,
+                        ...(fromMyServices ? { fromMyServices: true } : {}),
+                    },
                 },
             },
         } as never),
