@@ -1,5 +1,6 @@
 import { DrawerContentScrollView } from "@react-navigation/drawer"
 import { View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 import images from "../../assets/images"
 import { useModal } from "../../contexts/ModalContext"
 import { useAppDispatch, useAppSelector } from "../../hooks"
@@ -7,7 +8,7 @@ import { useGetWalletQuery } from "../../redux/Apis/User"
 import { logout, selectUser } from "../../redux/Slices/AuthSlice"
 import { bumpServiceStack } from "../../redux/Slices/NavigationSlice"
 import colors from "../../utils/colors"
-import { heightPixel } from "../../utils/helper"
+import { heightPixel, widthPixel } from "../../utils/helper"
 import { navigateToAddServiceCategories, navigateToHomeTab } from "../../utils/navigation"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import Button from "../Button"
@@ -82,7 +83,19 @@ const DrawerBar = (props: any) => {
     }
 
     return (
-        <DrawerContentScrollView {...props} contentContainerStyle={{ paddingTop: 0 }} showsVerticalScrollIndicator={false}>
+        <SafeAreaView
+            style={{ flex: 1, backgroundColor: colors.black }}
+            edges={['top', 'bottom', 'left', 'right']}
+        >
+        <DrawerContentScrollView
+            {...props}
+            contentContainerStyle={{
+                paddingTop: heightPixel(8),
+                paddingBottom: heightPixel(16),
+                paddingHorizontal: widthPixel(20),
+            }}
+            showsVerticalScrollIndicator={false}
+        >
             <Row gap={10} align="center" style={{ marginVertical: heightPixel(24) }}>
                 <View>
                     <Icon source={{ uri: user?.photo }} size={50} rounded no_padding border={colors.white} resize="cover" />
@@ -132,6 +145,7 @@ const DrawerBar = (props: any) => {
             }
             <Button text="Logout" type="custom" icon={images.drawer_icons.logout} style={styles.logout_button} onPress={onPressLogout} />
         </DrawerContentScrollView>
+        </SafeAreaView>
     )
 }
 

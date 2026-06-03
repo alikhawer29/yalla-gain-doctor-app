@@ -20,7 +20,7 @@ const ServiceCard = ({ data, onPress }) => {
                 <Row justify="space-between">
                     <Row align="center" gap={10}>
                         <Icon source={images.calendar} size={14} />
-                        <Text size={13}>{formatLongDate((data?.appointment_date || data?.rescheduled_appointment_date) ?? '')}</Text>
+                        <Text size={13}>{formatLongDate((data?.is_rescheduled ? data?.rescheduled_appointment_date : data?.appointment_date) ?? '')}</Text>
                     </Row>
                     <StatusBadge status={data?.status === 'completed' ? 'Past' : data?.status} />
                 </Row>

@@ -123,17 +123,19 @@ export type UaeTransactionLogItem = {
 
 export type UaeTransactionLogsApiResponse = {
   /** Either an array of logs (with `meta` for pagination) or a nested envelope. */
-  data?: UaeTransactionLogItem[] | {
-    transaction_logs?: {
-      current_page: number;
-      last_page: number;
-      per_page: number;
-      total: number;
-      data: UaeTransactionLogItem[];
-    };
-    items?: UaeTransactionLogItem[];
-    data?: UaeTransactionLogItem[];
-  };
+  data?:
+    | UaeTransactionLogItem[]
+    | {
+        transaction_logs?: {
+          current_page: number;
+          last_page: number;
+          per_page: number;
+          total: number;
+          data: UaeTransactionLogItem[];
+        };
+        items?: UaeTransactionLogItem[];
+        data?: UaeTransactionLogItem[];
+      };
   meta?: {
     current_page: number;
     last_page: number;
@@ -146,7 +148,12 @@ export type UaeTransactionLogsApiResponse = {
 
 export const userApi = createApi({
   reducerPath: 'userApi',
-  tagTypes: ['Wallet', 'UaeBeneficiaries', 'UaeTransactionLogs', 'Notifications'],
+  tagTypes: [
+    'Wallet',
+    'UaeBeneficiaries',
+    'UaeTransactionLogs',
+    'Notifications',
+  ],
   baseQuery: fetchBaseQuery({
     baseUrl: DOCTOR_TRAINER_API_BASE_URL,
     prepareHeaders: (headers, { getState }) => {
@@ -534,7 +541,12 @@ export const userApi = createApi({
     getDashboardEarningsGraph: builder.query<
       {
         filter?: string;
-        data?: Array<{ day?: string; date?: string; month?: string; earnings?: number }>;
+        data?: Array<{
+          day?: string;
+          date?: string;
+          month?: string;
+          earnings?: number;
+        }>;
         status?: boolean;
       },
       { filter: 'weekly' | 'monthly' | 'yearly' }
@@ -549,7 +561,12 @@ export const userApi = createApi({
     getDashboardBookingsGraph: builder.query<
       {
         filter?: string;
-        data?: Array<{ day?: string; date?: string; month?: string; bookings?: number }>;
+        data?: Array<{
+          day?: string;
+          date?: string;
+          month?: string;
+          bookings?: number;
+        }>;
         status?: boolean;
       },
       { filter: 'weekly' | 'monthly' | 'yearly' }
@@ -622,13 +639,7 @@ export const userApi = createApi({
         to?: string;
       }
     >({
-      query: ({
-        page = 1,
-        per_page = 15,
-        status,
-        from,
-        to,
-      }) => ({
+      query: ({ page = 1, per_page = 15, status, from, to }) => ({
         url: `stripe/uae/transaction-logs`,
         method: 'GET',
         params: {
@@ -660,6 +671,14 @@ export const userApi = createApi({
       }),
       keepUnusedDataFor: 0,
     }),
+    getConsultationFees: builder.query({
+      query: params => ({
+        url: `consultation-fees`,
+        method: 'GET',
+        params,
+      }),
+      keepUnusedDataFor: 0,
+    }),
   }),
 });
 
@@ -674,6 +693,7 @@ export const {
   useUpdateServiceSlotsMutation,
   useDeleteProfileMutation,
   useGetAppointmentRequestsQuery,
+  useGetConsultationFeesQuery,
   useGetBookingByIdQuery,
   useUpdateAppointmentStatusMutation,
   useGetBookingsQuery,

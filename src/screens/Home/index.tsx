@@ -68,7 +68,9 @@ const Home = () => {
                 data={data}
                 renderItem={({ item }) => (
                     <ServiceLogCard
-                        date={formatLongDate(item?.appointment_date ?? '')}
+                        date={formatLongDate(
+                            (item?.is_rescheduled ? item?.rescheduled_appointment_date : item?.appointment_date) ?? '',
+                        )}
                         bookingId={`#${item?.id}`}
                         amount={item?.service?.charges || 0}
                         status={item?.status}

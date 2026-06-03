@@ -23,7 +23,7 @@ const AddService = () => {
         values: {
             initial,
             isLoading,
-            is_edit
+            is_edit,
         },
         functions: {
             onSubmit,
@@ -37,6 +37,7 @@ const AddService = () => {
             <Formik
                 innerRef={formik_ref}
                 initialValues={initial}
+                enableReinitialize
                 validationSchema={schema}
                 onSubmit={onSubmit}
             >
@@ -53,11 +54,11 @@ const AddService = () => {
                         <Input
                             type="number"
                             label="Service Charges"
-                            placeholder="Enter Service Charges"
+                            placeholder="Set by admin"
                             required
                             value={data?.charges}
-                            onChangeText={handleChange("charges")}
                             error={touched.charges ? errors.charges : undefined}
+                            disabled
                         />
                         <Input
                             label="Description"
