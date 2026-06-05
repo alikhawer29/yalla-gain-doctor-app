@@ -85,6 +85,16 @@ export type RootStackParamList = {
     UserHistory: { id: string | number },
     Reviews: undefined,
     ZoomMeeting: { sdk_key: string; signature: string; meeting_number: string; password: string; join_url?: string; zak_token?: string; appointment_id?: string | number },
+    VideoSession: {
+        session_token: string;
+        session_name: string;
+        user_name: string;
+        role: number;
+        doctor_name?: string;
+        patient_name?: string;
+        appointment_id?: string | number;
+        sdk_key?: string;
+    },
     AvatarDetail: { id?: string | number } | undefined,
     Wallet: undefined;
     WithdrawAmount: undefined;

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react"
+import { useState } from "react"
 import { View, RefreshControl } from "react-native"
 import Button from "../../components/Button"
 import Image from "../../components/Image"
@@ -6,6 +8,7 @@ import Row from "../../components/Row"
 import ScreenLoader from "../../components/ScreenLoader"
 import StatusBadge from "../../components/StatusBadge"
 import Text from "../../components/Text"
+import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
 import {
     formatLongDate,
@@ -19,8 +22,12 @@ import Input from "../../components/Input"
 import colors from "../../utils/colors"
 import { Rating } from "react-native-ratings"
 import images from "../../assets/images"
+import type { BookingVideoSession } from "../../types/videoSession"
+import { getPrescriptionFileDisplay } from "../../utils/prescriptionFile"
+import { downloadRemoteFile } from "../../utils/remoteFileDownload"
 
 const BookingDetails = () => {
+    const [isDownloadingPrescription, setIsDownloadingPrescription] = useState(false)
 
     const {
         values: {
@@ -32,6 +39,7 @@ const BookingDetails = () => {
             prescription,
             prescriptionFile,
             existingPrescriptionFileUrl,
+            videoSession,
         },
         functions: {
             onApprove,
@@ -41,6 +49,7 @@ const BookingDetails = () => {
             onSavePrescription,
             onChangePrescription,
             onStartSession,
+            onEndSession,
             onReport,
             onBookingHistory,
             onPickPrescriptionFile,
@@ -53,7 +62,85 @@ const BookingDetails = () => {
         return <Loader mode="secondary" />
     }
 
-    const getButtonsByStatus = (status: "pending" | "upcoming" | "in-progress" | "past" | "rejected", handler: {
+    const serverPrescriptionFile = data?.prescription_file
+        ? getPrescriptionFileDisplay({
+            fileName: data?.prescription_file_name,
+            fileType: data?.prescription_file_type,
+            fileUrl: data?.prescription_file,
+        })
+        : null
+
+    const existingPrescriptionFile = existingPrescriptionFileUrl
+        ? getPrescriptionFileDisplay({
+            fileName: data?.prescription_file_name,
+            fileType: data?.prescription_file_type,
+            fileUrl: existingPrescriptionFileUrl,
+        })
+        : null
+
+    const newPrescriptionFile = prescriptionFile
+        ? getPrescriptionFileDisplay({
+            fileName: prescriptionFile.name,
+            fileType: prescriptionFile.type,
+        })
+        : null
+
+    const onDownloadPrescriptionFile = async (
+        fileUrl?: string | null,
+        fileName?: string,
+    ) => {
+        if (!fileUrl || isDownloadingPrescription) return
+        setIsDownloadingPrescription(true)
+        try {
+            await downloadRemoteFile(fileUrl, fileName || 'prescription', {
+                description: 'Prescription file',
+            })
+        } finally {
+            setIsDownloadingPrescription(false)
+        }
+    }
+
+    const renderVideoActions = (handler: {
+        videoSession?: BookingVideoSession | null;
+        onStartSession?: () => void;
+        onEndSession?: () => void;
+        isStartingSession?: boolean;
+        startType?: "primary" | "outlined";
+    }) => {
+        const vs = handler?.videoSession;
+        if (!vs) return null;
+
+        const startLabel =
+            vs.status === "started" ? "Rejoin Session" : "Start Session";
+        const buttons: ReactNode[] = [];
+
+        if (vs.can_start) {
+            buttons.push(
+                <Button
+                    key="start"
+                    text={startLabel}
+                    onPress={handler?.onStartSession}
+                    type={handler?.startType ?? "primary"}
+                    loading={handler?.isStartingSession || false}
+                />,
+            );
+        }
+        if (vs.can_end) {
+            buttons.push(
+                <Button
+                    key="end"
+                    text="End Session"
+                    onPress={handler?.onEndSession}
+                    type="outlined"
+                />,
+            );
+        }
+
+        if (buttons.length === 0) return null;
+        return <View style={{ gap: heightPixel(10) }}>{buttons}</View>;
+    };
+
+    const getButtonsByStatus = (status: "pending" | "upcoming" | "in-progress" | "past" | "rejected" | "approved", handler: {
         editMode?: boolean;
         onApprove?: () => void;
         onReject?: () => void;
@@ -61,8 +148,10 @@ const BookingDetails = () => {
         onEdit?: () => void;
         onSavePrescription?: () => void | Promise<void>;
         onStartSession?: () => void;
+        onEndSession?: () => void;
         onReport?: () => void;
         isStartingSession?: boolean;
+        videoSession?: BookingVideoSession | null;
     }) => {
         switch (status) {
             case "pending":
@@ -90,27 +179,17 @@ const BookingDetails = () => {
                 )
 
             case "upcoming":
-                return (
-                    <Button
-                        text="Start Session"
-                        onPress={handler?.onStartSession}
-                        loading={handler?.isStartingSession || false}
-                    />
-                )
+            case "approved":
+                return renderVideoActions({
+                    ...handler,
+                    startType: "primary",
+                });
 
             case "in-progress":
-                return (
-                    <View style={{ gap: heightPixel(10) }}>
-                        {
-                            <Button
-                                text="Start Session"
-                                onPress={handler?.onStartSession}
-                                type="outlined"
-                                loading={handler?.isStartingSession || false}
-                            />
-                        }
-                    </View >
-                )
+                return renderVideoActions({
+                    ...handler,
+                    startType: "outlined",
+                });
 
             case "past":
                 return (
@@ -153,7 +232,7 @@ const BookingDetails = () => {
 
     return (
         <>
-            {isUpdateLoading && <ScreenLoader />}
+            {isUpdateLoading || isDownloadingPrescription ? <ScreenLoader /> : null}
             <Wrapper
                 scrollable
                 refreshControl={
@@ -324,21 +403,35 @@ const BookingDetails = () => {
                                 </Row>
                             )}
 
-                            {data?.prescription_file && (
-                                <Row style={{ marginTop: heightPixel(10) }} align="center" gap={10}>
-                                    <Image
-                                        source={images.file}
-                                        style={{ width: widthPixel(50), height: widthPixel(50) }}
-                                        resize="contain"
-                                    />
-                                    <Text
-                                        style={styles.value_text}
-                                        color={colors.icon_gray}
-                                        lines={1}
-                                    >
-                                        {String(data?.prescription_file).split("/").pop()}
-                                    </Text>
-                                </Row>
+                            {data?.prescription_file && serverPrescriptionFile && (
+                                <Touchable
+                                    onPress={() =>
+                                        onDownloadPrescriptionFile(
+                                            data.prescription_file,
+                                            serverPrescriptionFile.fileName,
+                                        )
+                                    }
+                                >
+                                    <Row style={{ marginTop: heightPixel(10) }} align="center" gap={10}>
+                                        <Image
+                                            source={serverPrescriptionFile.icon}
+                                            style={{ width: widthPixel(50), height: widthPixel(50) }}
+                                            resize="contain"
+                                        />
+                                        <View style={{ flex: 1 }}>
+                                            <Text
+                                                style={styles.value_text}
+                                                color={colors.icon_gray}
+                                                lines={1}
+                                            >
+                                                {serverPrescriptionFile.fileName}
+                                            </Text>
+                                            <Text size={11} color={colors.primary}>
+                                                Tap to download
+                                            </Text>
+                                        </View>
+                                    </Row>
+                                </Touchable>
                             )}
                         </>
                     )}
@@ -353,15 +446,38 @@ const BookingDetails = () => {
                                 value={prescription}
                             />
                             <View style={{ marginTop: heightPixel(10) }}>
-                                {existingPrescriptionFileUrl && !prescriptionFile ? (
-                                    <Text
-                                        style={{ marginBottom: heightPixel(8) }}
-                                        color={colors.icon_gray}
-                                        size={12}
+                                {existingPrescriptionFile && !prescriptionFile ? (
+                                    <Touchable
+                                        onPress={() =>
+                                            onDownloadPrescriptionFile(
+                                                existingPrescriptionFileUrl,
+                                                existingPrescriptionFile.fileName,
+                                            )
+                                        }
                                     >
-                                        Current file:{' '}
-                                        {String(existingPrescriptionFileUrl).split('/').pop()}
-                                    </Text>
+                                        <Row
+                                            style={{ marginBottom: heightPixel(8) }}
+                                            align="center"
+                                            gap={8}
+                                        >
+                                            <Image
+                                                source={existingPrescriptionFile.icon}
+                                                style={{
+                                                    width: widthPixel(28),
+                                                    height: widthPixel(28),
+                                                }}
+                                                resize="contain"
+                                            />
+                                            <View style={{ flex: 1 }}>
+                                                <Text color={colors.icon_gray} size={12} lines={1}>
+                                                    Current file: {existingPrescriptionFile.fileName}
+                                                </Text>
+                                                <Text size={11} color={colors.primary}>
+                                                    Tap to download
+                                                </Text>
+                                            </View>
+                                        </Row>
+                                    </Touchable>
                                 ) : null}
                                 <Button
                                     text={
@@ -372,21 +488,43 @@ const BookingDetails = () => {
                                     onPress={onPickPrescriptionFile}
                                     type="outlined"
                                 />
-                                {!!prescriptionFile && (
-                                    <Text
+                                {!!prescriptionFile && newPrescriptionFile && (
+                                    <Row
                                         style={{ marginTop: heightPixel(5) }}
-                                        color={colors.icon_gray}
-                                        size={12}
+                                        align="center"
+                                        gap={8}
                                     >
-                                        New file: {prescriptionFile.name}
-                                    </Text>
+                                        <Image
+                                            source={newPrescriptionFile.icon}
+                                            style={{
+                                                width: widthPixel(28),
+                                                height: widthPixel(28),
+                                            }}
+                                            resize="contain"
+                                        />
+                                        <Text color={colors.icon_gray} size={12} lines={1}>
+                                            New file: {newPrescriptionFile.fileName}
+                                        </Text>
+                                    </Row>
                                 )}
                             </View>
                         </>
                     }
                 </View>
                 <View style={{ marginVertical: heightPixel(30) }}>
-                    {getButtonsByStatus(data?.status, { editMode, onApprove, onReject, onReschedule, onEdit, onSavePrescription, onStartSession, onReport, isStartingSession: isUpdateLoading })}
+                    {getButtonsByStatus(data?.status, {
+                        editMode,
+                        onApprove,
+                        onReject,
+                        onReschedule,
+                        onEdit,
+                        onSavePrescription,
+                        onStartSession,
+                        onEndSession,
+                        onReport,
+                        isStartingSession: isUpdateLoading,
+                        videoSession,
+                    })}
                 </View>
             </Wrapper>
         </>

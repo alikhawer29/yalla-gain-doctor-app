@@ -108,6 +108,9 @@ const images = {
         subscription: require('./helpdesk/subscription.png'),
         trash: require('./helpdesk/trash.png'),
         wallet: require('./helpdesk/wallet.png'),
+        pdf: require('./helpdesk/pdf.png'),
+        docs: require('./helpdesk/docs.png'),
+        xlsx: require('./helpdesk/xlsx.png'),
     },
 };
 

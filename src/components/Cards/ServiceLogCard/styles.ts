@@ -33,15 +33,11 @@ const styles = StyleSheet.create({
         gap: widthPixel(5),
     },
     statusBadge: {
-        backgroundColor: colors.primary,
         paddingHorizontal: widthPixel(12),
         paddingVertical: heightPixel(4),
         borderRadius: heightPixel(15),
         alignItems: "center",
         justifyContent: "center",
-    },
-    upcomingBadge: {
-        backgroundColor: "#FF6B35", // Orange-red color for upcoming status
     },
 })
 

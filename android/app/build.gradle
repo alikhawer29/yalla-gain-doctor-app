@@ -135,31 +135,6 @@ dependencies {
         implementation jscFlavor
     }
 
-    // Zoom Meeting SDK
-    implementation 'us.zoom.meetingsdk:zoomsdk:6.6.0'
-    
-    // Coil image loading library (required by Zoom SDK)
-    implementation "io.coil-kt:coil:2.5.0"
-    implementation "io.coil-kt:coil-gif:2.5.0"
-    
-    // Jetpack Compose dependencies required by Zoom SDK
-    // Must be new enough to include rememberComposableLambda and PointerInputEventHandler (Zoom UI uses them at runtime)
-    def composeBomVersion = "2024.09.00"
-    implementation platform("androidx.compose:compose-bom:$composeBomVersion")
-    // Include all Compose UI modules to ensure PointerInputEventHandler is available
-    implementation "androidx.compose.ui:ui"
-    implementation "androidx.compose.ui:ui-graphics"
-    implementation "androidx.compose.ui:ui-text"
-    implementation "androidx.compose.ui:ui-unit"
-    implementation "androidx.compose.ui:ui-geometry"
-    implementation "androidx.compose.ui:ui-tooling-preview"
-    implementation "androidx.compose.foundation:foundation"
-    implementation "androidx.compose.material3:material3"
-    implementation "androidx.activity:activity-compose:1.9.2"
-    implementation "androidx.compose.runtime:runtime"
-    implementation "androidx.compose.runtime:runtime-livedata"
-    implementation "androidx.lifecycle:lifecycle-runtime-ktx:2.7.0"
-    implementation "androidx.lifecycle:lifecycle-viewmodel-compose:2.7.0"
 }
 
 apply plugin: "com.google.gms.google-services"

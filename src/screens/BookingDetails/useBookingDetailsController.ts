@@ -14,10 +14,14 @@ import {
   useGetBookingByIdQuery,
   useUpdateAppointmentStatusMutation,
   useUpdatePrescriptionMutation,
-  useCreateZoomMeetingMutation,
-  useLazyGetZoomDetailsQuery,
+  useStartZoomSessionMutation,
+  useEndZoomMeetingMutation,
 } from '../../redux/Apis/User';
+import { mapZoomApiMessage } from '../../utils/mapZoomApiMessage';
+import { useAppSelector } from '../../hooks';
+import { selectUser } from '../../redux/Slices/AuthSlice';
 import { navigate, navigateToProgressTracking } from '../../utils/navigation';
+import { parseZoomVideoSession } from '../../utils/parseZoomVideoSession';
 import { ROUTES } from '../../utils/routes';
 import useToggle from '../../hooks/useToggle';
 import { RootStackParamList } from '../../interfaces';
@@ -56,6 +60,7 @@ const useBookingDetailsController = () => {
   const navigation = useNavigation();
   const route = useRoute<RouteProp<RootStackParamList, 'BookingDetails'>>();
   const params = route.params;
+  const authUser = useAppSelector(selectUser);
   const { showOkModal, showYesNoModal, showInputModal } = useModal();
   const [toggleEditMode, editMode] = useToggle();
   const previousIdRef = useRef<string | number | undefined>(undefined);
@@ -67,16 +72,12 @@ const useBookingDetailsController = () => {
     type: string;
   } | null>(null);
   const [isStartingSession, setIsStartingSession] = useState(false);
+  const [isEndingSession, setIsEndingSession] = useState(false);
   const [isPullRefreshing, setIsPullRefreshing] = useState(false);
 
   const { data, refetch, isLoading, isSuccess } = useGetBookingByIdQuery(
     params?.id as string | number,
   );
-  // Use lazy query to prevent auto-fetching - only fetch when explicitly needed (when starting session)
-  // This prevents "Meeting not created yet" errors from showing automatically
-  const [getZoomDetails, { isLoading: isFetchingZoomDetails }] =
-    useLazyGetZoomDetailsQuery();
-
   const [
     update,
     {
@@ -92,8 +93,8 @@ const useBookingDetailsController = () => {
       isSuccess: isUpdatePrescriptionSuccess,
     },
   ] = useUpdatePrescriptionMutation();
-  const [createZoomMeeting, { isLoading: isCreatingZoomMeeting }] =
-    useCreateZoomMeetingMutation();
+  const [startZoomSession] = useStartZoomSessionMutation();
+  const [endZoomSession] = useEndZoomMeetingMutation();
 
   useEffect(() => {
     if (isFocused && params?.id) {
@@ -340,17 +341,10 @@ const useBookingDetailsController = () => {
   };
 
   const onStartSession = async () => {
-    if (data?.data?.status === 'upcoming') {
-      showOkModal({
-        type: 'error',
-        title: 'Alert',
-        message:
-          'The session can only be started once the scheduled date and time arrive. Please check your booking details.',
-      });
-      return;
-    }
+    const booking = data?.data;
+    const videoSession = booking?.video_session;
 
-    if (!data?.data?.id) {
+    if (!booking?.id) {
       showOkModal({
         type: 'error',
         title: 'Error',
@@ -359,151 +353,122 @@ const useBookingDetailsController = () => {
       return;
     }
 
-    // Set loading state - this will persist until navigation
+    if (!videoSession) {
+      showOkModal({
+        type: 'error',
+        title: 'Video',
+        message: 'Video session is not available for this booking.',
+      });
+      return;
+    }
+
+    if (!videoSession.can_start) {
+      showOkModal({
+        type: 'error',
+        title: 'Video',
+        message:
+          videoSession.status === 'ended'
+            ? 'This meeting has already ended.'
+            : 'You cannot start this session right now.',
+      });
+      return;
+    }
+
     setIsStartingSession(true);
 
     try {
-      // First, try to create the meeting (or get "already created" response)
-      let createResult;
-      try {
-        createResult = await createZoomMeeting(data.data.id).unwrap();
-      } catch (createError: any) {
-        // If meeting already exists, continue to fetch zoom details
-        if (
-          createError?.data?.message?.includes('already created') ||
-          createError?.data?.status
-        ) {
-          createResult = createError.data;
-        } else {
-          throw createError;
-        }
-      }
+      const startResult = await startZoomSession(booking.id).unwrap();
+      const sessionCreds = parseZoomVideoSession(
+        (startResult?.data ?? startResult) as Record<string, unknown>,
+      );
 
-      // Wait a bit for the meeting to be fully created/ready
-      await new Promise<void>(resolve => setTimeout(() => resolve(), 1000));
-
-      // Always fetch zoom details to get zak token from zoom_start_url
-      // This is required for host to start the meeting
-      let zoomDetails;
-      try {
-        const zoomDetailsResult = await getZoomDetails(data.data.id).unwrap();
-        zoomDetails = zoomDetailsResult?.data;
-      } catch (zoomError: any) {
-        // If meeting doesn't exist yet, show appropriate error
-        if (
-          zoomError?.data?.message?.includes('not created') ||
-          zoomError?.data?.message?.includes('Meeting not created')
-        ) {
-          setIsStartingSession(false);
-          showOkModal({
-            type: 'error',
-            title: 'Error',
-            message:
-              'Meeting is being created. Please wait a moment and try again.',
-          });
-          return;
-        }
-        throw zoomError;
-      }
-
-      if (!zoomDetails) {
-        setIsStartingSession(false);
-        showOkModal({
-          type: 'error',
-          title: 'Error',
-          message: 'Failed to fetch Zoom meeting details. Please try again.',
-        });
-        return;
-      }
-
-      // Extract zak token from zoom_start_url (required for host to start meeting)
-      const startUrl =
-        zoomDetails.zoom_start_url || zoomDetails.zoom_api?.start_url;
-      let zakToken: string | undefined;
-
-      if (startUrl) {
-        const zakMatch = startUrl.match(/[?&]zak=([^&]+)/);
-        if (zakMatch && zakMatch[1]) {
-          zakToken = decodeURIComponent(zakMatch[1]);
-        } else {
-          console.error(
-            'Zoom Details - Failed to extract ZAK token from URL:',
-            startUrl,
-          );
-        }
-      } else {
-        console.error('Zoom Details - No start_url found in zoom details');
-      }
-
-      const meetingNumber =
-        zoomDetails.zoom_meeting_id || zoomDetails.zoom_api?.id;
-
-      if (!zakToken) {
+      if (!sessionCreds) {
         setIsStartingSession(false);
         showOkModal({
           type: 'error',
           title: 'Error',
           message:
-            'Failed to retrieve Zoom access token (ZAK). Please try again.',
+            'Failed to retrieve video session credentials. Please try again.',
         });
         return;
       }
 
-      if (!meetingNumber) {
-        setIsStartingSession(false);
-        showOkModal({
-          type: 'error',
-          title: 'Error',
-          message: 'Failed to retrieve Zoom meeting number. Please try again.',
-        });
-        return;
-      }
+      const userName = [authUser?.first_name, authUser?.last_name]
+        .filter(Boolean)
+        .join(' ')
+        .trim() || 'Doctor';
 
-      // Refetch booking to get sdk_key and signature (needed for SDK initialization)
-      const bookingRefetch = await refetch();
-      const bookingData = bookingRefetch?.data?.data;
+      const patient = booking?.user;
+      const patientName = patient
+        ? [patient.first_name, patient.last_name].filter(Boolean).join(' ')
+        : undefined;
 
-      if (!bookingData?.sdk_key || !bookingData?.signature) {
-        setIsStartingSession(false);
-        showOkModal({
-          type: 'error',
-          title: 'Error',
-          message: 'Failed to retrieve Zoom SDK credentials. Please try again.',
-        });
-        return;
-      }
+      navigate(ROUTES.VIDEO_SESSION as any, {
+        session_token: sessionCreds.session_token,
+        session_name: sessionCreds.session_name,
+        user_name: userName,
+        role: sessionCreds.role ?? 1,
+        doctor_name: userName,
+        patient_name: patientName,
+        appointment_id: booking.id,
+        sdk_key: videoSession.sdk_key,
+      } as any);
 
-      // Navigate to Zoom meeting with zak token for host to start
-      navigate(
-        ROUTES.ZOOM_MEETING as any,
-        {
-          sdk_key: bookingData.sdk_key,
-          signature: bookingData.signature,
-          meeting_number: String(meetingNumber),
-          password:
-            zoomDetails.zoom_password || zoomDetails.zoom_api?.password || '',
-          join_url: zoomDetails.zoom_join_url || zoomDetails.zoom_api?.join_url,
-          zak_token: zakToken, // ZAK token is required for host to start meeting
-          appointment_id: params?.id, // Appointment ID for end meeting API
-        } as any,
-      );
-
-      // Reset loading state after navigation - use setTimeout to ensure navigation completes first
       setTimeout(() => {
         setIsStartingSession(false);
       }, 100);
     } catch (err: any) {
       setIsStartingSession(false);
-      console.error('Zoom meeting error:', err);
+      console.error('Video session error:', err);
       showOkModal({
         type: 'error',
-        title: 'Error',
-        message:
-          err?.data?.message ||
-          err?.message ||
-          'Failed to start Zoom meeting. Please try again.',
+        title: 'Video Session',
+        message: mapZoomApiMessage(err?.data?.message ?? err?.message),
       });
     }
+  };
+
+  const onEndSession = () => {
+    const booking = data?.data;
+    if (!booking?.id) return;
+
+    if (!booking?.video_session?.can_end) {
+      showOkModal({
+        type: 'error',
+        title: 'Video',
+        message: 'This session cannot be ended right now.',
+      });
+      return;
+    }
+
+    showYesNoModal(
+      {
+        type: 'warning',
+        title: 'End Session',
+        message:
+          'End this video session for everyone? The patient will not be able to rejoin.',
+      },
+      async () => {
+        setIsEndingSession(true);
+        try {
+          await endZoomSession(booking.id).unwrap();
+          await refetch();
+          showOkModal({
+            type: 'success',
+            title: 'Session Ended',
+            message: 'The video session has ended successfully.',
+          });
+        } catch (err: any) {
+          showOkModal({
+            type: 'error',
+            title: 'End Session',
+            message: mapZoomApiMessage(err?.data?.message ?? err?.message),
+          });
+        } finally {
+          setIsEndingSession(false);
+        }
+      },
+    );
   };
 
   const onBookingHistory = () => {
@@ -528,11 +493,12 @@ const useBookingDetailsController = () => {
     values: {
       data: data?.data || null,
       existingPrescriptionFileUrl: data?.data?.prescription_file ?? null,
+      videoSession: data?.data?.video_session ?? null,
       isUpdateLoading:
         isUpdateLoading ||
         isUpdatePrescriptionLoading ||
-        isCreatingZoomMeeting ||
-        isStartingSession,
+        isStartingSession ||
+        isEndingSession,
       isLoading,
       isRefreshing: isPullRefreshing,
       editMode,
@@ -547,6 +513,7 @@ const useBookingDetailsController = () => {
       onSavePrescription,
       onChangePrescription: setPrescription,
       onStartSession,
+      onEndSession,
       onReport,
       onBookingHistory,
       onPickPrescriptionFile,

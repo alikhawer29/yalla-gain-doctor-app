@@ -13,20 +13,10 @@ import { formatLongDate, heightPixel } from "../../utils/helper"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import useServiceLogsController from "../ServiceLogs/useServiceLogsController"
 
+const HOME_SERVICE_LOGS_LIMIT = 2
+
 const Home = () => {
     const navigation = useNavigation()
-
-    // const data = {
-    //     labels: ["Mon", "Tues", "Wed", "Thu", "Fri"],
-    //     datasets: [
-    //         {
-    //             data: [50, 95, 20, 50, 20],
-    //             color: (opacity = 1) => colors.primary, // optional
-    //             strokeWidth: 0 // optional
-    //         }
-    //     ],
-    // };
-
     const {
         values: {
             data,
@@ -37,6 +27,9 @@ const Home = () => {
             onPressCard,
         }
     } = useServiceLogsController()
+
+    const serviceLogs = (data ?? []).slice(0, HOME_SERVICE_LOGS_LIMIT)
+    const hasMoreLogs = (data?.length ?? 0) > HOME_SERVICE_LOGS_LIMIT
 
     const handleViewAll = () => {
         ; (navigation as any).navigate(NAVIGATORS.BOOKING_STACK, { screen: ROUTES.SERVICE_LOGS })
@@ -53,19 +46,19 @@ const Home = () => {
         </View>
     )
 
-    const listFooter = (
+    const listFooter = hasMoreLogs ? (
         <Button
             text="View All"
             type="outlined"
             onPress={handleViewAll}
             style={{ marginTop: heightPixel(10) }}
         />
-    )
+    ) : null
 
     return (
         <Wrapper bottom_bar>
             <FlatList
-                data={data}
+                data={serviceLogs}
                 renderItem={({ item }) => (
                     <ServiceLogCard
                         date={formatLongDate(

@@ -65,6 +65,7 @@ const ROUTES = {
   CREATE_AVATAR: 'CreateAvatar',
   SCAN: 'Scan',
   ZOOM_MEETING: 'ZoomMeeting',
+  VIDEO_SESSION: 'VideoSession',
   DASHBOARD: 'Dashboard',
   AVATAR_DETAIL: 'AvatarDetail',
   WALLET: 'Wallet',

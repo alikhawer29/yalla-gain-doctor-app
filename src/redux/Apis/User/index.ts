@@ -288,18 +288,11 @@ export const userApi = createApi({
         body: payload.body,
       }),
     }),
-    createZoomMeeting: builder.mutation({
+    startZoomSession: builder.mutation({
       query: id => ({
-        url: `appointments/${id}/zoom/create`,
+        url: `my-booking/${id}/zoom/start-session`,
         method: 'POST',
       }),
-    }),
-    getZoomDetails: builder.query({
-      query: id => ({
-        url: `appointments/${id}/zoom/details`,
-        method: 'GET',
-      }),
-      keepUnusedDataFor: 0,
     }),
     endZoomMeeting: builder.mutation({
       query: id => ({
@@ -698,9 +691,7 @@ export const {
   useUpdateAppointmentStatusMutation,
   useGetBookingsQuery,
   useUpdatePrescriptionMutation,
-  useCreateZoomMeetingMutation,
-  useGetZoomDetailsQuery,
-  useLazyGetZoomDetailsQuery,
+  useStartZoomSessionMutation,
   useEndZoomMeetingMutation,
   useGetBookingHistoryQuery,
   useGetReviewsQuery,

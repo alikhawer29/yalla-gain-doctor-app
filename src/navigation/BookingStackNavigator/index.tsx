@@ -8,7 +8,7 @@ import ServiceLogs from '../../screens/ServiceLogs';
 import RescheduleBooking from '../../screens/RescheduleBooking';
 import ReportBooking from '../../screens/ReportBooking';
 import UserHistory from '../../screens/UserHistory';
-import ZoomMeeting from '../../screens/ZoomMeeting';
+import VideoSessionScreen from '../../screens/VideoSessionScreen';
 
 const Stack = createStackNavigator<RootStackParamList>();
 
@@ -21,7 +21,7 @@ const BookingStackNavigator = () => {
             <Stack.Screen name={ROUTES.RESCHEDULE_BOOKING} component={RescheduleBooking} />
             <Stack.Screen name={ROUTES.REPORT_BOOKING} component={ReportBooking} />
             <Stack.Screen name={ROUTES.USER_HISTORY} component={UserHistory} />
-            <Stack.Screen name={ROUTES.ZOOM_MEETING} component={ZoomMeeting} options={{ headerShown: false }} />
+            <Stack.Screen name={ROUTES.VIDEO_SESSION} component={VideoSessionScreen} options={{ headerShown: false }} />
         </Stack.Navigator>
     );
 }

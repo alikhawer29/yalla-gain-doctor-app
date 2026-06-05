@@ -1,8 +1,8 @@
 import images from '../assets/images';
 
 /** Backend host (no trailing slash). Single place to switch environments. */
-export const SERVER_ORIGIN = 'https://custom-dev.onlinetestingserver.com';
-// export const SERVER_ORIGIN = 'http://109.1.1.12';
+// export const SERVER_ORIGIN = 'https://custom-dev.onlinetestingserver.com';
+export const SERVER_ORIGIN = 'http://109.1.1.7';
 
 /** Shared API root (no `doctor_trainer` segment). Used for verify-otp, resend-otp, etc. */
 export const YALLA_API_BASE_URL = `${SERVER_ORIGIN}/yalla-backend/api/`;

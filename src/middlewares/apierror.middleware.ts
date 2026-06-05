@@ -8,8 +8,12 @@ const errorLogger = () => next => action => {
       action?.error?.message ||
       'Something went wrong';
 
-    // Skip showing error toast for "Meeting not created yet" - this is expected for new appointments
-    if (message?.toLowerCase().includes('meeting not created yet')) {
+    // Skip toast while video session is still being provisioned on the server
+    const lower = message?.toLowerCase() ?? '';
+    if (
+      lower.includes('meeting not created yet') ||
+      lower.includes('session not created')
+    ) {
       return next(action);
     }
 

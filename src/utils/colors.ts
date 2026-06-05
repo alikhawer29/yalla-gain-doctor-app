@@ -22,12 +22,12 @@ const colors = {
   light_transparent_danger: 'rgba(255, 0, 0, 0.1)',
   yellow: '#FEDB16',
 
-  // status colors
+  // booking / appointment status colors
   pending: '#D59C00',
-  rejected: '#F20000',
+  rejected: '#F00000',
   upcoming: '#FF4F25',
   'in-progress': '#118076',
-  past: '#666666',
+  past: '#C85929',
   rescheduled: '#9747FF',
 };
 

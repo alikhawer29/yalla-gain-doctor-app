@@ -251,20 +251,21 @@ export const timeToISOString = (time: string, date: Date = new Date()) => {
 };
 
 export const getStatusColor = (status: string) => {
-  const key = status?.toLowerCase();
+  const key = status?.toLowerCase()?.replace(/_/g, '-').trim();
 
-  return (
-    colors[key] ||
-    {
-      pending: colors.pending,
-      upcoming: colors.upcoming,
-      rejected: colors.rejected,
-      completed: colors.extra_light_gray,
-      cancelled: colors.icon_gray,
-      rescheduled: colors.rescheduled,
-    }[key] ||
-    colors.black
-  );
+  const statusColors: Record<string, string> = {
+    pending: colors.pending,
+    upcoming: colors.upcoming,
+    rejected: colors.rejected,
+    rescheduled: colors.rescheduled,
+    past: colors.past,
+    completed: colors.past,
+    'in-progress': colors['in-progress'],
+    approved: colors.upcoming,
+    cancelled: colors.rejected,
+  };
+
+  return statusColors[key] ?? colors.black;
 };
 
 export const formatTime = (time: string) => {

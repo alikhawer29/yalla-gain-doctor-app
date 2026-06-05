@@ -4,7 +4,21 @@ import Icon from "../../Icon"
 import Text from "../../Text"
 import Touchable from "../../Touchable"
 import colors from "../../../utils/colors"
-import { capitalize, heightPixel, widthPixel } from "../../../utils/helper"
+import { getStatusColor, capitalize, heightPixel, widthPixel } from "../../../utils/helper"
+
+const statusLabel = (status?: string) => {
+    const key = status?.toLowerCase();
+    if (key === 'upcoming') return 'Upcoming';
+    if (key === 'completed' || key === 'past') return 'Past';
+    if (key === 'in-progress') return 'In Progress';
+    return capitalize(status || '');
+};
+
+const statusColorKey = (status?: string) => {
+    const key = status?.toLowerCase();
+    if (key === 'completed') return 'past';
+    return status || 'pending';
+};
 
 const styles = StyleSheet.create({
     card: {
@@ -37,15 +51,11 @@ const styles = StyleSheet.create({
         gap: widthPixel(5),
     },
     statusBadge: {
-        backgroundColor: colors.primary,
         paddingHorizontal: widthPixel(12),
         paddingVertical: heightPixel(4),
         borderRadius: heightPixel(5),
         alignItems: "center",
         justifyContent: "center",
-    },
-    upcomingBadge: {
-        backgroundColor: "#FF6B35", // Orange-red color for upcoming status
     },
 })
 
@@ -80,13 +90,13 @@ const ServiceLogCard = ({
                         </View>
                     </View>
                     <View style={styles.rightContent}>
-                        <View style={[styles.statusBadge, status === "upcoming" && styles.upcomingBadge]}>
+                        <View
+                            style={[
+                                styles.statusBadge,
+                                { backgroundColor: getStatusColor(statusColorKey(status)) },
+                            ]}>
                             <Text size={10} color={colors.white} weight="semibold">
-                                {status === "upcoming"
-                                    ? "Upcoming"
-                                    : status === "completed"
-                                        ? "Past"
-                                        : capitalize(status || "")}
+                                {statusLabel(status)}
                             </Text>
                         </View>
                     </View>

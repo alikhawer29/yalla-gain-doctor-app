@@ -63,10 +63,10 @@
 	<string>Your location is used to improve appointment accuracy and show nearby healthcare services.</string>
 
 	<key>NSCameraUsageDescription</key>
-	<string>This app requires camera access to participate in video consultations with patients through Zoom meetings.</string>
+	<string>Camera for video sessions</string>
 
 	<key>NSMicrophoneUsageDescription</key>
-	<string>This app requires microphone access to participate in audio and video consultations with patients through Zoom meetings.</string>
+	<string>Microphone for audio in sessions</string>
 
 	<!-- React Native -->
 	<key>RCTNewArchEnabled</key>
