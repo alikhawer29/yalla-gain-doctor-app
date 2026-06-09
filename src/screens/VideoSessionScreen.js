@@ -26,7 +26,12 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import usePermissions from '../hooks/usePermissions';
 import { useEndZoomMeetingMutation } from '../redux/Apis/User';
 import * as ZoomVideoService from '../services/ZoomVideoService';
-import colors from '../utils/colors';
+import {
+  formatSessionCountdown,
+  getSessionEndMs,
+  getSessionRemainingSeconds,
+  hasSessionCountdown,
+} from '../utils/sessionCountdown';
 import styles, {
   LOCAL_H,
   LOCAL_W,
@@ -46,12 +51,6 @@ function initialsFromName(name) {
   if (parts.length === 0) return '?';
   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
   return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-}
-
-function formatDuration(seconds) {
-  const m = Math.floor(seconds / 60);
-  const s = seconds % 60;
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 }
 
 const ParticipantCameraOffView = ({ initials, name }) => (
@@ -98,7 +97,20 @@ const VideoSessionScreen = () => {
     doctor_name,
     patient_name,
     appointment_id,
+    session_status,
+    duration_minutes,
+    started_at,
+    appointment_date,
+    appointment_end_time,
   } = route.params || {};
+
+  const sessionTiming = {
+    status: session_status,
+    duration_minutes,
+    started_at,
+    appointment_date,
+    appointment_end_time,
+  };
 
   const isHost = Number(role) === 1;
 
@@ -158,7 +170,9 @@ const VideoSessionScreen = () => {
   const [isBackCamera, setIsBackCamera] = useState(false);
   const [isAudioOn, setIsAudioOn] = useState(true);
   const [isSpeakerOn, setIsSpeakerOn] = useState(true);
-  const [sessionDuration, setSessionDuration] = useState(0);
+  const [remainingSeconds, setRemainingSeconds] = useState(() =>
+    getSessionRemainingSeconds(sessionTiming),
+  );
   const [remoteUserJoined, setRemoteUserJoined] = useState(false);
   const [sessionEnded, setSessionEnded] = useState(false);
   const [users, setUsers] = useState([]);
@@ -167,6 +181,7 @@ const VideoSessionScreen = () => {
 
   const timerRef = useRef(null);
   const hasEndedApiRef = useRef(false);
+  const autoEndedRef = useRef(false);
   const joinStartedRef = useRef(false);
 
   useEffect(() => {
@@ -183,6 +198,19 @@ const VideoSessionScreen = () => {
     const id = setInterval(tick, 450);
     return () => clearInterval(id);
   }, [isConnecting]);
+
+  useEffect(() => {
+    const tick = () => {
+      setRemainingSeconds(getSessionRemainingSeconds(sessionTiming));
+    };
+    tick();
+    const id = setInterval(tick, 1000);
+    timerRef.current = id;
+    return () => {
+      clearInterval(id);
+      timerRef.current = null;
+    };
+  }, [session_status, duration_minutes, started_at, appointment_date, appointment_end_time]);
 
   const syncUsers = useCallback(async () => {
     if (!zoom?.session) return;
@@ -267,17 +295,31 @@ const VideoSessionScreen = () => {
   }, [endSessionForAll]);
 
   useEffect(() => {
+    if (!hasSessionCountdown(sessionTiming)) return;
+    if (getSessionEndMs(sessionTiming) == null) return;
+    if (sessionEnded || autoEndedRef.current) return;
+    if (remainingSeconds > 0) return;
+
+    autoEndedRef.current = true;
+    endSessionForAll();
+  }, [
+    remainingSeconds,
+    sessionEnded,
+    session_status,
+    duration_minutes,
+    started_at,
+    appointment_date,
+    appointment_end_time,
+    endSessionForAll,
+  ]);
+
+  useEffect(() => {
     ZoomVideoService.bindZoom(zoom);
     ZoomVideoService.setSessionEventHandlers({
       onSessionJoin: async () => {
         setIsConnecting(false);
         await ZoomVideoService.applyCameraFacing(false);
         await syncUsers();
-        if (!timerRef.current) {
-          timerRef.current = setInterval(() => {
-            setSessionDuration(prev => prev + 1);
-          }, 1000);
-        }
       },
       onSessionLeave: () => {
         callEndSessionApi();
@@ -443,7 +485,8 @@ const VideoSessionScreen = () => {
 
   const remoteUserId = remoteUser?.userId ?? null;
   const localUserId = myUser?.userId ?? null;
-  const timerDisplay = formatDuration(sessionDuration);
+  const hasSessionTimer = hasSessionCountdown(sessionTiming);
+  const timerDisplay = formatSessionCountdown(remainingSeconds);
 
   return (
     <View style={styles.root}>
@@ -466,7 +509,7 @@ const VideoSessionScreen = () => {
         <View style={styles.timerWrap}>
           {!isConnecting ? <View style={styles.liveDot} /> : null}
           <Text style={styles.timerText}>
-            {isConnecting ? '--:--' : timerDisplay}
+            {!hasSessionTimer ? '--:--' : timerDisplay}
           </Text>
         </View>
       </View>

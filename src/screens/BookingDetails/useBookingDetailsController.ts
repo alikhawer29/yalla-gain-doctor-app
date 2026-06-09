@@ -22,6 +22,7 @@ import { useAppSelector } from '../../hooks';
 import { selectUser } from '../../redux/Slices/AuthSlice';
 import { navigate, navigateToProgressTracking } from '../../utils/navigation';
 import { parseZoomVideoSession } from '../../utils/parseZoomVideoSession';
+import { pickSessionTiming } from '../../utils/sessionCountdown';
 import { ROUTES } from '../../utils/routes';
 import useToggle from '../../hooks/useToggle';
 import { RootStackParamList } from '../../interfaces';
@@ -378,9 +379,12 @@ const useBookingDetailsController = () => {
 
     try {
       const startResult = await startZoomSession(booking.id).unwrap();
-      const sessionCreds = parseZoomVideoSession(
-        (startResult?.data ?? startResult) as Record<string, unknown>,
-      );
+      const startPayload = (startResult?.data ?? startResult) as Record<
+        string,
+        unknown
+      >;
+      const sessionCreds = parseZoomVideoSession(startPayload);
+      const sessionTiming = pickSessionTiming(videoSession, startPayload, booking);
 
       if (!sessionCreds) {
         setIsStartingSession(false);
@@ -412,6 +416,11 @@ const useBookingDetailsController = () => {
         patient_name: patientName,
         appointment_id: booking.id,
         sdk_key: videoSession.sdk_key,
+        session_status: sessionTiming.status ?? videoSession.status,
+        duration_minutes: sessionTiming.duration_minutes,
+        started_at: sessionTiming.started_at,
+        appointment_date: sessionTiming.appointment_date,
+        appointment_end_time: sessionTiming.appointment_end_time,
       } as any);
 
       setTimeout(() => {

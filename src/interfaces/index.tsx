@@ -94,6 +94,11 @@ export type RootStackParamList = {
         patient_name?: string;
         appointment_id?: string | number;
         sdk_key?: string;
+        session_status?: 'waiting' | 'started' | 'ended' | null;
+        duration_minutes?: number | null;
+        started_at?: string | null;
+        appointment_date?: string | null;
+        appointment_end_time?: string | null;
     },
     AvatarDetail: { id?: string | number } | undefined,
     Wallet: undefined;
