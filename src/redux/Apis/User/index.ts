@@ -497,14 +497,14 @@ export const userApi = createApi({
     }),
     readAllNotifications: builder.mutation({
       query: () => ({
-        url: `../user/notification/all/read`,
+        url: `notification/all/read`,
         method: 'POST',
       }),
       invalidatesTags: ['Notifications'],
     }),
     readNotification: builder.mutation({
       query: body => ({
-        url: `../user/notification/read`,
+        url: `notification/read`,
         method: 'POST',
         body,
       }),
@@ -512,7 +512,7 @@ export const userApi = createApi({
     }),
     unreadNotification: builder.mutation({
       query: body => ({
-        url: `../user/notification/unread`,
+        url: `notification/unread`,
         method: 'POST',
         body,
       }),
