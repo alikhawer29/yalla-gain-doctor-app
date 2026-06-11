@@ -100,6 +100,7 @@ const VideoSessionScreen = () => {
     session_status,
     duration_minutes,
     started_at,
+    scheduled_end_at,
     appointment_date,
     appointment_end_time,
   } = route.params || {};
@@ -108,6 +109,7 @@ const VideoSessionScreen = () => {
     status: session_status,
     duration_minutes,
     started_at,
+    scheduled_end_at,
     appointment_date,
     appointment_end_time,
   };
@@ -210,7 +212,14 @@ const VideoSessionScreen = () => {
       clearInterval(id);
       timerRef.current = null;
     };
-  }, [session_status, duration_minutes, started_at, appointment_date, appointment_end_time]);
+  }, [
+    session_status,
+    duration_minutes,
+    started_at,
+    scheduled_end_at,
+    appointment_date,
+    appointment_end_time,
+  ]);
 
   const syncUsers = useCallback(async () => {
     if (!zoom?.session) return;

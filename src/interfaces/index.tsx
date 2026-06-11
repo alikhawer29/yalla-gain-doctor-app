@@ -97,6 +97,7 @@ export type RootStackParamList = {
         session_status?: 'waiting' | 'started' | 'ended' | null;
         duration_minutes?: number | null;
         started_at?: string | null;
+        scheduled_end_at?: string | null;
         appointment_date?: string | null;
         appointment_end_time?: string | null;
     },
