@@ -109,9 +109,6 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - meetingsdk-react-native (6.6.0):
-    - React-Core
-    - ZoomMeetingSDK (= 6.6.0)
   - nanopb (3.30910.0):
     - nanopb/decode (= 3.30910.0)
     - nanopb/encode (= 3.30910.0)
@@ -1893,6 +1890,34 @@ PODS:
     - React-RCTFBReactNativeSpec
     - ReactCommon/turbomodule/core
     - SocketRocket
+  - react-native-blob-util (0.24.9):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - SocketRocket
+    - Yoga
   - react-native-blur (4.4.1):
     - boost
     - DoubleConversion
@@ -2005,7 +2030,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-safe-area-context (5.7.0):
+  - react-native-safe-area-context (5.8.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2023,8 +2048,8 @@ PODS:
     - React-graphics
     - React-ImageManager
     - React-jsi
-    - react-native-safe-area-context/common (= 5.7.0)
-    - react-native-safe-area-context/fabric (= 5.7.0)
+    - react-native-safe-area-context/common (= 5.8.0)
+    - react-native-safe-area-context/fabric (= 5.8.0)
     - React-NativeModulesApple
     - React-RCTFabric
     - React-renderercss
@@ -2035,7 +2060,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-safe-area-context/common (5.7.0):
+  - react-native-safe-area-context/common (5.8.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2063,7 +2088,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - react-native-safe-area-context/fabric (5.7.0):
+  - react-native-safe-area-context/fabric (5.8.0):
     - boost
     - DoubleConversion
     - fast_float
@@ -2092,6 +2117,14 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
+  - react-native-zoom-video-sdk (2.5.0):
+    - React-Core
+    - ZoomVideoSDK/CptShare (= 2.5.0)
+    - ZoomVideoSDK/Whiteboard (= 2.5.0)
+    - ZoomVideoSDK/zm_annoter_dynamic (= 2.5.0)
+    - ZoomVideoSDK/zoomcml (= 2.5.0)
+    - ZoomVideoSDK/ZoomTask (= 2.5.0)
+    - ZoomVideoSDK/ZoomVideoSDK (= 2.5.0)
   - React-NativeModulesApple (0.82.0):
     - boost
     - DoubleConversion
@@ -2900,7 +2933,7 @@ PODS:
     - RNWorklets
     - SocketRocket
     - Yoga
-  - RNScreens (4.24.0):
+  - RNScreens (4.25.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -2927,10 +2960,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNScreens/common (= 4.24.0)
+    - RNScreens/common (= 4.25.2)
     - SocketRocket
     - Yoga
-  - RNScreens/common (4.24.0):
+  - RNScreens/common (4.25.2):
     - boost
     - DoubleConversion
     - fast_float
@@ -2959,7 +2992,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNSVG (15.15.4):
+  - RNSVG (15.15.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -2985,10 +3018,10 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNSVG/common (= 15.15.4)
+    - RNSVG/common (= 15.15.5)
     - SocketRocket
     - Yoga
-  - RNSVG/common (15.15.4):
+  - RNSVG/common (15.15.5):
     - boost
     - DoubleConversion
     - fast_float
@@ -3016,37 +3049,7 @@ PODS:
     - ReactCommon/turbomodule/core
     - SocketRocket
     - Yoga
-  - RNWorklets (0.7.4):
-    - boost
-    - DoubleConversion
-    - fast_float
-    - fmt
-    - glog
-    - hermes-engine
-    - RCT-Folly
-    - RCT-Folly/Fabric
-    - RCTRequired
-    - RCTTypeSafety
-    - React-Core
-    - React-debug
-    - React-Fabric
-    - React-featureflags
-    - React-graphics
-    - React-hermes
-    - React-ImageManager
-    - React-jsi
-    - React-NativeModulesApple
-    - React-RCTFabric
-    - React-renderercss
-    - React-rendererdebug
-    - React-utils
-    - ReactCodegen
-    - ReactCommon/turbomodule/bridging
-    - ReactCommon/turbomodule/core
-    - RNWorklets/worklets (= 0.7.4)
-    - SocketRocket
-    - Yoga
-  - RNWorklets/worklets (0.7.4):
+  - RNWorklets (0.6.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3073,10 +3076,40 @@ PODS:
     - ReactCodegen
     - ReactCommon/turbomodule/bridging
     - ReactCommon/turbomodule/core
-    - RNWorklets/worklets/apple (= 0.7.4)
+    - RNWorklets/worklets (= 0.6.1)
     - SocketRocket
     - Yoga
-  - RNWorklets/worklets/apple (0.7.4):
+  - RNWorklets/worklets (0.6.1):
+    - boost
+    - DoubleConversion
+    - fast_float
+    - fmt
+    - glog
+    - hermes-engine
+    - RCT-Folly
+    - RCT-Folly/Fabric
+    - RCTRequired
+    - RCTTypeSafety
+    - React-Core
+    - React-debug
+    - React-Fabric
+    - React-featureflags
+    - React-graphics
+    - React-hermes
+    - React-ImageManager
+    - React-jsi
+    - React-NativeModulesApple
+    - React-RCTFabric
+    - React-renderercss
+    - React-rendererdebug
+    - React-utils
+    - ReactCodegen
+    - ReactCommon/turbomodule/bridging
+    - ReactCommon/turbomodule/core
+    - RNWorklets/worklets/apple (= 0.6.1)
+    - SocketRocket
+    - Yoga
+  - RNWorklets/worklets/apple (0.6.1):
     - boost
     - DoubleConversion
     - fast_float
@@ -3107,7 +3140,12 @@ PODS:
     - Yoga
   - SocketRocket (0.7.1)
   - Yoga (0.0.0)
-  - ZoomMeetingSDK (6.6.0)
+  - ZoomVideoSDK/CptShare (2.5.0)
+  - ZoomVideoSDK/Whiteboard (2.5.0)
+  - ZoomVideoSDK/zm_annoter_dynamic (2.5.0)
+  - ZoomVideoSDK/zoomcml (2.5.0)
+  - ZoomVideoSDK/ZoomTask (2.5.0)
+  - ZoomVideoSDK/ZoomVideoSDK (2.5.0)
 
 DEPENDENCIES:
   - boost (from `../node_modules/react-native/third-party-podspecs/boost.podspec`)
@@ -3120,7 +3158,6 @@ DEPENDENCIES:
   - GoogleUtilities
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
   - LoaderKit (from `../node_modules/react-native-loader-kit`)
-  - "meetingsdk-react-native (from `../node_modules/@zoom/meetingsdk-react-native`)"
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -3155,11 +3192,13 @@ DEPENDENCIES:
   - React-logger (from `../node_modules/react-native/ReactCommon/logger`)
   - React-Mapbuffer (from `../node_modules/react-native/ReactCommon`)
   - React-microtasksnativemodule (from `../node_modules/react-native/ReactCommon/react/nativemodule/microtasks`)
+  - react-native-blob-util (from `../node_modules/react-native-blob-util`)
   - "react-native-blur (from `../node_modules/@react-native-community/blur`)"
   - react-native-date-picker (from `../node_modules/react-native-date-picker`)
   - "react-native-document-picker (from `../node_modules/@react-native-documents/picker`)"
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - "react-native-zoom-video-sdk (from `../node_modules/@zoom/react-native-videosdk`)"
   - React-NativeModulesApple (from `../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios`)
   - React-oscompat (from `../node_modules/react-native/ReactCommon/oscompat`)
   - React-perflogger (from `../node_modules/react-native/ReactCommon/reactperflogger`)
@@ -3220,7 +3259,7 @@ SPEC REPOS:
     - NVActivityIndicatorView-ObjC
     - PromisesObjC
     - SocketRocket
-    - ZoomMeetingSDK
+    - ZoomVideoSDK
 
 EXTERNAL SOURCES:
   boost:
@@ -3242,8 +3281,6 @@ EXTERNAL SOURCES:
     :tag: hermes-2025-09-01-RNv0.82.0-265ef62ff3eb7289d17e366664ac0da82303e101
   LoaderKit:
     :path: "../node_modules/react-native-loader-kit"
-  meetingsdk-react-native:
-    :path: "../node_modules/@zoom/meetingsdk-react-native"
   RCT-Folly:
     :podspec: "../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec"
   RCTDeprecation:
@@ -3310,6 +3347,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native/ReactCommon"
   React-microtasksnativemodule:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/microtasks"
+  react-native-blob-util:
+    :path: "../node_modules/react-native-blob-util"
   react-native-blur:
     :path: "../node_modules/@react-native-community/blur"
   react-native-date-picker:
@@ -3320,6 +3359,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-image-picker"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-zoom-video-sdk:
+    :path: "../node_modules/@zoom/react-native-videosdk"
   React-NativeModulesApple:
     :path: "../node_modules/react-native/ReactCommon/react/nativemodule/core/platform/ios"
   React-oscompat:
@@ -3427,7 +3468,6 @@ SPEC CHECKSUMS:
   GoogleUtilities: 00c88b9a86066ef77f0da2fab05f65d7768ed8e1
   hermes-engine: 8642d8f14a548ab718ec112e9bebdfdd154138b5
   LoaderKit: f0348704893b1f95d723038184171a5a026041ed
-  meetingsdk-react-native: eef5511189d6363aeb209c09b66eaf4fef544443
   nanopb: fad817b59e0457d11a5dfbde799381cd727c1275
   NVActivityIndicatorView-ObjC: a2394f53d84c32f71823743a2030e0378d40332f
   PromisesObjC: f5707f49cb48b9636751c5b2e7d227e43fba9f47
@@ -3464,11 +3504,13 @@ SPEC CHECKSUMS:
   React-logger: 2021eb67660b673cc654635832136fbbf2c79103
   React-Mapbuffer: 9bda44c983f9c683047546a338ebe9a21020babd
   React-microtasksnativemodule: 9b52faf56750d7e3c67d9cf96b650f14c31524c2
+  react-native-blob-util: 7447785d92be4c36118ee8c2bb8dfdb662de8096
   react-native-blur: ba0e9ad6274783c8d45f42da82acae02e25784ad
   react-native-date-picker: 8191d29ff17772c771a9a69efc0c4c47a7affeef
   react-native-document-picker: 063f6391c62fafd49f97490a3ebb1255e4e30781
   react-native-image-picker: 43e6cd4231e670030fe09b079d696fa5a634ccfc
-  react-native-safe-area-context: 0f4986a88ec555aff660503b483d6e4bd6980a9a
+  react-native-safe-area-context: 7ee594b2c2aa287757c1ba78ac70278305bc7807
+  react-native-zoom-video-sdk: 4aca1eb8e923ac3e696f061732a54e4f0a4e0c70
   React-NativeModulesApple: 1b4d9722d8df62e881684abadf320e7a8fa1b7f6
   React-oscompat: 80ca388c4831481cd03a6b45ecfc82739ca9a95e
   React-perflogger: 2e155343fa744b02ec2eab0f134639beb8fff659
@@ -3509,13 +3551,13 @@ SPEC CHECKSUMS:
   RNNotifee: 4a6ee5c7deaf00e005050052d73ee6315dff7ec9
   RNPermissions: 969c32c78b15731e3b6f6cb6b2ebd60d89b58235
   RNReanimated: c76d99de4022813a27dc3745d8d2de4230ac5fef
-  RNScreens: 7179cc1ba31b4e18ed29f10abf20c24a7961cf4c
-  RNSVG: 963192f99dc2014b9aef2aa4f0ae621cb92fbe5e
-  RNWorklets: d0114f9d0c47b1678c93ae8ed32e5c4948e5cca7
+  RNScreens: fc76f47e82d3616284684203ebab6e952dd7f28a
+  RNSVG: 474ee44b95fc882944ab730286e5d9b6113685b1
+  RNWorklets: daa0a3e7946a9c4042f3a962c87a12dc5bc0badd
   SocketRocket: d4aabe649be1e368d1318fdf28a022d714d65748
   Yoga: edeb9900b9e5bb5b27b9a6a2d5914e4fe4033c1b
-  ZoomMeetingSDK: e1ce033e8dc31cf946ef0a09971e2a8ec4e26cd0
+  ZoomVideoSDK: 85c1f052264f7c54fb03ddd67c331be0c4eb6a6a
 
-PODFILE CHECKSUM: 9da0f387c0ed9a74f9d9d1710da83cc6d5440008
+PODFILE CHECKSUM: a71956e933c580ae252b26e3448b71b70e3e5290
 
 COCOAPODS: 1.16.2
