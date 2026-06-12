@@ -544,10 +544,13 @@ const VideoSessionScreen = () => {
   };
 
   const onToggleSpeaker = async () => {
+    const targetOn = !isSpeakerOn;
+    setIsSpeakerOn(targetOn);
     try {
-      const on = await ZoomVideoService.toggleSpeaker();
+      const on = await ZoomVideoService.toggleSpeaker(targetOn);
       setIsSpeakerOn(on);
     } catch (e) {
+      setIsSpeakerOn(!targetOn);
       console.log('[VideoSession] toggleSpeaker', e);
     }
   };

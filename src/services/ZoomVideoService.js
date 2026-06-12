@@ -10,6 +10,8 @@ let storedSessionToken = null;
 let listenerSubscriptions = [];
 /** When true, session audio setup must not unmute the local mic. */
 let userPrefersMicMuted = false;
+/** iOS getSpeakerStatus() often lags after setSpeaker; track route locally. */
+let speakerRouteOn = true;
 
 const sessionInfo = {
   sessionName: null,
@@ -44,6 +46,7 @@ export function unbindZoom() {
   zoomInstance = null;
   storedSessionToken = null;
   userPrefersMicMuted = false;
+  speakerRouteOn = true;
   sessionInfo.sessionName = null;
   sessionInfo.userName = null;
   sessionInfo.role = null;
@@ -250,6 +253,7 @@ export async function configureSessionAudio({ preferSpeaker = true } = {}) {
       const canSwitch = await audioHelper.canSwitchSpeaker();
       if (canSwitch !== false) {
         await audioHelper.setSpeaker(true);
+        speakerRouteOn = true;
       }
     } catch (e) {
       console.log('[ZoomVideoService] setSpeaker on', e);
@@ -260,14 +264,18 @@ export async function configureSessionAudio({ preferSpeaker = true } = {}) {
 }
 
 export async function getSpeakerOn() {
+  if (Platform.OS === 'ios') {
+    return speakerRouteOn;
+  }
   if (!zoomInstance?.audioHelper) {
-    return true;
+    return speakerRouteOn;
   }
   try {
-    return !!(await zoomInstance.audioHelper.getSpeakerStatus());
+    speakerRouteOn = !!(await zoomInstance.audioHelper.getSpeakerStatus());
+    return speakerRouteOn;
   } catch (e) {
     console.log('[ZoomVideoService] getSpeakerStatus', e);
-    return true;
+    return speakerRouteOn;
   }
 }
 
@@ -420,6 +428,7 @@ export async function toggleSpeaker(enableSpeaker) {
   }
 
   console.log('[ZoomVideoService] toggleSpeaker', next);
+  speakerRouteOn = next;
 
   if (Platform.OS === 'ios') {
     try {
@@ -443,6 +452,10 @@ export async function toggleSpeaker(enableSpeaker) {
     } catch (e) {
       console.log('[ZoomVideoService] iOS speaker route refresh', e);
     }
+  }
+
+  if (Platform.OS === 'ios') {
+    return speakerRouteOn;
   }
 
   return getSpeakerOn();
