@@ -2,11 +2,14 @@
  * Zoom Video SDK service (@zoom/react-native-videosdk).
  * Bind the SDK instance from a screen via bindZoom() before calling join/leave.
  */
+import { Platform } from 'react-native';
 import { EventType, ZoomVideoSdkUser } from '@zoom/react-native-videosdk';
 
 let zoomInstance = null;
 let storedSessionToken = null;
 let listenerSubscriptions = [];
+/** When true, session audio setup must not unmute the local mic. */
+let userPrefersMicMuted = false;
 
 const sessionInfo = {
   sessionName: null,
@@ -32,9 +35,15 @@ export function bindZoom(zoom) {
 
 export function unbindZoom() {
   console.log('[ZoomVideoService] unbindZoom');
+  try {
+    zoomInstance?.audioHelper?.cleanAudioSession?.();
+  } catch (e) {
+    console.log('[ZoomVideoService] cleanAudioSession', e);
+  }
   removeAllListeners();
   zoomInstance = null;
   storedSessionToken = null;
+  userPrefersMicMuted = false;
   sessionInfo.sessionName = null;
   sessionInfo.userName = null;
   sessionInfo.role = null;
@@ -180,6 +189,89 @@ export async function joinSession({
 }
 
 /**
+ * Poll until native session is active (join is async).
+ */
+export async function waitUntilInSession(timeoutMs = 20000) {
+  if (!zoomInstance?.isInSession) return false;
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      if (await zoomInstance.isInSession()) {
+        return true;
+      }
+    } catch (e) {
+      console.log('[ZoomVideoService] isInSession poll', e);
+    }
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  try {
+    return !!(await zoomInstance.isInSession());
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Start VOIP audio and route to speaker. Does not change mic mute unless the
+ * user explicitly muted via toggleAudio (userPrefersMicMuted).
+ */
+export async function configureSessionAudio({ preferSpeaker = true } = {}) {
+  if (!zoomInstance?.audioHelper) {
+    return preferSpeaker;
+  }
+
+  const { audioHelper } = zoomInstance;
+
+  if (Platform.OS === 'ios') {
+    try {
+      await audioHelper.setSDKAudioSessionEnv();
+    } catch (e) {
+      console.log('[ZoomVideoService] setSDKAudioSessionEnv', e);
+    }
+  }
+
+  try {
+    await audioHelper.startAudio();
+  } catch (e) {
+    console.log('[ZoomVideoService] startAudio', e);
+  }
+
+  if (userPrefersMicMuted) {
+    try {
+      const user = await getMySelf();
+      await audioHelper.muteAudio(user.userId);
+    } catch (e) {
+      console.log('[ZoomVideoService] re-apply user mute', e);
+    }
+  }
+
+  if (preferSpeaker) {
+    try {
+      const canSwitch = await audioHelper.canSwitchSpeaker();
+      if (canSwitch !== false) {
+        await audioHelper.setSpeaker(true);
+      }
+    } catch (e) {
+      console.log('[ZoomVideoService] setSpeaker on', e);
+    }
+  }
+
+  return getSpeakerOn();
+}
+
+export async function getSpeakerOn() {
+  if (!zoomInstance?.audioHelper) {
+    return true;
+  }
+  try {
+    return !!(await zoomInstance.audioHelper.getSpeakerStatus());
+  } catch (e) {
+    console.log('[ZoomVideoService] getSpeakerStatus', e);
+    return true;
+  }
+}
+
+/**
  * Leave session. Host (role === 1) ends for all when isHost is true.
  */
 export function leaveSession(isHost = false) {
@@ -310,22 +402,50 @@ export async function toggleAudio() {
   console.log('[ZoomVideoService] toggleAudio', { muted });
   if (muted) {
     await zoomInstance.audioHelper.unmuteAudio(myId);
+    userPrefersMicMuted = false;
     return true;
   }
   await zoomInstance.audioHelper.muteAudio(myId);
+  userPrefersMicMuted = true;
   return false;
 }
 
 /** Toggle speaker (earpiece vs speaker). */
 export async function toggleSpeaker(enableSpeaker) {
   if (!zoomInstance?.audioHelper) return false;
-  const next =
-    typeof enableSpeaker === 'boolean'
-      ? enableSpeaker
-      : !(await zoomInstance.audioHelper.getSpeakerStatus());
+
+  let next = enableSpeaker;
+  if (typeof next !== 'boolean') {
+    next = !(await getSpeakerOn());
+  }
+
   console.log('[ZoomVideoService] toggleSpeaker', next);
-  await zoomInstance.audioHelper.setSpeaker(next);
-  return next;
+
+  if (Platform.OS === 'ios') {
+    try {
+      await zoomInstance.audioHelper.setSDKAudioSessionEnv();
+    } catch (e) {
+      console.log('[ZoomVideoService] setSDKAudioSessionEnv before speaker', e);
+    }
+  }
+
+  try {
+    await zoomInstance.audioHelper.setSpeaker(next);
+  } catch (e) {
+    console.log('[ZoomVideoService] setSpeaker', e);
+  }
+
+  if (Platform.OS === 'ios') {
+    try {
+      await zoomInstance.audioHelper.resetAudioSession();
+      await zoomInstance.audioHelper.setSDKAudioSessionEnv();
+      await zoomInstance.audioHelper.setSpeaker(next);
+    } catch (e) {
+      console.log('[ZoomVideoService] iOS speaker route refresh', e);
+    }
+  }
+
+  return getSpeakerOn();
 }
 
 export async function getRemoteUsers() {

@@ -70,11 +70,11 @@ export const SpeakerIcon = ({ size = 26, color = ICON, active = true }: IconProp
     <Path d="M5 10v4h3l5 4V6L8 10H5z" fill={color} />
     {active ? (
       <>
-        <Path d="M16 9a4 4 0 010 6" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
-        <Path d="M18 7a7 7 0 010 10" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+        <Path d="M15 9a4 4 0 010 6" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
+        <Path d="M17.5 7a6.5 6.5 0 010 10" stroke={color} strokeWidth={1.8} strokeLinecap="round" />
       </>
     ) : (
-      <Line x1={17} y1={8} x2={21} y2={16} stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Line x1={15} y1={8} x2={19} y2={16} stroke={color} strokeWidth={2} strokeLinecap="round" />
     )}
   </Svg>
 );

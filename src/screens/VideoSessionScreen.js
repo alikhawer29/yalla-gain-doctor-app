@@ -69,24 +69,37 @@ const ParticipantCameraOffView = ({ initials, name }) => (
   </View>
 );
 
-const ControlItem = ({ label, onPress, children }) => (
+const ControlItem = ({ label, onPress, children, style }) => (
   <TouchableOpacity
-    style={styles.controlItem}
+    style={[styles.controlItem, style]}
     onPress={onPress}
     activeOpacity={0.7}
     accessibilityRole="button"
     accessibilityLabel={label}>
     {children}
-    <Text style={styles.controlLabel}>{label}</Text>
+    <Text style={styles.controlLabel} numberOfLines={1}>
+      {label}
+    </Text>
   </TouchableOpacity>
 );
+
+function getRequiredSessionPermissions(PERMISSIONS) {
+  if (Platform.OS === 'ios') {
+    return [PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.MICROPHONE];
+  }
+  if (Platform.OS === 'android') {
+    return [PERMISSIONS.ANDROID.CAMERA, PERMISSIONS.ANDROID.RECORD_AUDIO];
+  }
+  return [];
+}
 
 const VideoSessionScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const insets = useSafeAreaInsets();
   const zoom = useZoom();
-  const { ensurePermissions, PERMISSIONS } = usePermissions();
+  const { ensurePermissions, requestPermissions, PERMISSIONS } =
+    usePermissions();
   const [endZoomSession] = useEndZoomMeetingMutation();
 
   const {
@@ -221,6 +234,23 @@ const VideoSessionScreen = () => {
     appointment_end_time,
   ]);
 
+  const syncLocalMediaState = useCallback(async () => {
+    try {
+      const mySelf = await ZoomVideoService.getMySelfUser();
+      if (!mySelf) return;
+      const [muted, videoOn, speakerOn] = await Promise.all([
+        mySelf.audioStatus.isMuted(),
+        mySelf.videoStatus.isOn(),
+        ZoomVideoService.getSpeakerOn(),
+      ]);
+      setIsAudioOn(!muted);
+      setIsVideoOn(videoOn);
+      setIsSpeakerOn(speakerOn);
+    } catch (e) {
+      console.log('[VideoSession] syncLocalMediaState', e);
+    }
+  }, []);
+
   const syncUsers = useCallback(async () => {
     if (!zoom?.session) return;
     try {
@@ -236,10 +266,20 @@ const VideoSessionScreen = () => {
       } else {
         setRemoteVideoOn(false);
       }
+      await syncLocalMediaState();
     } catch (e) {
       console.log('[VideoSession] syncUsers error', e);
     }
-  }, [zoom]);
+  }, [zoom, syncLocalMediaState]);
+
+  const ensureSessionAudio = useCallback(async () => {
+    try {
+      await ZoomVideoService.configureSessionAudio({ preferSpeaker: true });
+      await syncLocalMediaState();
+    } catch (e) {
+      console.log('[VideoSession] ensureSessionAudio', e);
+    }
+  }, [syncLocalMediaState]);
 
   const callEndSessionApi = useCallback(async () => {
     if (!appointment_id || hasEndedApiRef.current) return;
@@ -328,6 +368,7 @@ const VideoSessionScreen = () => {
       onSessionJoin: async () => {
         setIsConnecting(false);
         await ZoomVideoService.applyCameraFacing(false);
+        await ensureSessionAudio();
         await syncUsers();
       },
       onSessionLeave: () => {
@@ -335,6 +376,8 @@ const VideoSessionScreen = () => {
         finishAndShowEnded();
       },
       onUserJoin: async () => {
+        await new Promise(resolve => setTimeout(resolve, 400));
+        await ensureSessionAudio();
         await syncUsers();
       },
       onUserLeave: async () => {
@@ -361,6 +404,9 @@ const VideoSessionScreen = () => {
       zoom.addListener(EventType.onUserVideoStatusChanged, async () => {
         await syncUsers();
       }),
+      zoom.addListener(EventType.onUserAudioStatusChanged, async () => {
+        await syncLocalMediaState();
+      }),
     ];
 
     const start = async () => {
@@ -369,10 +415,17 @@ const VideoSessionScreen = () => {
 
       try {
         const granted = await ensurePermissions(
-          Platform.OS === 'android'
-            ? [PERMISSIONS.ANDROID.CAMERA, PERMISSIONS.ANDROID.RECORD_AUDIO]
-            : [PERMISSIONS.IOS.CAMERA, PERMISSIONS.IOS.MICROPHONE],
+          getRequiredSessionPermissions(PERMISSIONS),
         );
+        if (
+          granted &&
+          Platform.OS === 'android' &&
+          Number(Platform.Version) >= 31
+        ) {
+          await requestPermissions([
+            PERMISSIONS.ANDROID.BLUETOOTH_CONNECT,
+          ]).catch(() => {});
+        }
         if (!granted) {
           setErrorMessage('Camera and microphone permissions are required.');
           Alert.alert(
@@ -389,6 +442,11 @@ const VideoSessionScreen = () => {
           userName: user_name,
           sessionToken: session_token,
         });
+        const inSession = await ZoomVideoService.waitUntilInSession(20000);
+        if (!inSession) {
+          throw new Error('Session join timed out. Please try again.');
+        }
+        await ensureSessionAudio();
         ZoomVideoService.getSessionInfo().role = role;
       } catch (e) {
         console.log('[VideoSession] join failed', e);
@@ -425,9 +483,11 @@ const VideoSessionScreen = () => {
     user_name,
     role,
     ensurePermissions,
+    requestPermissions,
     PERMISSIONS,
     navigation,
     syncUsers,
+    ensureSessionAudio,
     callEndSessionApi,
     finishAndShowEnded,
     stopTimer,
@@ -652,7 +712,10 @@ const VideoSessionScreen = () => {
             </Text>
           </TouchableOpacity>
 
-          <ControlItem label="Speaker" onPress={onToggleSpeaker}>
+          <ControlItem
+            label={isSpeakerOn ? 'Speaker' : 'Earpiece'}
+            onPress={onToggleSpeaker}
+            style={styles.speakerControl}>
             <SpeakerIcon active={isSpeakerOn} />
           </ControlItem>
         </View>
