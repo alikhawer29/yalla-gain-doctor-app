@@ -4,7 +4,7 @@ import NetworkLogger from 'react-native-network-logger';
 import colors from '../../utils/colors';
 
 /** Flip to `true` when you need in-app API logs — no comment/uncomment elsewhere. */
-const ENABLE_NETWORK_LOGGER = true;
+const ENABLE_NETWORK_LOGGER = false;
 
 const DevNetworkLogger = () => {
   const [visible, setVisible] = useState(false);

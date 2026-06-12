@@ -89,7 +89,9 @@ export async function downloadRemoteFile(
 
   try {
     if (Platform.OS === 'android') {
-      const tempPath = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${Date.now()}_${safeName}`;
+      const tempPath = `${
+        ReactNativeBlobUtil.fs.dirs.CacheDir
+      }/${Date.now()}_${safeName}`;
       const response = await ReactNativeBlobUtil.config({
         path: tempPath,
         fileCache: true,
@@ -115,7 +117,9 @@ export async function downloadRemoteFile(
       return;
     }
 
-    const cachePath = `${ReactNativeBlobUtil.fs.dirs.CacheDir}/${Date.now()}_${safeName}`;
+    const cachePath = `${
+      ReactNativeBlobUtil.fs.dirs.CacheDir
+    }/${Date.now()}_${safeName}`;
     const response = await ReactNativeBlobUtil.config({
       path: cachePath,
       fileCache: true,
@@ -138,7 +142,6 @@ export async function downloadRemoteFile(
       visibilityTime: 4000,
     });
   } catch (error) {
-    console.log('[downloadRemoteFile]', error);
     Toast.show({
       type: 'error',
       text1: 'Download failed',
