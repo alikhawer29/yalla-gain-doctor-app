@@ -10,23 +10,13 @@ import {
   getCities,
   getStates,
   normalizeDialingCode,
+  toUploadAsset,
 } from '../../../utils/helper';
 import { navigateAndSimpleReset } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
 import { SIGNUP_SCHEMA } from '../../../utils/validators';
 
 type RegisterRouteProp = RouteProp<AuthStackParamList, 'Register'>;
-
-/** Strip UI-only / extra keys before multipart upload */
-const toUploadAsset = (asset: any) => {
-  if (!asset || typeof asset !== 'object' || !asset.uri) return asset;
-  return {
-    uri: asset.uri,
-    type: asset.type,
-    name: asset.name ?? asset.fileName ?? 'image.jpg',
-    fileName: asset.fileName ?? asset.name ?? 'image.jpg',
-  };
-};
 
 const initial = {
   first_name: '',

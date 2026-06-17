@@ -15,7 +15,7 @@ const KeyboardAvoidingWrapper: FC<IKeyboardAvoidingWrapper> = ({ children }) => 
             enableOnAndroid={true}
             extraScrollHeight={Platform.OS === 'android' ? 150 : 80}
             enableAutomaticScroll={true}
-            enableResetScrollToCoords={Platform.OS === 'ios'}
+            enableResetScrollToCoords={false}
             keyboardOpeningTime={Platform.OS === 'ios' ? 250 : 0}
         >
             {children}

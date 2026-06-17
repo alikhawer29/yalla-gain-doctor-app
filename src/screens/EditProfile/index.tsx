@@ -1,5 +1,6 @@
-import { FieldArray, Formik } from "formik"
+import { FieldArray, Formik, setNestedObjectValues } from "formik"
 import { Image, View } from "react-native"
+import Toast from "react-native-toast-message"
 import images from "../../assets/images"
 import Button from "../../components/Button"
 import Dropdown from "../../components/Dropdown"
@@ -39,7 +40,7 @@ const EditProfile = () => {
     } = useEditProfileController()
 
     return (
-        <Wrapper scrollable bottom_bar>
+        <Wrapper bottom_bar>
             <KeyboardAvoidingWrapper>
                 <Formik
                     innerRef={formik_ref}
@@ -48,7 +49,22 @@ const EditProfile = () => {
                     onSubmit={onSubmit}
                     enableReinitialize
                 >
-                    {({ values: data, handleChange, handleSubmit, touched, errors, setFieldValue }) => (
+                    {({ values: data, handleChange, touched, errors, setFieldValue, validateForm, setTouched, submitForm }) => {
+                        const onPressUpdate = async () => {
+                            const validationErrors = await validateForm();
+                            if (validationErrors && Object.keys(validationErrors).length > 0) {
+                                setTouched(setNestedObjectValues(data, true));
+                                Toast.show({
+                                    type: 'error',
+                                    text1: 'Validation Error',
+                                    text2: 'Please fix the highlighted fields before updating.',
+                                });
+                                return;
+                            }
+                            submitForm();
+                        };
+
+                        return (
                         <>
                             <View style={styles.icon_container}>
                                 <View>
@@ -79,7 +95,7 @@ const EditProfile = () => {
                                 error={touched?.phone ? errors?.phone : ""}
                                 country={data?.country_code}
                                 onChangeCountry={e => {
-                                    setFieldValue("country_code", e?.cca2)
+                                    setFieldValue("country_code", e?.cca2?.toUpperCase())
                                     setFieldValue("dialing_code", normalizeDialingCode(e?.callingCode?.[0]))
                                 }}
                             />
@@ -171,9 +187,10 @@ const EditProfile = () => {
                                     </>
                                 )}
                             </FieldArray>
-                            <Button text="Update" onPress={handleSubmit} loading={isLoading} style={styles.button} />
+                            <Button text="Update" onPress={onPressUpdate} loading={isLoading} style={styles.button} />
                         </>
-                    )}
+                        );
+                    }}
                 </Formik>
             </KeyboardAvoidingWrapper>
         </Wrapper>

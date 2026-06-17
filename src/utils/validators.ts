@@ -209,39 +209,29 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     ),
   country_code: Yup.string()
     .required('Country code is required')
+    .transform(val => (typeof val === 'string' ? val.toUpperCase() : val))
     .matches(/^[A-Z]{2}$/, 'Invalid country code format'),
   phone: Yup.string()
     .required('Mobile Number is required')
-    .matches(/^\d{7,15}$/, 'Phone number must be between 7 and 15 digits')
+    .matches(/^\d+$/, 'Phone number must contain digits only')
     .test(
-      'phone-length',
-      'Phone number length is invalid for selected country',
+      'phone-country-length',
+      'Invalid phone number length for selected country',
       function (value) {
         const { country_code } = this.parent;
-        if (!value || !country_code) return true;
-
-        // Basic phone length validation by country
-        const phoneLengths: { [key: string]: { min: number; max: number } } = {
-          AE: { min: 8, max: 12 }, // UAE
-          US: { min: 10, max: 10 }, // United States
-          GB: { min: 10, max: 11 }, // United Kingdom
-          IN: { min: 10, max: 10 }, // India
-          PK: { min: 10, max: 11 }, // Pakistan
-          SA: { min: 9, max: 9 }, // Saudi Arabia
-          KW: { min: 8, max: 8 }, // Kuwait
-          QA: { min: 8, max: 8 }, // Qatar
-          OM: { min: 8, max: 8 }, // Oman
-          BH: { min: 8, max: 8 }, // Bahrain
-        };
-
-        const lengthRule = phoneLengths[country_code];
-        if (lengthRule) {
-          return (
-            value.length >= lengthRule.min && value.length <= lengthRule.max
-          );
+        if (!value) return true;
+        const { min, max } = getPhoneRules(country_code);
+        if (value.length < min) {
+          return this.createError({
+            message: `Phone number must be at least ${min} digits for the selected country`,
+          });
         }
-
-        return true; // Allow any length for unknown countries
+        if (value.length > max) {
+          return this.createError({
+            message: `Phone number must be at most ${max} digits for the selected country`,
+          });
+        }
+        return true;
       },
     ),
   gender: Yup.string()
@@ -260,7 +250,9 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
     .required('Bio is required')
     .min(10, 'Bio must be at least 10 characters')
     .max(500, 'Bio cannot exceed 500 characters'),
-  language: Yup.string().required('Language is required'),
+  language: Yup.string()
+    .required('Language is required')
+    .transform(val => (typeof val === 'string' ? val.toLowerCase() : val)),
   photo: Yup.mixed()
     .nullable()
     .test(

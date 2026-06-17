@@ -1,10 +1,9 @@
-import React, { memo, useEffect } from 'react';
+import React, { memo, useEffect, useState } from 'react';
 import { LayoutAnimation, View } from 'react-native';
 import DropDownPicker from 'react-native-dropdown-picker';
 import colors from '../../utils/colors';
 import Text from '../Text';
 import styles from './styles';
-import useToggle from '../../hooks/useToggle';
 import { heightPixel } from '../../utils/helper';
 
 const Dropdown = props => {
@@ -35,7 +34,7 @@ const Dropdown = props => {
     }
   }, [error]);
 
-  const [toggle, open] = useToggle();
+  const [open, setOpen] = useState(false);
 
   return (
     <View style={styles.container}>
@@ -62,7 +61,7 @@ const Dropdown = props => {
       )}
       <DropDownPicker
         open={open}
-        setOpen={toggle}
+        setOpen={setOpen}
         items={options}
         style={[styles.inputContainer, { height: heightPixel(height) }]}
         placeholder={placeholder}

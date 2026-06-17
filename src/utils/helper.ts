@@ -127,6 +127,31 @@ const isFileLike = (val: any) =>
   'uri' in val &&
   (val.uri || val.name);
 
+/** Normalize image-picker assets for React Native multipart uploads (especially iOS). */
+export const toUploadAsset = (asset: any) => {
+  if (!asset || typeof asset !== 'object' || !asset.uri) return asset;
+  return {
+    uri: asset.uri,
+    type: asset.type ?? 'image/jpeg',
+    name: asset.name ?? asset.fileName ?? 'image.jpg',
+    fileName: asset.fileName ?? asset.name ?? 'image.jpg',
+  };
+};
+
+/** True when a URI points at an already-uploaded remote file (not a device pick). */
+export const isRemoteUploadUri = (uri: string | null | undefined): boolean => {
+  if (!uri || typeof uri !== 'string') return false;
+  const u = uri.trim().toLowerCase();
+  return u.startsWith('http://') || u.startsWith('https://');
+};
+
+/** True when the value is a newly picked local image, not an existing server URL. */
+export const isDevicePickedAsset = (value: unknown): boolean => {
+  if (!value || typeof value !== 'object' || !('uri' in value)) return false;
+  const uri = (value as { uri?: string }).uri;
+  return typeof uri === 'string' && uri.length > 0 && !isRemoteUploadUri(uri);
+};
+
 /** True when FormData from Manage Slots includes at least one `slots[n][…]` entry. */
 export const formDataHasSlotEntries = (
   formData: FormData | null | undefined,
@@ -224,19 +249,29 @@ export const getGreetingText = () => {
   }
 };
 
+let cachedStates: { label: string; value: string }[] | null = null;
+const cachedCitiesByState = new Map<string, { label: string; value: string }[]>();
+
 export const getStates = () => {
-  let states = State.getStatesOfCountry('AE');
-  return states.map(item => ({ label: item?.name, value: item?.name }));
+  if (cachedStates) return cachedStates;
+  const states = State.getStatesOfCountry('AE');
+  cachedStates = states.map(item => ({ label: item?.name, value: item?.name }));
+  return cachedStates;
 };
 
 export const getCities = value => {
   if (value) {
-    let state = State.getStatesOfCountry('AE').find(
+    const cached = cachedCitiesByState.get(value);
+    if (cached) return cached;
+
+    const state = State.getStatesOfCountry('AE').find(
       item => item.name === value,
     );
     if (!state) return [];
-    let cities = City.getCitiesOfState('AE', state.isoCode);
-    return cities.map(item => ({ label: item?.name, value: item?.name }));
+    const cities = City.getCitiesOfState('AE', state.isoCode);
+    const options = cities.map(item => ({ label: item?.name, value: item?.name }));
+    cachedCitiesByState.set(value, options);
+    return options;
   }
 
   return [];
