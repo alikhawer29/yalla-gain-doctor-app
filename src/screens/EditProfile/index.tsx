@@ -57,8 +57,8 @@ const EditProfile = () => {
                                     </View>
                                 </View>
                             </View>
-                            <Input label="First Name" placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : null} />
-                            <Input label="Last Name" placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : null} />
+                            <Input label="First Name" maxLength={20} placeholder="Enter First Name" required value={data?.first_name} onChangeText={handleChange("first_name")} error={touched?.first_name ? errors?.first_name : null} />
+                            <Input label="Last Name" maxLength={20} placeholder="Enter Last Name" required value={data?.last_name} onChangeText={handleChange("last_name")} error={touched?.last_name ? errors?.last_name : null} />
                             <Dropdown
                                 required
                                 label="Gender"

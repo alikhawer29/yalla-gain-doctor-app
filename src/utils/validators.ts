@@ -12,7 +12,7 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
   first_name: Yup.string()
     .required('First Name is required')
     .min(2, 'First Name must be at least 2 characters')
-    .max(50, 'First Name cannot exceed 50 characters')
+    .max(20, 'First Name cannot exceed 20 characters')
     .matches(
       /^[a-zA-Z\s'-]+$/,
       'First Name can only contain letters, spaces, hyphens, and apostrophes',
@@ -20,7 +20,7 @@ export const SIGNUP_SCHEMA = Yup.object().shape({
   last_name: Yup.string()
     .required('Last Name is required')
     .min(2, 'Last Name must be at least 2 characters')
-    .max(50, 'Last Name cannot exceed 50 characters')
+    .max(20, 'Last Name cannot exceed 20 characters')
     .matches(
       /^[a-zA-Z\s'-]+$/,
       'Last Name can only contain letters, spaces, hyphens, and apostrophes',
@@ -188,7 +188,7 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
   first_name: Yup.string()
     .required('First Name is required')
     .min(2, 'First Name must be at least 2 characters')
-    .max(50, 'First Name cannot exceed 50 characters')
+    .max(20, 'First Name cannot exceed 20 characters')
     .matches(
       /^[a-zA-Z\s'-]+$/,
       'First Name can only contain letters, spaces, hyphens, and apostrophes',
@@ -196,7 +196,7 @@ export const EDIT_PROFILE_SCHEMA = Yup.object().shape({
   last_name: Yup.string()
     .required('Last Name is required')
     .min(2, 'Last Name must be at least 2 characters')
-    .max(50, 'Last Name cannot exceed 50 characters')
+    .max(20, 'Last Name cannot exceed 20 characters')
     .matches(
       /^[a-zA-Z\s'-]+$/,
       'Last Name can only contain letters, spaces, hyphens, and apostrophes',
@@ -421,22 +421,26 @@ export const USER_REGISTER_SCHEMA = Yup.object().shape({
   phone: Yup.string()
     .required('Mobile Number is required')
     .matches(/^\d+$/, 'Phone number must contain digits only')
-    .test('phone-country-length', 'Invalid phone number length for selected country', function (value) {
-      const { country_code } = this.parent;
-      if (!value) return true;
-      const { min, max } = getPhoneRules(country_code);
-      if (value.length < min) {
-        return this.createError({
-          message: `Phone number must be at least ${min} digits for the selected country`,
-        });
-      }
-      if (value.length > max) {
-        return this.createError({
-          message: `Phone number must be at most ${max} digits for the selected country`,
-        });
-      }
-      return true;
-    }),
+    .test(
+      'phone-country-length',
+      'Invalid phone number length for selected country',
+      function (value) {
+        const { country_code } = this.parent;
+        if (!value) return true;
+        const { min, max } = getPhoneRules(country_code);
+        if (value.length < min) {
+          return this.createError({
+            message: `Phone number must be at least ${min} digits for the selected country`,
+          });
+        }
+        if (value.length > max) {
+          return this.createError({
+            message: `Phone number must be at most ${max} digits for the selected country`,
+          });
+        }
+        return true;
+      },
+    ),
 });
 
 export const SET_PASSWORD_SCHEMA = Yup.object().shape({
@@ -481,19 +485,14 @@ export const ADD_SERVICE_SCHEMA = Yup.object().shape({
 export const CREATE_SERVICE_SCHEMA = ADD_SERVICE_SCHEMA.shape({
   slots: Yup.mixed()
     .required('Please add at least one availability slot')
-    .test(
-      'has-slots',
-      'Please add at least one availability slot',
-      value => {
-        if (!value || typeof value !== 'object') return false;
-        const parts = (value as { _parts?: [string, unknown][] })._parts;
-        if (!Array.isArray(parts) || parts.length === 0) return false;
-        return parts.some(
-          ([key]) =>
-            typeof key === 'string' && /^slots\[\d+\]/.test(key),
-        );
-      },
-    ),
+    .test('has-slots', 'Please add at least one availability slot', value => {
+      if (!value || typeof value !== 'object') return false;
+      const parts = (value as { _parts?: [string, unknown][] })._parts;
+      if (!Array.isArray(parts) || parts.length === 0) return false;
+      return parts.some(
+        ([key]) => typeof key === 'string' && /^slots\[\d+\]/.test(key),
+      );
+    }),
 });
 
 export const EXERCISE_SCHEMA = Yup.object().shape({
