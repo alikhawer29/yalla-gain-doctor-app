@@ -15,6 +15,7 @@ import Row from "../../components/Row"
 import Text from "../../components/Text"
 import { heightPixel, normalizeDialingCode } from "../../utils/helper"
 import Upload from "../../components/Upload"
+import { getPhoneRules } from "../../utils/phoneRules"
 
 const EditProfile = () => {
 
@@ -74,6 +75,7 @@ const EditProfile = () => {
                                 required
                                 value={data?.phone}
                                 onChangeText={handleChange("phone")}
+                                maxLength={getPhoneRules(data?.country_code).max}
                                 error={touched?.phone ? errors?.phone : ""}
                                 country={data?.country_code}
                                 onChangeCountry={e => {
