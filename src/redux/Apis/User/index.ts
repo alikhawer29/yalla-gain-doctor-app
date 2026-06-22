@@ -44,6 +44,8 @@ export type PaymentLogItem = {
 export type PaymentLogsApiResponse = {
   data?: {
     total_earnings?: number;
+    total_realized?: number;
+    total_unrealized?: number;
     payment_logs?: {
       current_page: number;
       last_page: number;

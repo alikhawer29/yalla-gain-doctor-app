@@ -12,7 +12,50 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 20,
+    marginBottom: heightPixel(12),
+  },
+  summaryCard: {
+    backgroundColor: colors.blackish_gray,
+    borderRadius: widthPixel(12),
+    padding: widthPixel(14),
+    marginBottom: heightPixel(16),
+    borderWidth: 1,
+    borderColor: colors.white + '10',
+  },
+  summaryStat: {
+    gap: heightPixel(6),
+  },
+  summaryStatMain: {
+    marginBottom: heightPixel(4),
+  },
+  summaryValueRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: widthPixel(6),
+    flexWrap: 'wrap',
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: colors.white + '12',
+    marginVertical: heightPixel(12),
+  },
+  summarySubRow: {
+    flexDirection: 'row',
+    alignItems: 'stretch',
+  },
+  summaryHalf: {
+    flex: 1,
+  },
+  summaryVerticalDivider: {
+    width: 1,
+    backgroundColor: colors.white + '12',
+    marginHorizontal: widthPixel(12),
+  },
+  list: {
+    flex: 1,
+  },
+  listContent: {
+    paddingBottom: heightPixel(16),
   },
   filterBtn: {
     padding: 10,

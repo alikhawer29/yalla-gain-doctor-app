@@ -6,7 +6,6 @@ import {
     ActivityIndicator,
     RefreshControl,
 } from 'react-native';
-import dayjs from 'dayjs';
 import Wrapper from '../../components/Wrapper';
 import Text from '../../components/Text';
 import Icon from '../../components/Icon';
@@ -18,10 +17,32 @@ import FilterModal from './FilterModal';
 import usePaymentLogsController from './usePaymentLogsController';
 import { PaymentLogItem } from '../../redux/Apis/User';
 
-// const formatDisplayDate = (iso: string) => {
-//     const d = dayjs(iso);
-//     return d.isValid() ? d.format('DD/MM/YYYY') : iso;
-// };
+type SummaryStatProps = {
+    label: string;
+    value?: number | null;
+    emphasize?: boolean;
+};
+
+const SummaryStat = ({ label, value, emphasize }: SummaryStatProps) => (
+    <View style={[styles.summaryStat, emphasize && styles.summaryStatMain]}>
+        <Text color={colors.icon_gray} size={12}>
+            {label}
+        </Text>
+        <View style={styles.summaryValueRow}>
+            <Text
+                color={colors.white}
+                size={emphasize ? 22 : 16}
+                weight="bold"
+            >
+                {value != null ? value : '—'}
+            </Text>
+            <Icon source={images.coin} size={emphasize ? 16 : 13} />
+            <Text color={colors.primary} size={10} weight="semibold">
+                Yalla Coins
+            </Text>
+        </View>
+    </View>
+);
 
 const PaymentLogs = () => {
     const [filterVisible, setFilterVisible] = useState(false);
@@ -30,6 +51,8 @@ const PaymentLogs = () => {
         values: {
             logs,
             totalEarnings,
+            totalRealized,
+            totalUnrealized,
             filterFrom,
             filterTo,
             isLoading,
@@ -120,23 +143,33 @@ const PaymentLogs = () => {
         <Wrapper>
             <View style={styles.container}>
                 <View style={styles.headerRow}>
-                    <View
-                        style={{ flexDirection: 'row', alignItems: 'center', gap: 5 }}
-                    >
-                        <Text color={colors.white} size={18}>
-                            Total Earnings:{' '}
-                            <Text color={colors.white} weight="bold">
-                                {totalEarnings != null ? totalEarnings : '—'} Yalla Coins
-                            </Text>
-                        </Text>
-                        <Icon source={images.coin} size={18} />
-                    </View>
+                    <Text color={colors.white} size={16} weight="semibold">
+                        Earnings summary
+                    </Text>
                     <TouchableOpacity
                         style={styles.filterBtn}
                         onPress={() => setFilterVisible(true)}
                     >
                         <Icon source={images.filters} size={20} />
                     </TouchableOpacity>
+                </View>
+
+                <View style={styles.summaryCard}>
+                    <SummaryStat
+                        label="Total Earnings"
+                        value={totalEarnings}
+                        emphasize
+                    />
+                    <View style={styles.summaryDivider} />
+                    <View style={styles.summarySubRow}>
+                        <View style={styles.summaryHalf}>
+                            <SummaryStat label="Realized (After Commission)" value={totalRealized} />
+                        </View>
+                        <View style={styles.summaryVerticalDivider} />
+                        <View style={styles.summaryHalf}>
+                            <SummaryStat label="Unrealized" value={totalUnrealized} />
+                        </View>
+                    </View>
                 </View>
 
                 {isError ? (
@@ -153,6 +186,8 @@ const PaymentLogs = () => {
                 ) : (
                     <FlatList
                         data={logs}
+                        style={styles.list}
+                        contentContainerStyle={styles.listContent}
                         renderItem={renderItem}
                         keyExtractor={item => String(item.id)}
                         showsVerticalScrollIndicator={false}

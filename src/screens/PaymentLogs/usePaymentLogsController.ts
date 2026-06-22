@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import {
-  PaymentLogItem,
-  useGetPaymentLogsQuery,
-} from '../../redux/Apis/User';
+import { PaymentLogItem, useGetPaymentLogsQuery } from '../../redux/Apis/User';
 
 const PER_PAGE = 15;
 
@@ -38,6 +35,8 @@ const usePaymentLogsController = () => {
   }, [data]);
 
   const totalEarnings = data?.data?.total_earnings;
+  const totalRealized = data?.data?.total_realized;
+  const totalUnrealized = data?.data?.total_unrealized;
   const pagination = data?.data?.payment_logs;
 
   const applyDateFilter = useCallback((from: string, to: string) => {
@@ -60,6 +59,8 @@ const usePaymentLogsController = () => {
     values: {
       logs,
       totalEarnings,
+      totalRealized,
+      totalUnrealized,
       filterFrom,
       filterTo,
       isLoading: isLoading && page === 1,
