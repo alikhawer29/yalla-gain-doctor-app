@@ -181,6 +181,7 @@ const useChatbotController = () => {
             data: messages,
             input,
             sessionReady,
+            userPhoto: user?.photo ?? null,
         },
         functions: {
             onSendMessage,

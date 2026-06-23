@@ -61,7 +61,7 @@ const ChatItemCard: FC<IChatItemCard> = ({ message, sender, image, created_at, t
         >
             {image && (
                 <View style={{ width: "20%", alignItems: is_sender ? "flex-end" : "flex-start" }}>
-                    <Icon source={image} rounded no_padding size={39} />
+                    <Icon source={image} rounded no_padding size={39} resize="cover" />
                 </View>
             )}
             {

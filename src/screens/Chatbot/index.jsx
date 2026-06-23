@@ -28,7 +28,8 @@ const Chatbot = () => {
         },
         values: {
             data,
-            input
+            input,
+            userPhoto,
         },
         functions: {
             onChangeInput,
@@ -41,13 +42,15 @@ const Chatbot = () => {
     const keyboardHeight = useKeyboard();
     const isNewAndroid = Platform.OS === "android" && Platform.Version >= 35;
 
+    const meAvatar = userPhoto ? { uri: userPhoto } : images.dummy;
+
     const renderItem = ({ item }) => (
         <ChatItemCard
             message={item?.text}
             sender={item.sender === "me"}
             created_at={item?.timestamp}
             typing={item?.typing}
-            image={item.sender === "me" ? images.dummy : images.chatbot}
+            image={item.sender === "me" ? meAvatar : images.chatbot}
         />
     )
 
