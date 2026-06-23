@@ -1,0 +1,71 @@
+diff --git a/node_modules/@zoom/react-native-videosdk/android/build.gradle b/node_modules/@zoom/react-native-videosdk/android/build.gradle
+index 211169a..fa2defd 100644
+--- a/node_modules/@zoom/react-native-videosdk/android/build.gradle
++++ b/node_modules/@zoom/react-native-videosdk/android/build.gradle
+@@ -4,7 +4,7 @@ buildscript {
+ 
+   repositories {
+     google()
+-    jcenter()
++    mavenCentral()
+   }
+ 
+   dependencies {
+@@ -53,7 +53,6 @@ android {
+ 
+ repositories {
+   mavenCentral()
+-  jcenter()
+   google()
+ 
+   def found = false
+diff --git a/node_modules/@zoom/react-native-videosdk/android/src/main/java/com/reactnativezoom/videosdk/RNZoomVideoSdkModule.java b/node_modules/@zoom/react-native-videosdk/android/src/main/java/com/reactnativezoom/videosdk/RNZoomVideoSdkModule.java
+index 902d294..91ed980 100644
+--- a/node_modules/@zoom/react-native-videosdk/android/src/main/java/com/reactnativezoom/videosdk/RNZoomVideoSdkModule.java
++++ b/node_modules/@zoom/react-native-videosdk/android/src/main/java/com/reactnativezoom/videosdk/RNZoomVideoSdkModule.java
+@@ -1135,12 +1135,19 @@ public class RNZoomVideoSdkModule extends ReactContextBaseJavaModule implements
+   // -----------------------------------------------------------------------------------------------
+ 
+   private void refreshRotationIfNeeded() {
++    if (display == null) {
++      return;
++    }
++    if (ZoomVideoSDK.getInstance() == null || !ZoomVideoSDK.getInstance().isInSession()) {
++      return;
++    }
++    if (ZoomVideoSDK.getInstance().getVideoHelper() == null) {
++      return;
++    }
+     int rotation = display.getRotation();
+     if (rotation != lastRotation) {
+       lastRotation = rotation;
+-      if (ZoomVideoSDK.getInstance().getVideoHelper() != null) {
+-        ZoomVideoSDK.getInstance().getVideoHelper().rotateMyVideo(lastRotation);
+-      }
++      ZoomVideoSDK.getInstance().getVideoHelper().rotateMyVideo(lastRotation);
+     }
+   }
+ 
+diff --git a/node_modules/@zoom/react-native-videosdk/src/hooks/useSdkHandler.ts b/node_modules/@zoom/react-native-videosdk/src/hooks/useSdkHandler.ts
+index 176088b..b6ffb3d 100644
+--- a/node_modules/@zoom/react-native-videosdk/src/hooks/useSdkHandler.ts
++++ b/node_modules/@zoom/react-native-videosdk/src/hooks/useSdkHandler.ts
+@@ -74,6 +74,18 @@ export function useSdkHandler(config: InitConfig = {}): ZoomVideoSdkContext {
+     }
+   }, [config, isInited]);
+ 
++  // Metro reload / fast refresh: cleanup native SDK before JS remounts.
++  useEffect(() => {
++    return () => {
++      try {
++        const result = sdkHandler.current.cleanup();
++        if (result && typeof (result as Promise<void>).catch === 'function') {
++          (result as Promise<void>).catch(() => {});
++        }
++      } catch (_) {}
++    };
++  }, []);
++
+   const joinSession = useCallback((joinConfig: JoinSessionConfig) => {
+     return sdkHandler.current.joinSession(joinConfig);
+   }, []);

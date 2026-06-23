@@ -21,35 +21,31 @@ const styles = StyleSheet.create({
     marginBottom: heightPixel(16),
     borderWidth: 1,
     borderColor: colors.white + '10',
+    gap: heightPixel(10),
   },
-  summaryStat: {
-    gap: heightPixel(6),
+  summaryRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    justifyContent: 'space-between',
+    gap: widthPixel(12),
   },
-  summaryStatMain: {
-    marginBottom: heightPixel(4),
+  summaryLabelCol: {
+    flex: 1,
+    gap: heightPixel(2),
+  },
+  summaryHint: {
+    marginTop: heightPixel(2),
   },
   summaryValueRow: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: widthPixel(6),
-    flexWrap: 'wrap',
+    flexShrink: 0,
   },
   summaryDivider: {
     height: 1,
     backgroundColor: colors.white + '12',
-    marginVertical: heightPixel(12),
-  },
-  summarySubRow: {
-    flexDirection: 'row',
-    alignItems: 'stretch',
-  },
-  summaryHalf: {
-    flex: 1,
-  },
-  summaryVerticalDivider: {
-    width: 1,
-    backgroundColor: colors.white + '12',
-    marginHorizontal: widthPixel(12),
+    marginVertical: heightPixel(4),
   },
   list: {
     flex: 1,

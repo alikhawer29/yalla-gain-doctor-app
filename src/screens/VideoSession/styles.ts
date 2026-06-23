@@ -32,11 +32,30 @@ const styles = StyleSheet.create({
     backgroundColor: videoSessionColors.bg,
     zIndex: 20,
   },
+  headerLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    flexShrink: 1,
+    maxWidth: '46%',
+  },
   leaveBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     gap: 4,
-    minWidth: 80,
+  },
+  leaveMeetingBtn: {
+    paddingVertical: 6,
+    paddingHorizontal: 10,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.35)',
+    backgroundColor: 'rgba(255,255,255,0.08)',
+  },
+  leaveMeetingText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
   },
   leaveText: {
     color: '#FFFFFF',

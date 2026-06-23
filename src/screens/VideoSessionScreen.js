@@ -198,6 +198,7 @@ const VideoSessionScreen = () => {
   const hasEndedApiRef = useRef(false);
   const autoEndedRef = useRef(false);
   const joinStartedRef = useRef(false);
+  const voluntaryLeaveRef = useRef(false);
 
   useEffect(() => {
     if (!isConnecting) {
@@ -313,20 +314,30 @@ const VideoSessionScreen = () => {
     finishAndShowEnded();
   }, [callEndSessionApi, finishAndShowEnded, isHost]);
 
-  const confirmHeaderLeave = useCallback(() => {
+  const leaveMeetingOnly = useCallback(() => {
+    voluntaryLeaveRef.current = true;
+    stopTimer();
+    try {
+      ZoomVideoService.leaveSession(false);
+    } catch (e) {
+      console.log('[VideoSession] leave meeting only', e);
+    }
+    navigation.goBack();
+  }, [navigation, stopTimer]);
+
+  const confirmLeaveMeeting = useCallback(() => {
     Alert.alert(
-      'End Session?',
-      'Are you sure you want to end this session?',
+      'Leave Meeting?',
+      'You will leave the video call. You can rejoin from booking details.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
-          text: 'End Session',
-          style: 'destructive',
-          onPress: endSessionForAll,
+          text: 'Leave',
+          onPress: leaveMeetingOnly,
         },
       ],
     );
-  }, [endSessionForAll]);
+  }, [leaveMeetingOnly]);
 
   const confirmEndSession = useCallback(() => {
     Alert.alert(
@@ -342,6 +353,17 @@ const VideoSessionScreen = () => {
       ],
     );
   }, [endSessionForAll]);
+
+  useEffect(() => {
+    const unsubscribe = navigation.addListener('beforeRemove', e => {
+      if (voluntaryLeaveRef.current || sessionEnded || autoEndedRef.current) {
+        return;
+      }
+      e.preventDefault();
+      confirmLeaveMeeting();
+    });
+    return unsubscribe;
+  }, [navigation, confirmLeaveMeeting, sessionEnded]);
 
   useEffect(() => {
     if (!hasSessionCountdown(sessionTiming)) return;
@@ -372,6 +394,11 @@ const VideoSessionScreen = () => {
         await syncUsers();
       },
       onSessionLeave: () => {
+        if (voluntaryLeaveRef.current) {
+          voluntaryLeaveRef.current = false;
+          stopTimer();
+          return;
+        }
         callEndSessionApi();
         finishAndShowEnded();
       },
@@ -566,15 +593,25 @@ const VideoSessionScreen = () => {
 
       {/* Header */}
       <View style={[styles.header, { paddingTop: insets.top + 10 }]}>
-        <TouchableOpacity
-          style={styles.leaveBtn}
-          onPress={confirmHeaderLeave}
-          hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
-          accessibilityRole="button"
-          accessibilityLabel="End session">
-          <BackChevronIcon />
-          {/* <Text style={styles.leaveText}>Leave</Text> */}
-        </TouchableOpacity>
+        <View style={styles.headerLeft}>
+          <TouchableOpacity
+            style={styles.leaveBtn}
+            onPress={confirmLeaveMeeting}
+            hitSlop={{ top: 12, bottom: 12, left: 8, right: 8 }}
+            accessibilityRole="button"
+            accessibilityLabel="Go back and leave meeting">
+            <BackChevronIcon />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={styles.leaveMeetingBtn}
+            onPress={confirmLeaveMeeting}
+            activeOpacity={0.85}
+            accessibilityRole="button"
+            accessibilityLabel="Leave meeting">
+            <Text style={styles.leaveMeetingText}>Leave Meeting</Text>
+          </TouchableOpacity>
+        </View>
 
         <Text style={styles.brandTitle}>YallaGain</Text>
 
@@ -706,12 +743,12 @@ const VideoSessionScreen = () => {
 
           <TouchableOpacity
             style={styles.endPill}
-            onPress={isHost ? confirmEndSession : confirmHeaderLeave}
+            onPress={isHost ? confirmEndSession : confirmLeaveMeeting}
             activeOpacity={0.85}
             accessibilityRole="button"
-            accessibilityLabel={isHost ? 'End session' : 'Leave session'}>
+            accessibilityLabel={isHost ? 'End session for everyone' : 'Leave meeting'}>
             <Text style={styles.endPillText}>
-              {isHost ? 'End Session' : 'Leave'}
+              {isHost ? 'End Session' : 'Leave Meeting'}
             </Text>
           </TouchableOpacity>
 

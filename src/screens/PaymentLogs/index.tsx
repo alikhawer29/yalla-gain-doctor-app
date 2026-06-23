@@ -15,34 +15,113 @@ import colors from '../../utils/colors';
 import { formatLongDate, heightPixel, widthPixel } from '../../utils/helper';
 import FilterModal from './FilterModal';
 import usePaymentLogsController from './usePaymentLogsController';
-import { PaymentLogItem } from '../../redux/Apis/User';
+import { PaymentEarningsSummary, PaymentLogItem } from '../../redux/Apis/User';
 
-type SummaryStatProps = {
+type SummaryRowProps = {
     label: string;
     value?: number | null;
+    prefix?: string;
     emphasize?: boolean;
+    hint?: string;
 };
 
-const SummaryStat = ({ label, value, emphasize }: SummaryStatProps) => (
-    <View style={[styles.summaryStat, emphasize && styles.summaryStatMain]}>
-        <Text color={colors.icon_gray} size={12}>
-            {label}
-        </Text>
+const formatCoins = (value?: number | null) =>
+    value != null ? String(value) : '—';
+
+const SummaryRow = ({
+    label,
+    value,
+    prefix = '',
+    emphasize,
+    hint,
+}: SummaryRowProps) => (
+    <View style={styles.summaryRow}>
+        <View style={styles.summaryLabelCol}>
+            <Text
+                color={colors.white}
+                size={emphasize ? 14 : 13}
+                weight={emphasize ? 'semibold' : 'regular'}
+            >
+                {label}
+            </Text>
+            {hint ? (
+                <Text color={colors.icon_gray} size={11} style={styles.summaryHint}>
+                    {hint}
+                </Text>
+            ) : null}
+        </View>
         <View style={styles.summaryValueRow}>
             <Text
                 color={colors.white}
-                size={emphasize ? 22 : 16}
+                size={emphasize ? 18 : 15}
                 weight="bold"
             >
-                {value != null ? value : '—'}
+                {prefix}
+                {formatCoins(value)}
             </Text>
-            <Icon source={images.coin} size={emphasize ? 16 : 13} />
-            <Text color={colors.primary} size={10} weight="semibold">
-                Yalla Coins
-            </Text>
+            <Icon source={images.coin} size={13} />
         </View>
     </View>
 );
+
+const EarningsSummaryCard = ({
+    summary,
+}: {
+    summary?: PaymentEarningsSummary;
+}) => {
+    const gross = summary?.gross_earnings;
+    const tips = summary?.tips_received ?? 0;
+    const service =
+        gross != null ? Math.max(0, gross - tips) : null;
+    const grossHint =
+        gross != null && service != null
+            ? tips > 0
+                ? `(${service} service + ${tips} tip)`
+                : `(${service} service)`
+            : undefined;
+
+    return (
+        <View style={styles.summaryCard}>
+            <SummaryRow
+                label="Gross Earnings"
+                value={summary?.gross_earnings}
+                emphasize
+            // hint={grossHint}
+            />
+            <SummaryRow
+                label="Total Commission"
+                value={summary?.total_commission}
+                prefix="- "
+            // hint="(service only)"
+            />
+
+            <View style={styles.summaryDivider} />
+
+            <SummaryRow
+                label="Net Earnings"
+                value={summary?.net_earnings}
+                emphasize
+            />
+
+            <View style={styles.summaryDivider} />
+
+            <SummaryRow
+                label="Paid Out"
+                value={summary?.paid_out}
+            // hint="(afer commission)"
+            />
+            <SummaryRow
+                label="Tips Received"
+                value={summary?.tips_received}
+            // hint="(direct transfer)"
+            />
+            <SummaryRow
+                label="Pending Payout"
+                value={summary?.pending_payout}
+            />
+        </View>
+    );
+};
 
 const PaymentLogs = () => {
     const [filterVisible, setFilterVisible] = useState(false);
@@ -50,9 +129,7 @@ const PaymentLogs = () => {
     const {
         values: {
             logs,
-            totalEarnings,
-            totalRealized,
-            totalUnrealized,
+            earningsSummary,
             filterFrom,
             filterTo,
             isLoading,
@@ -109,22 +186,24 @@ const PaymentLogs = () => {
             return (
                 <View style={styles.card}>
                     <View style={styles.cardRow}>
-                        <Coin label="Booking Id" value={`#${item.id}`} />
+                        <Coin label="Booking Id" value={`#${item.booking_id}`} />
                     </View>
                     <View style={styles.cardRow}>
                         <CoinWithIcon
                             label="Booking Amount"
-                            value={String(item.booking_amount)}
+                            value={String(item.session_value ?? item.booking_amount)}
                         />
                     </View>
                     <View style={styles.cardRow}>
+                        <Coin label="Booking Date" value={formatLongDate(item.booking_date ?? '')} />
+                    </View>
+                    <View style={styles.cardRow}>
                         <Coin label="Payment Date" value={formatLongDate(item.payment_date ?? '')} />
-
                     </View>
                     <View style={styles.cardRow}>
                         <CoinWithIcon
                             label="Payment Amount"
-                            value={String(item.payment_amount)}
+                            value={String(item.booking_payout ?? item.payment_amount)}
                         />
                     </View>
                     <View style={styles.cardRow}>
@@ -132,6 +211,12 @@ const PaymentLogs = () => {
                     </View>
                     <View style={styles.cardRow}>
                         <CoinWithIcon label="Tip" value={String(item.tip)} />
+                    </View>
+                    <View style={styles.cardRow}>
+                        <Coin
+                            label="Payout Status"
+                            value={item.is_payout_done ? 'Paid' : 'Pending'}
+                        />
                     </View>
                 </View>
             );
@@ -144,7 +229,7 @@ const PaymentLogs = () => {
             <View style={styles.container}>
                 <View style={styles.headerRow}>
                     <Text color={colors.white} size={16} weight="semibold">
-                        Earnings summary
+                        Earnings Summary
                     </Text>
                     <TouchableOpacity
                         style={styles.filterBtn}
@@ -154,23 +239,7 @@ const PaymentLogs = () => {
                     </TouchableOpacity>
                 </View>
 
-                <View style={styles.summaryCard}>
-                    <SummaryStat
-                        label="Total Earnings"
-                        value={totalEarnings}
-                        emphasize
-                    />
-                    <View style={styles.summaryDivider} />
-                    <View style={styles.summarySubRow}>
-                        <View style={styles.summaryHalf}>
-                            <SummaryStat label="Realized (After Commission)" value={totalRealized} />
-                        </View>
-                        <View style={styles.summaryVerticalDivider} />
-                        <View style={styles.summaryHalf}>
-                            <SummaryStat label="Unrealized" value={totalUnrealized} />
-                        </View>
-                    </View>
-                </View>
+                <EarningsSummaryCard summary={earningsSummary} />
 
                 {isError ? (
                     <Text color={colors.danger} size={14} style={{ marginTop: 24 }}>

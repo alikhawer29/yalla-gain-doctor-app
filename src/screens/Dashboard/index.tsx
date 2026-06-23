@@ -1,14 +1,15 @@
-import { ActivityIndicator, RefreshControl, View } from 'react-native';
-import { BarChart, LineChart } from 'react-native-chart-kit';
+import { ActivityIndicator, ImageSourcePropType, RefreshControl, View } from 'react-native';
+import { LineChart } from 'react-native-chart-kit';
 import images from '../../assets/images';
 import ProfileHeader from '../../components/ProfileHeader';
 import Row from '../../components/Row';
 import Text from '../../components/Text';
 import Wrapper from '../../components/Wrapper';
 import Icon from '../../components/Icon';
+import Image from '../../components/Image';
 import Dropdown from '../../components/Dropdown';
 import colors from '../../utils/colors';
-import { heightPixel, vw, widthPixel } from '../../utils/helper';
+import { heightPixel, widthPixel } from '../../utils/helper';
 import {
     buildLineChartLayout,
     createLineChartConfig,
@@ -25,14 +26,60 @@ const DASHBOARD_CHART_AREA_WIDTH = getChartAreaWidth({
     cardHorizontal: widthPixel(15),
 });
 
-const miniBarChartWidth = Math.max(widthPixel(100), Math.round(vw * 48 - widthPixel(42)));
-const miniBarChartHeight = heightPixel(48);
+type StatCardProps = {
+    label: string;
+    value: number;
+    icon: ImageSourcePropType;
+    loading?: boolean;
+    showCoins?: boolean;
+};
+
+const formatStatValue = (value: number) =>
+    Number.isInteger(value) ? String(value) : String(value);
+
+const StatCard = ({ label, value, icon, loading, showCoins }: StatCardProps) => (
+    <View style={styles.statCard}>
+        <View style={styles.statCardBody}>
+            <Row justify="space-between" align="flex-start">
+                {/* <View style={styles.iconContainer}> */}
+                <Image source={icon} style={{ width: heightPixel(50), height: heightPixel(50) }} />
+                {/* </View> */}
+                <View style={{ alignItems: 'flex-end', flex: 1, marginLeft: widthPixel(8) }}>
+                    <Text size={12} color={colors.white}>
+                        {label}
+                    </Text>
+                    {loading ? (
+                        <ActivityIndicator color={colors.primary} style={{ marginTop: heightPixel(6) }} />
+                    ) : (
+                        <Text size={23} weight="bold" color={colors.white}>
+                            {formatStatValue(value)}
+                        </Text>
+                    )}
+                    {showCoins ? (
+                        <View style={styles.yallaCoinRow}>
+                            <Icon source={images.coin} size={12} />
+                            <Text size={10} color={colors.primary} weight="semibold">
+                                Yalla Coins
+                            </Text>
+                        </View>
+                    ) : null}
+                </View>
+            </Row>
+        </View>
+        <View style={styles.cardGraphWrap}>
+            <Image source={images.card_graph} style={styles.cardGraph} resize="contain" />
+        </View>
+    </View>
+);
 
 const Dashboard = () => {
     const {
         values: {
             total_bookings,
-            total_earnings,
+            total_coins,
+            paid_out,
+            pending_payout,
+            total_tips_received,
             earningsLineData,
             bookingsLineData,
             earningsFilter,
@@ -46,17 +93,7 @@ const Dashboard = () => {
         functions: { onEarningsFilterChange, onBookingsFilterChange, onRefresh },
     } = useDashboardController();
 
-    const miniBarData = {
-        labels: ['1', '2', '3', '4', '5', '6', '7', '8'],
-        datasets: [
-            {
-                data: [20, 45, 28, 80, 99, 43, 80, 60],
-            },
-        ],
-    };
-
     const chartConfig = createLineChartConfig(colors.grayish_black);
-    const fullChartConfig = chartConfig;
 
     const earningsChartPayload = {
         labels: earningsLineData.labels,
@@ -97,113 +134,42 @@ const Dashboard = () => {
             <View style={styles.container}>
                 <ProfileHeader />
 
-                <Row justify="space-between" align="stretch">
-                    <View style={styles.topCard}>
-                        <Row justify="space-between" align="flex-start">
-                            <View style={styles.iconContainer}>
-                                <Icon
-                                    source={images.drawer_icons.my_bookings}
-                                    size={20}
-                                    tint_color={colors.white}
-                                />
-                            </View>
-                            <View style={{ alignItems: 'flex-end' }}>
-                                <Text size={12} color={colors.white}>
-                                    Total Booking
-                                </Text>
-                                {isStatsLoading ? (
-                                    <ActivityIndicator color={colors.primary} />
-                                ) : (
-                                    <Text size={23} weight="bold" color={colors.white}>{total_bookings}</Text>
-                                )}
-                            </View>
-                        </Row>
-                        <View
-                            style={{
-                                height: miniBarChartHeight,
-                                alignSelf: 'stretch',
-                                overflow: 'hidden',
-                            }}
-                        >
-                            <BarChart
-                                data={miniBarData}
-                                width={miniBarChartWidth}
-                                height={miniBarChartHeight}
-                                yAxisLabel=""
-                                yAxisSuffix=""
-                                chartConfig={{
-                                    ...chartConfig,
-                                    propsForBackgroundLines: { strokeWidth: 0 },
-                                    fillShadowGradient: colors.primary,
-                                    fillShadowGradientOpacity: 1,
-                                }}
-                                withHorizontalLabels={false}
-                                withVerticalLabels={false}
-                                withInnerLines={false}
-                                showBarTops={false}
-                                style={{
-                                    paddingRight: widthPixel(2),
-                                    paddingTop: heightPixel(2),
-                                }}
-                                flatColor={true}
-                            />
-                        </View>
-                    </View>
-
-                    <View style={styles.topCard}>
-                        <Row justify="space-between" align="flex-start">
-                            <View style={styles.iconContainer}>
-                                <Icon source={images.coin} size={20} tint_color={colors.white} />
-                            </View>
-                            <View style={{ alignItems: 'flex-end' }}>
-                                <Text size={12} color={colors.white}>
-                                    Total Earning
-                                </Text>
-                                {isStatsLoading ? (
-                                    <ActivityIndicator color={colors.primary} />
-                                ) : (
-                                    <Text size={23} weight="bold" color={colors.white}>{total_earnings}</Text>
-                                )}
-                                <View style={styles.yallaCoinRow}>
-                                    <Icon source={images.coin} size={12} />
-                                    <Text size={10} color={colors.primary} weight="semibold">
-                                        Yalla Coins
-                                    </Text>
-                                </View>
-                            </View>
-                        </Row>
-                        <View
-                            style={{
-                                height: miniBarChartHeight,
-                                alignSelf: 'stretch',
-                                overflow: 'hidden',
-                            }}
-                        >
-                            <BarChart
-                                data={miniBarData}
-                                width={miniBarChartWidth}
-                                height={miniBarChartHeight}
-                                yAxisLabel=""
-                                yAxisSuffix=""
-                                chartConfig={{
-                                    ...chartConfig,
-                                    propsForBackgroundLines: { strokeWidth: 0 },
-                                    fillShadowGradient: colors.primary,
-                                    fillShadowGradientOpacity: 1,
-                                }}
-                                withHorizontalLabels={false}
-                                withVerticalLabels={false}
-                                withInnerLines={false}
-                                showBarTops={false}
-                                style={{
-                                    paddingRight: widthPixel(2),
-                                    paddingTop: heightPixel(2),
-                                }}
-                                flatColor={true}
-                            />
-                        </View>
-                    </View>
-                </Row>
+                <View style={styles.statsGrid}>
+                    <StatCard
+                        label="Total Booking"
+                        value={total_bookings}
+                        icon={images.total_bookings}
+                        loading={isStatsLoading}
+                    />
+                    <StatCard
+                        label="Total Earning"
+                        value={total_coins}
+                        icon={images.total_earnings}
+                        loading={isStatsLoading}
+                        showCoins
+                    />
+                    <StatCard
+                        label="Paid Out"
+                        value={paid_out}
+                        icon={images.total_earnings}
+                        loading={isStatsLoading}
+                        showCoins
+                    />
+                    <StatCard
+                        label="Pending Payout"
+                        value={pending_payout}
+                        icon={images.total_earnings}
+                        loading={isStatsLoading}
+                        showCoins
+                    />
+                    <StatCard
+                        label="Tips Received"
+                        value={total_tips_received}
+                        icon={images.total_earnings}
+                        loading={isStatsLoading}
+                        showCoins
+                    />
+                </View>
 
                 <View style={styles.graphCard}>
                     <Row
@@ -234,7 +200,7 @@ const Dashboard = () => {
                                 data={earningsChartPayload}
                                 width={earningsChartLayout.width}
                                 height={heightPixel(220)}
-                                chartConfig={fullChartConfig}
+                                chartConfig={chartConfig}
                                 formatYLabel={formatYAxisInteger}
                                 bezier
                                 withDots={true}
@@ -286,7 +252,7 @@ const Dashboard = () => {
                                 data={bookingsChartPayload}
                                 width={bookingsChartLayout.width}
                                 height={heightPixel(220)}
-                                chartConfig={fullChartConfig}
+                                chartConfig={chartConfig}
                                 formatYLabel={formatYAxisInteger}
                                 bezier
                                 withDots={true}

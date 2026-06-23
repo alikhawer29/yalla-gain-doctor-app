@@ -9,6 +9,7 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import AppWrapper from './src/components/AppWrapper';
 import DevNetworkLogger from './src/components/DevNetworkLogger';
+import ForceLogoutBootstrap from './src/components/ForceLogoutBootstrap';
 import { ModalProvider } from './src/contexts/ModalContext';
 import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
@@ -67,6 +68,7 @@ function App() {
             <MenuProvider>
               <ZoomVideoSdkProvider config={zoomSdkConfig}>
                 <ModalProvider>
+                  <ForceLogoutBootstrap />
                   <NavigationContainer ref={navigationRef} theme={navTheme}>
                     <AppStackNavigator />
                     <Toast />

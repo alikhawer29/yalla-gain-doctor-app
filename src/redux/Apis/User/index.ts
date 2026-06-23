@@ -31,21 +31,60 @@ export type HealthProgressApiResponse = {
   message?: string;
 };
 
+export type DashboardStats = {
+  total_bookings?: number;
+  total_earnings?: number;
+  total_coins?: number;
+  net_earnings?: number;
+  paid_out?: number;
+  pending_payout?: number;
+  total_tips_received?: number;
+};
+
+export type DashboardStatsApiResponse = {
+  data?: DashboardStats;
+  status?: boolean;
+};
+
+export type FaqItem = {
+  id: number;
+  question: string;
+  answer: string;
+  image?: string | null;
+  video?: string | null;
+  created_at?: string;
+};
+
 export type PaymentLogItem = {
   id: number;
   booking_id: string;
   booking_amount: number;
+  session_value?: number;
+  amount_charged?: number;
+  uses_subscription_session?: boolean;
+  payment_type?: string;
+  booking_date?: string;
   payment_date: string;
   commission: number;
   tip: number;
   payment_amount: number;
+  provider_payout?: number;
+  booking_payout?: number;
+  is_payout_done?: boolean;
+};
+
+export type PaymentEarningsSummary = {
+  gross_earnings?: number;
+  total_commission?: number;
+  net_earnings?: number;
+  paid_out?: number;
+  tips_received?: number;
+  pending_payout?: number;
 };
 
 export type PaymentLogsApiResponse = {
   data?: {
-    total_earnings?: number;
-    total_realized?: number;
-    total_unrealized?: number;
+    earnings_summary?: PaymentEarningsSummary;
     payment_logs?: {
       current_page: number;
       last_page: number;
@@ -483,7 +522,10 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['Wallet'],
     }),
-    getFaqs: builder.query({
+    getFaqs: builder.query<
+      { data?: FaqItem[]; status?: boolean },
+      void
+    >({
       query: () => ({
         url: `faqs`,
         method: 'GET',
@@ -520,13 +562,7 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['Notifications'],
     }),
-    getDashboardStats: builder.query<
-      {
-        data?: { total_bookings?: number; total_earnings?: number };
-        status?: boolean;
-      },
-      void
-    >({
+    getDashboardStats: builder.query<DashboardStatsApiResponse, void>({
       query: () => ({
         url: `dashboard/stats`,
         method: 'GET',

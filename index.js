@@ -14,9 +14,17 @@ import {
   ensureAndroidNotificationChannel,
 } from './src/services/push/fcmDisplay';
 import { invalidateNotificationsList } from './src/services/push/invalidateNotificationsList';
+import { handleForceLogoutRemoteMessage } from './src/services/auth/forceLogout';
 
 setBackgroundMessageHandler(getMessaging(), async remoteMessage => {
+  const handled = await handleForceLogoutRemoteMessage(remoteMessage, {
+    deferAlert: true,
+  });
   await ensureAndroidNotificationChannel();
+  if (handled) {
+    await displayNotificationFromRemoteMessage(remoteMessage);
+    return;
+  }
   await displayNotificationFromRemoteMessage(remoteMessage);
   invalidateNotificationsList();
 });

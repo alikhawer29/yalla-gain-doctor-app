@@ -1,76 +1,107 @@
-import React, { useState } from "react"
-import { View, FlatList, TouchableOpacity, Image, LayoutAnimation, Platform, UIManager } from "react-native"
-import Wrapper from "../../components/Wrapper"
-import Text from "../../components/Text"
-import Row from "../../components/Row"
-import Icon from "../../components/Icon"
-import images from "../../assets/images"
-import colors from "../../utils/colors"
-import { heightPixel, widthPixel } from "../../utils/helper"
-import { useGetFaqsQuery } from "../../redux/Apis/User"
+import React, { FC, useCallback, useState } from 'react';
+import {
+  View,
+  FlatList,
+  ActivityIndicator,
+  TouchableOpacity,
+} from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
+import Image from '../../components/Image';
+import ImagePreviewModal from '../../components/ImagePreviewModal';
+import Text from '../../components/Text';
+import Wrapper from '../../components/Wrapper';
+import Empty from '../../components/Empty';
+import colors from '../../utils/colors';
+import { FaqItem, useGetFaqsQuery } from '../../redux/Apis/User';
+import FaqVideoPlayer from './FaqVideoPlayer';
+import styles from './styles';
 
-if (Platform.OS === 'android' && UIManager.setLayoutAnimationEnabledExperimental) {
-    UIManager.setLayoutAnimationEnabledExperimental(true);
-}
+const FAQ: FC = () => {
+  const { data, isLoading, isFetching, refetch } = useGetFaqsQuery(undefined, {
+    refetchOnFocus: true,
+    refetchOnReconnect: true,
+  });
+  const faqs: FaqItem[] = data?.data ?? [];
 
-const FAQ = () => {
-    const { data, isLoading, refetch } = useGetFaqsQuery(undefined)
-    const [expandedIds, setExpandedIds] = useState<number[]>([])
+  const [previewImageUrl, setPreviewImageUrl] = useState<string | null>(null);
 
-    const toggleExpand = (id: number) => {
-        LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut)
-        setExpandedIds((prev) =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        )
-    }
+  useFocusEffect(
+    useCallback(() => {
+      refetch();
+    }, [refetch]),
+  );
 
-    const renderItem = ({ item }: any) => {
-        const isExpanded = expandedIds.includes(item.id)
-        return (
-            <View style={{ marginBottom: 15, borderRadius: 15, backgroundColor: colors.black, borderWidth: 1, borderColor: colors.white + "20" }}>
-                <TouchableOpacity onPress={() => toggleExpand(item.id)} activeOpacity={0.7} style={{ padding: 15, flexDirection: "row", justifyContent: "space-between", alignItems: "center" }}>
-                    <Text color={colors.white} weight="semibold" style={{ flex: 1 }}>{item.question}</Text>
-                    <Icon source={images.right_arrow} size={15} style={{ transform: [{ rotate: isExpanded ? "90deg" : "0deg" }] }} />
-                </TouchableOpacity>
-
-                {isExpanded && (
-                    <View style={{ padding: 15, paddingTop: 0 }}>
-                        {item.image && (
-                            <Image
-                                source={{ uri: item.image }}
-                                style={{ width: "100%", height: heightPixel(150), borderRadius: 10, marginBottom: 10 }}
-                                resizeMode="cover"
-                            />
-                        )}
-                        <Text color={colors.white + "80"} size={14} style={{ lineHeight: 20 }}>{item.answer}</Text>
-                        <Text color={colors.white + "40"} size={12} style={{ marginTop: 10 }}>{item.created_at}</Text>
-                    </View>
-                )}
-            </View>
-        )
-    }
+  const renderFaqItem = ({ item, index }: { item: FaqItem; index: number }) => {
+    const hasImage = !!item.image;
+    const hasVideo = !!item.video;
 
     return (
-        <Wrapper>
-            <View style={{ paddingTop: 10, flex: 1 }}>
-                <FlatList
-                    data={data?.data || []}
-                    renderItem={renderItem}
-                    keyExtractor={(item) => item.id.toString()}
-                    showsVerticalScrollIndicator={false}
-                    onRefresh={refetch}
-                    refreshing={isLoading}
-                    ListEmptyComponent={
-                        !isLoading ? (
-                            <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-                                <Text color={colors.white}>No FAQs Available</Text>
-                            </View>
-                        ) : null
-                    }
-                />
-            </View>
-        </Wrapper>
-    )
-}
+      <View style={styles.itemContainer}>
+        <Text color={colors.white} weight="bold" size={18} style={styles.question}>
+          Question {index + 1} :
+        </Text>
+        <Text color={colors.white} style={styles.question}>
+          {item.question}
+        </Text>
 
-export default FAQ
+        <View style={{ marginTop: 10 }}>
+          <Text color={colors.white} weight="bold" size={18} style={styles.answer}>
+            Response:
+          </Text>
+          <Text color={colors.white} style={styles.answer}>
+            {item.answer}
+          </Text>
+        </View>
+
+        {hasImage && (
+          <TouchableOpacity
+            activeOpacity={0.85}
+            onPress={() => setPreviewImageUrl(item.image!)}
+          >
+            <Image
+              source={{ uri: item.image! }}
+              style={styles.image}
+              resize="cover"
+            />
+          </TouchableOpacity>
+        )}
+
+        {hasVideo && <FaqVideoPlayer videoUrl={item.video!} />}
+      </View>
+    );
+  };
+
+  if (isLoading) {
+    return (
+      <Wrapper>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
+      </Wrapper>
+    );
+  }
+
+  return (
+    <Wrapper scrollable={false}>
+      <View style={styles.container}>
+        <FlatList
+          data={faqs}
+          renderItem={renderFaqItem}
+          keyExtractor={item => String(item.id)}
+          showsVerticalScrollIndicator={false}
+          ListEmptyComponent={<Empty message="No FAQs found" />}
+          refreshing={isFetching && !isLoading}
+          onRefresh={refetch}
+        />
+      </View>
+
+      <ImagePreviewModal
+        visible={!!previewImageUrl}
+        imageUrl={previewImageUrl ?? ''}
+        onClose={() => setPreviewImageUrl(null)}
+      />
+    </Wrapper>
+  );
+};
+
+export default FAQ;

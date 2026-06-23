@@ -15,15 +15,16 @@ import {
   ensureAndroidNotificationChannel,
 } from './fcmDisplay';
 import { invalidateNotificationsList } from './invalidateNotificationsList';
+import { handleForceLogoutRemoteMessage, handleForceLogoutData } from '../auth/forceLogout';
 
 const messaging = getMessaging();
 
-/**
- * Optional: handle taps / cold start; extend when the API sends `data` routes.
- */
-function handleNotificationData(_data?: Record<string, string> | object): void {
-  if (!_data || typeof _data !== 'object') return;
-  if (Object.keys(_data).length === 0) return;
+async function handleNotificationData(
+  data?: Record<string, string> | object,
+): Promise<void> {
+  if (!data || typeof data !== 'object') return;
+  if (Object.keys(data).length === 0) return;
+  await handleForceLogoutData(data);
 }
 
 /**
@@ -90,29 +91,42 @@ export async function setupForegroundPushHandlers(): Promise<() => void> {
   await ensureAndroidNotificationChannel();
 
   const unsubOnMessage = onMessage(messaging, async remoteMessage => {
-    await displayNotificationFromRemoteMessage(remoteMessage);
+    const handled = await handleForceLogoutRemoteMessage(remoteMessage);
+    if (!handled) {
+      await displayNotificationFromRemoteMessage(remoteMessage);
+    }
     invalidateNotificationsList();
   });
 
-  const unsubOpened = onNotificationOpenedApp(messaging, remoteMessage => {
-    handleNotificationData(remoteMessage?.data as Record<string, string> | undefined);
+  const unsubOpened = onNotificationOpenedApp(messaging, async remoteMessage => {
+    const handled = await handleForceLogoutRemoteMessage(remoteMessage, {
+      deferAlert: false,
+    });
+    if (!handled) {
+      await handleNotificationData(remoteMessage?.data as Record<string, string> | undefined);
+    }
     invalidateNotificationsList();
   });
 
-  const unsubNotifee = notifee.onForegroundEvent(({ type, detail }) => {
+  const unsubNotifee = notifee.onForegroundEvent(async ({ type, detail }) => {
     if (type === EventType.PRESS) {
-      handleNotificationData(detail.notification?.data);
+      await handleNotificationData(detail.notification?.data);
     }
   });
 
   const initialRemote = await getInitialNotification(messaging);
-  if (initialRemote?.data) {
-    handleNotificationData(initialRemote.data as Record<string, string>);
+  if (initialRemote) {
+    const handled = await handleForceLogoutRemoteMessage(initialRemote, {
+      deferAlert: false,
+    });
+    if (!handled && initialRemote.data) {
+      await handleNotificationData(initialRemote.data as Record<string, string>);
+    }
   }
 
   const initialNotifee = await notifee.getInitialNotification();
   if (initialNotifee?.notification?.data) {
-    handleNotificationData(initialNotifee.notification.data);
+    await handleNotificationData(initialNotifee.notification.data);
   }
 
   let appState = AppState.currentState;

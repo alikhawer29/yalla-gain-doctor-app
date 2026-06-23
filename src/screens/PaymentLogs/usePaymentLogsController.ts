@@ -34,9 +34,7 @@ const usePaymentLogsController = () => {
     else setLogs(prev => [...prev, ...pg.data]);
   }, [data]);
 
-  const totalEarnings = data?.data?.total_earnings;
-  const totalRealized = data?.data?.total_realized;
-  const totalUnrealized = data?.data?.total_unrealized;
+  const earningsSummary = data?.data?.earnings_summary;
   const pagination = data?.data?.payment_logs;
 
   const applyDateFilter = useCallback((from: string, to: string) => {
@@ -58,9 +56,7 @@ const usePaymentLogsController = () => {
   return {
     values: {
       logs,
-      totalEarnings,
-      totalRealized,
-      totalUnrealized,
+      earningsSummary,
       filterFrom,
       filterTo,
       isLoading: isLoading && page === 1,

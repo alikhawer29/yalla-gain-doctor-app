@@ -103,7 +103,10 @@ const useDashboardController = () => {
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   const total_bookings = statsRes?.data?.total_bookings ?? 0;
-  const total_earnings = statsRes?.data?.total_earnings ?? 0;
+  const total_coins = statsRes?.data?.total_coins ?? 0;
+  const paid_out = statsRes?.data?.paid_out ?? 0;
+  const pending_payout = statsRes?.data?.pending_payout ?? 0;
+  const total_tips_received = statsRes?.data?.total_tips_received ?? 0;
 
   const earningsLineData = useMemo(
     () => rowsToLineChart(earningsRes?.data, 'earnings', earningsFilter),
@@ -145,7 +148,10 @@ const useDashboardController = () => {
   return {
     values: {
       total_bookings,
-      total_earnings,
+      total_coins,
+      paid_out,
+      pending_payout,
+      total_tips_received,
       earningsLineData,
       bookingsLineData,
       earningsFilter,

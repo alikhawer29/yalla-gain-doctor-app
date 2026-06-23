@@ -6,14 +6,37 @@ const styles = StyleSheet.create({
   container: {
     gap: heightPixel(15),
   },
-  topCard: {
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+    rowGap: heightPixel(12),
+  },
+  statCard: {
     backgroundColor: colors.grayish_black,
     borderRadius: widthPixel(15),
     padding: widthPixel(15),
+    paddingBottom: 0,
     width: '48%',
     height: heightPixel(150),
     justifyContent: 'space-between',
     overflow: 'hidden',
+  },
+  statCardBody: {
+    flex: 1,
+  },
+  cardGraphWrap: {
+    width: '100%',
+    height: heightPixel(48),
+    marginTop: heightPixel(8),
+    alignItems: 'center',
+    justifyContent: 'center',
+    overflow: 'hidden',
+  },
+  cardGraph: {
+    width: '100%',
+    height: heightPixel(48),
+    alignSelf: 'center',
   },
   topCardValue: {
     fontSize: heightPixel(24),
