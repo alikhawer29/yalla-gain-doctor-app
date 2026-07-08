@@ -1,6 +1,6 @@
 import { RouteProp, useFocusEffect, useRoute } from "@react-navigation/native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { Alert, FlatList, TouchableOpacity, View } from "react-native";
+import { FlatList, TouchableOpacity, View } from "react-native";
 import images from "../../assets/images";
 import Button from "../../components/Button";
 import CardWrapper from "../../components/CardWrapper";
@@ -14,11 +14,15 @@ import Wrapper from "../../components/Wrapper";
 import { useModal } from "../../contexts/ModalContext";
 import { useGetServiceSlotsQuery, useUpdateServiceSlotsMutation } from "../../redux/Apis/User";
 import colors from "../../utils/colors";
-import { heightPixel, timeFormatter, timeToISOString, widthPixel } from "../../utils/helper";
+import { heightPixel, timeToISOString, widthPixel } from "../../utils/helper";
 import { AppStackParamList } from "../../interfaces";
 import { goBack, navigateBackToServiceDetails } from "../../utils/navigation";
 
-const INITIAL_SLOTS = [
+type SlotEntry = { start_time: string; end_time: string };
+type DayEntry = { day: string; enabled: boolean; slots: SlotEntry[] };
+type SlotError = { start?: boolean; end?: boolean; message?: string };
+
+const INITIAL_SLOTS: DayEntry[] = [
     { day: "Monday", enabled: false, slots: [{ start_time: "", end_time: "" }] },
     { day: "Tuesday", enabled: false, slots: [{ start_time: "", end_time: "" }] },
     { day: "Wednesday", enabled: false, slots: [{ start_time: "", end_time: "" }] },
@@ -28,7 +32,13 @@ const INITIAL_SLOTS = [
     { day: "Sunday", enabled: false, slots: [{ start_time: "", end_time: "" }] },
 ];
 
-const parseTimeToMinutes = (time) => {
+const cloneInitialSlots = (): DayEntry[] =>
+    INITIAL_SLOTS.map((day) => ({
+        ...day,
+        slots: day.slots.map((slot) => ({ ...slot })),
+    }));
+
+const parseTimeToMinutes = (time: string) => {
     if (!time) return 0;
 
     if (time.includes("T")) {
@@ -38,7 +48,61 @@ const parseTimeToMinutes = (time) => {
 
     const [hours, minutes] = time.split(":").map(Number);
     return hours * 60 + minutes;
-}
+};
+
+const doSlotsOverlap = (
+    a: { start: number; end: number },
+    b: { start: number; end: number },
+) => a.start < b.end && b.start < a.end;
+
+const validateSlot = (start: string, end: string): string | null => {
+    const startMin = parseTimeToMinutes(start);
+    const endMin = parseTimeToMinutes(end);
+
+    if (!start || !end) return null;
+    if (endMin <= startMin) return "End time must be after start time.";
+    if (endMin - startMin < 30) return "Slot must be at least 30 minutes long.";
+    return null;
+};
+
+const getDayErrors = (slots: SlotEntry[]): SlotError[] =>
+    slots.map((slot, slotIndex) => {
+        const basicError = validateSlot(slot.start_time, slot.end_time);
+        if (basicError) return { message: basicError };
+        if (!slot.start_time || !slot.end_time) return {};
+
+        const startMin = parseTimeToMinutes(slot.start_time);
+        const endMin = parseTimeToMinutes(slot.end_time);
+
+        const overlaps = slots.some((other, otherIndex) => {
+            if (otherIndex === slotIndex || !other.start_time || !other.end_time) return false;
+            const otherStart = parseTimeToMinutes(other.start_time);
+            const otherEnd = parseTimeToMinutes(other.end_time);
+            return doSlotsOverlap(
+                { start: startMin, end: endMin },
+                { start: otherStart, end: otherEnd },
+            );
+        });
+
+        return overlaps ? { message: "This time overlaps another slot." } : {};
+    });
+
+const validateAllDays = (days: DayEntry[]) => {
+    const allErrors: Record<number, SlotError[]> = {};
+    let hasError = false;
+
+    days.forEach((day, dayIndex) => {
+        if (!day.enabled) return;
+
+        const dayErrors = getDayErrors(day.slots);
+        if (dayErrors.some((e) => e?.message)) {
+            allErrors[dayIndex] = dayErrors;
+            hasError = true;
+        }
+    });
+
+    return { hasError, allErrors };
+};
 
 const SlotCard = ({ data, index, onToggleDay, onChangeSlot, onAddSlot, onRemoveSlot, errors }) => {
     return (
@@ -126,23 +190,9 @@ const SlotCard = ({ data, index, onToggleDay, onChangeSlot, onAddSlot, onRemoveS
 
 const Slots = () => {
 
-    const [slotsData, setSlotsData] = useState(INITIAL_SLOTS);
-    const [errors, setErrors] = useState<any>({});
+    const [slotsData, setSlotsData] = useState<DayEntry[]>(() => cloneInitialSlots());
+    const [errors, setErrors] = useState<Record<number, SlotError[]>>({});
     const [autoFillForWeek, setAutoFillForWeek] = useState(false);
-
-    const validateSlot = (start: string, end: string) => {
-
-
-        const startMin = parseTimeToMinutes(start);
-        const endMin = parseTimeToMinutes(end);
-
-        if (!start || !end) return null;
-        if (endMin <= startMin)
-            return "End time must be after start time.";
-        if (endMin - startMin < 30)
-            return "Slot must be at least 30 minutes long.";
-        return null;
-    };
 
     const formatTime = (time: string) => {
         if (!time) return "";
@@ -158,7 +208,7 @@ const Slots = () => {
         return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00`;
     };
 
-    const handleToggleDay = (dayIndex) => {
+    const handleToggleDay = (dayIndex: number) => {
         setSlotsData((prev) => {
             const newState = !prev[dayIndex].enabled;
 
@@ -176,42 +226,45 @@ const Slots = () => {
         });
     };
 
-    const handleChangeSlot = (dayIndex: number, slotIndex: number, key: 'start_time' | 'end_time', value: string) => {
+    const handleChangeSlot = (
+        dayIndex: number,
+        slotIndex: number,
+        key: "start_time" | "end_time",
+        value: string,
+    ) => {
+        if (autoFillForWeek && dayIndex !== 0) {
+            setAutoFillForWeek(false);
+        }
+
         setSlotsData((prev) => {
-            const updated = [...prev];
-            updated[dayIndex].slots[slotIndex][key] = value;
-            updated[dayIndex].enabled = true;
+            let updated = prev.map((day, i) => {
+                if (i !== dayIndex) return day;
+                return {
+                    ...day,
+                    enabled: true,
+                    slots: day.slots.map((slot, si) =>
+                        si === slotIndex ? { ...slot, [key]: value } : { ...slot },
+                    ),
+                };
+            });
 
             if (autoFillForWeek && dayIndex === 0) {
-                const mondaySlots = JSON.parse(JSON.stringify(updated[0].slots));
-                updated.forEach((day, i) => {
-                    day.slots = JSON.parse(JSON.stringify(mondaySlots));
-                    day.enabled = true;
-                });
-            } else if (autoFillForWeek && dayIndex !== 0) {
-                setAutoFillForWeek(false);
+                const mondaySlots = updated[0].slots.map((s) => ({ ...s }));
+                updated = updated.map((day, i) =>
+                    i === 0
+                        ? day
+                        : { ...day, enabled: true, slots: mondaySlots.map((s) => ({ ...s })) },
+                );
             }
 
-            const activeDayIndices = autoFillForWeek && dayIndex === 0 ? [0, 1, 2, 3, 4, 5, 6] : [dayIndex];
+            const activeDayIndices =
+                autoFillForWeek && dayIndex === 0 ? [0, 1, 2, 3, 4, 5, 6] : [dayIndex];
 
-            setErrors((prevErr: any) => {
+            setErrors((prevErr) => {
                 const updatedErr = { ...prevErr };
-
                 activeDayIndices.forEach((dIdx) => {
-                    const { start_time, end_time } = updated[dIdx].slots[slotIndex];
-                    const errorMsg = validateSlot(start_time, end_time);
-
-                    const dayErrors = [...(updatedErr[dIdx] || [])];
-                    dayErrors[slotIndex] = errorMsg
-                        ? {
-                            start: key === "start_time",
-                            end: key === "end_time",
-                            message: errorMsg,
-                        }
-                        : {};
-                    updatedErr[dIdx] = dayErrors;
+                    updatedErr[dIdx] = getDayErrors(updated[dIdx].slots);
                 });
-
                 return updatedErr;
             });
 
@@ -219,49 +272,54 @@ const Slots = () => {
         });
     };
 
-    const handleAddSlot = (dayIndex) => {
+    const handleAddSlot = (dayIndex: number) => {
+        if (autoFillForWeek && dayIndex !== 0) {
+            setAutoFillForWeek(false);
+        }
+
         setSlotsData((prev) => {
-            const updated = [...prev];
-            if (autoFillForWeek && dayIndex === 0) {
-                updated.forEach((day) => {
-                    day.slots.push({ start_time: "", end_time: "" });
-                });
-            } else {
-                if (autoFillForWeek) setAutoFillForWeek(false);
-                updated[dayIndex].slots.push({ start_time: "", end_time: "" });
-            }
-            return updated;
+            const applyToAll = autoFillForWeek && dayIndex === 0;
+            return prev.map((day, i) => {
+                const shouldAdd = applyToAll || i === dayIndex;
+                if (!shouldAdd) return day;
+                return {
+                    ...day,
+                    slots: [...day.slots, { start_time: "", end_time: "" }],
+                };
+            });
         });
     };
 
-    const handleRemoveSlot = (dayIndex, slotIndex) => {
+    const handleRemoveSlot = (dayIndex: number, slotIndex: number) => {
+        const applyToAll = autoFillForWeek && dayIndex === 0;
+        const applyToIndices = applyToAll ? [0, 1, 2, 3, 4, 5, 6] : [dayIndex];
+
+        if (autoFillForWeek && dayIndex !== 0) {
+            setAutoFillForWeek(false);
+        }
+
         setSlotsData((prev) => {
-            const updated = [...prev];
+            const updated = prev.map((day, i) => {
+                if (!applyToIndices.includes(i)) return day;
 
-            const applyToIndices = (autoFillForWeek && dayIndex === 0) ? [0, 1, 2, 3, 4, 5, 6] : [dayIndex];
-
-            if (autoFillForWeek && dayIndex !== 0) setAutoFillForWeek(false);
-
-            applyToIndices.forEach((dIdx) => {
-                if (updated[dIdx].slots.length > 1) {
-                    updated[dIdx].slots.splice(slotIndex, 1);
-                } else {
-                    updated[dIdx].slots[0] = { start_time: "", end_time: "" };
-                    updated[dIdx].enabled = false;
+                if (day.slots.length > 1) {
+                    return {
+                        ...day,
+                        slots: day.slots.filter((_, si) => si !== slotIndex),
+                    };
                 }
+
+                return {
+                    ...day,
+                    enabled: false,
+                    slots: [{ start_time: "", end_time: "" }],
+                };
             });
 
-            // Clear errors for current slot indices
-            setErrors((prevErr: any) => {
+            setErrors((prevErr) => {
                 const updatedErr = { ...prevErr };
-                applyToIndices.forEach(dIdx => {
-                    if (updatedErr[dIdx]) {
-                        if (updated[dIdx].slots.length > 1) {
-                            updatedErr[dIdx].splice(slotIndex, 1);
-                        } else {
-                            updatedErr[dIdx][0] = {};
-                        }
-                    }
+                applyToIndices.forEach((dIdx) => {
+                    updatedErr[dIdx] = getDayErrors(updated[dIdx].slots);
                 });
                 return updatedErr;
             });
@@ -277,15 +335,21 @@ const Slots = () => {
                 setSlotsData((prevSlots) => {
                     const mondayData = prevSlots[0];
                     return prevSlots.map((day, i) =>
-                        i === 0 ? day : { ...day, enabled: mondayData.enabled, slots: JSON.parse(JSON.stringify(mondayData.slots)) }
+                        i === 0
+                            ? day
+                            : {
+                                ...day,
+                                enabled: mondayData.enabled,
+                                slots: mondayData.slots.map((s) => ({ ...s })),
+                            },
                     );
                 });
 
-                setErrors((prevErr: any) => {
+                setErrors((prevErr) => {
                     const updatedErr = { ...prevErr };
                     const mondayErrors = prevErr[0] || [];
-                    [1, 2, 3, 4, 5, 6].forEach(i => {
-                        updatedErr[i] = JSON.parse(JSON.stringify(mondayErrors));
+                    [1, 2, 3, 4, 5, 6].forEach((i) => {
+                        updatedErr[i] = mondayErrors.map((e) => ({ ...e }));
                     });
                     return updatedErr;
                 });
@@ -294,37 +358,34 @@ const Slots = () => {
         });
     };
 
-    const { params } = useRoute<RouteProp<AppStackParamList, 'Slots'>>()
-    const isAddServiceFlow = Boolean(params?.onAdd)
+    const { params } = useRoute<RouteProp<AppStackParamList, 'Slots'>>();
+    const isAddServiceFlow = Boolean(params?.onAdd);
 
-    const { showOkModal } = useModal()
+    const { showOkModal } = useModal();
     const { data, isLoading: isGettingSlotsLoading } = useGetServiceSlotsQuery(params?.id, {
         skip: !params?.id || isAddServiceFlow,
-    })
-    const [submit, { isLoading, isSuccess, reset: resetSubmit }] = useUpdateServiceSlotsMutation()
-    const slotsSuccessShownRef = useRef(false)
+    });
+    const [submit, { isLoading, isSuccess, reset: resetSubmit }] = useUpdateServiceSlotsMutation();
+    const slotsSuccessShownRef = useRef(false);
 
     useFocusEffect(
         useCallback(() => {
             if (isAddServiceFlow) {
-                setSlotsData(INITIAL_SLOTS.map(day => ({
-                    ...day,
-                    slots: day.slots.map(() => ({ start_time: "", end_time: "" })),
-                })))
-                setErrors([])
-                setAutoFillForWeek(false)
+                setSlotsData(cloneInitialSlots());
+                setErrors({});
+                setAutoFillForWeek(false);
             }
         }, [isAddServiceFlow]),
-    )
+    );
 
     useEffect(() => {
-        if (isAddServiceFlow) return
+        if (isAddServiceFlow) return;
         if (data && data?.data?.length) {
             const apiSlots = data.data;
 
-            const mappedSlots = INITIAL_SLOTS.map((dayItem) => {
+            const mappedSlots = cloneInitialSlots().map((dayItem) => {
                 const daySlots = apiSlots.filter(
-                    (slot) => slot.day.toLowerCase() === dayItem.day.toLowerCase()
+                    (slot) => slot.day.toLowerCase() === dayItem.day.toLowerCase(),
                 );
 
                 if (daySlots.length) {
@@ -336,14 +397,14 @@ const Slots = () => {
                             end_time: item?.end_time ? timeToISOString(item?.end_time) : "",
                         })),
                     };
-                } else {
-                    return dayItem;
                 }
+
+                return dayItem;
             });
 
             setSlotsData(mappedSlots);
         }
-    }, [data]);
+    }, [data, isAddServiceFlow]);
 
     const afterSlotsSaved = useCallback(() => {
         if (params?.id && !isAddServiceFlow) {
@@ -368,9 +429,19 @@ const Slots = () => {
                 afterSlotsSaved();
             },
         );
-    }, [isSuccess, afterSlotsSaved, showOkModal, resetSubmit])
+    }, [isSuccess, afterSlotsSaved, showOkModal, resetSubmit]);
 
     const handleSubmit = () => {
+        const { hasError, allErrors } = validateAllDays(slotsData);
+        if (hasError) {
+            setErrors((prev) => ({ ...prev, ...allErrors }));
+            showOkModal({
+                type: 'warning',
+                title: 'Invalid Slots',
+                message: 'Please fix overlapping or invalid time slots before saving.',
+            });
+            return;
+        }
 
         const formData = new FormData();
         let count = 0;
@@ -386,14 +457,15 @@ const Slots = () => {
                 formData.append(`slots[${count}][end_time]`, formatTime(slot.end_time));
 
                 count++;
-            })
-        })
+            });
+        });
 
         if (count === 0) {
-            Alert.alert(
-                'Slots required',
-                'Enable at least one day and set start and end times for your service.',
-            );
+            showOkModal({
+                type: 'warning',
+                title: 'Slots Required',
+                message: 'Enable at least one day and set start and end times for your service.',
+            });
             return;
         }
 
@@ -407,14 +479,14 @@ const Slots = () => {
             });
         }
 
-        setSlotsData(INITIAL_SLOTS);
-
+        setSlotsData(cloneInitialSlots());
     };
 
     return (
         <Wrapper loading={isGettingSlotsLoading}>
             <FlatList
                 data={slotsData}
+                extraData={{ slotsData, errors }}
                 showsVerticalScrollIndicator={false}
                 ItemSeparatorComponent={() => <Seperator />}
                 keyExtractor={(item) => item.day}

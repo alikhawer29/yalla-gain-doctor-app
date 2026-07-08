@@ -73,7 +73,7 @@ function App() {
                     <AppStackNavigator />
                     <Toast />
                   </NavigationContainer>
-                  {/* <DevNetworkLogger /> */}
+                  {/* {__DEV__ && <DevNetworkLogger />} */}
                 </ModalProvider>
               </ZoomVideoSdkProvider>
             </MenuProvider>
