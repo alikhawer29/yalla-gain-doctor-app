@@ -12,6 +12,7 @@ import {
 } from 'react-native';
 import { initialWindowMetrics } from 'react-native-safe-area-context';
 import colors from './colors';
+import { getDeviceTimezone } from './device';
 
 const { width: SCREEN_WIDTH, height: SCREEN_HEIGHT } = Dimensions.get('window');
 
@@ -152,8 +153,46 @@ export const formatBookingLocalDate = (booking?: {
 };
 
 /**
- * UTC ISO → value for the time picker (`Date` parses as absolute; UI shows local wall clock).
+ * UTC ISO → wall-clock `HH:mm:ss` in the given IANA timezone (default: device).
  */
+export const utcIsoToWallClock = (
+  utcIso?: string | null,
+  timeZone?: string,
+): string => {
+  if (!utcIso?.trim()) return '';
+  const d = new Date(utcIso);
+  if (Number.isNaN(d.getTime())) return '';
+
+  const tz = timeZone?.trim() || getDeviceTimezone();
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone: tz,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(d);
+
+  const hour = parts.find(p => p.type === 'hour')?.value ?? '00';
+  const minute = parts.find(p => p.type === 'minute')?.value ?? '00';
+  const second = parts.find(p => p.type === 'second')?.value ?? '00';
+  return `${hour}:${minute}:${second}`;
+};
+
+/** Wall-clock time → picker value (shows the same HH:mm on any device timezone). */
+export const wallClockToPickerValue = (wallClock?: string | null): string => {
+  if (!wallClock?.trim()) return '';
+  return timeToISOString(wallClock);
+};
+
+/**
+ * UTC ISO → picker value using profile/business timezone wall clock (not device offset).
+ */
+export const slotUtcToPickerValue = (
+  utcIso?: string | null,
+  timeZone?: string,
+): string => wallClockToPickerValue(utcIsoToWallClock(utcIso, timeZone));
+
+/** @deprecated Prefer `slotUtcToPickerValue` for manage-slots (uses device local offset). */
 export const utcIsoToPickerValue = (utcIso?: string | null): string => {
   if (!utcIso?.trim()) return '';
   const d = new Date(utcIso);

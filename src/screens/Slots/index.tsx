@@ -14,7 +14,14 @@ import Wrapper from "../../components/Wrapper";
 import { useModal } from "../../contexts/ModalContext";
 import { useGetServiceSlotsQuery, useUpdateServiceSlotsMutation } from "../../redux/Apis/User";
 import colors from "../../utils/colors";
-import { heightPixel, timeToISOString, utcIsoToPickerValue, widthPixel } from "../../utils/helper";
+import { getDeviceTimezone } from "../../utils/device";
+import {
+    formatTime,
+    heightPixel,
+    slotUtcToPickerValue,
+    wallClockToPickerValue,
+    widthPixel,
+} from "../../utils/helper";
 import { AppStackParamList } from "../../interfaces";
 import { goBack, navigateBackToServiceDetails } from "../../utils/navigation";
 
@@ -190,23 +197,11 @@ const SlotCard = ({ data, index, onToggleDay, onChangeSlot, onAddSlot, onRemoveS
 
 const Slots = () => {
 
+    const slotTimezone = getDeviceTimezone();
+
     const [slotsData, setSlotsData] = useState<DayEntry[]>(() => cloneInitialSlots());
     const [errors, setErrors] = useState<Record<number, SlotError[]>>({});
     const [autoFillForWeek, setAutoFillForWeek] = useState(false);
-
-    const formatTime = (time: string) => {
-        if (!time) return "";
-
-        if (time.includes("T")) {
-            const date = new Date(time);
-            const hh = String(date.getHours()).padStart(2, "0");
-            const mm = String(date.getMinutes()).padStart(2, "0");
-            return `${hh}:${mm}:00`;
-        }
-
-        const [hh, mm] = time.split(":");
-        return `${hh.padStart(2, "0")}:${mm.padStart(2, "0")}:00`;
-    };
 
     const handleToggleDay = (dayIndex: number) => {
         setSlotsData((prev) => {
@@ -393,16 +388,15 @@ const Slots = () => {
                         ...dayItem,
                         enabled: true,
                         slots: daySlots.map((item) => ({
-                            // Prefer UTC → device local. Legacy wall-clock only if UTC missing.
                             start_time: item?.start_at_utc
-                                ? utcIsoToPickerValue(item.start_at_utc)
+                                ? slotUtcToPickerValue(item.start_at_utc, slotTimezone)
                                 : item?.start_time
-                                  ? timeToISOString(item.start_time)
+                                  ? wallClockToPickerValue(item.start_time)
                                   : "",
                             end_time: item?.end_at_utc
-                                ? utcIsoToPickerValue(item.end_at_utc)
+                                ? slotUtcToPickerValue(item.end_at_utc, slotTimezone)
                                 : item?.end_time
-                                  ? timeToISOString(item.end_time)
+                                  ? wallClockToPickerValue(item.end_time)
                                   : "",
                         })),
                     };
@@ -413,7 +407,7 @@ const Slots = () => {
 
             setSlotsData(mappedSlots);
         }
-    }, [data, isAddServiceFlow]);
+    }, [data, isAddServiceFlow, slotTimezone]);
 
     const afterSlotsSaved = useCallback(() => {
         if (params?.id && !isAddServiceFlow) {
@@ -453,6 +447,7 @@ const Slots = () => {
         }
 
         const formData = new FormData();
+        formData.append("timezone", slotTimezone);
         let count = 0;
 
         slotsData.forEach((day) => {
