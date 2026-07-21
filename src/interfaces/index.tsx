@@ -98,8 +98,7 @@ export type RootStackParamList = {
         duration_minutes?: number | null;
         started_at?: string | null;
         scheduled_end_at?: string | null;
-        appointment_date?: string | null;
-        appointment_end_time?: string | null;
+        scheduled_start_at?: string | null;
     },
     AvatarDetail: { id?: string | number } | undefined,
     Wallet: undefined;

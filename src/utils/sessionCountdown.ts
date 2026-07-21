@@ -1,58 +1,12 @@
 export type SessionTiming = {
   status?: 'waiting' | 'started' | 'ended' | null;
   started_at?: string | null;
+  scheduled_start_at?: string | null;
   scheduled_end_at?: string | null;
   duration_minutes?: number | null;
-  /** Booking slot fallback only before session starts (DD/MM/YYYY). */
-  appointment_date?: string | null;
-  appointment_end_time?: string | null;
 };
 
-function isSessionStarted(timing: SessionTiming): boolean {
-  if (timing.started_at) return true;
-  return timing.status?.toLowerCase() === 'started';
-}
-
-function parseBookingDateTime(
-  date?: string | null,
-  time?: string | null,
-): number | null {
-  if (!date?.trim() || !time?.trim()) return null;
-
-  const dateParts = date.trim().split('/');
-  if (dateParts.length !== 3) return null;
-
-  const day = Number(dateParts[0]);
-  const month = Number(dateParts[1]);
-  const year = Number(dateParts[2]);
-  const timeParts = time.trim().split(':');
-  const hours = Number(timeParts[0] ?? 0);
-  const minutes = Number(timeParts[1] ?? 0);
-  const seconds = Number(timeParts[2] ?? 0);
-
-  if (
-    !Number.isFinite(day) ||
-    !Number.isFinite(month) ||
-    !Number.isFinite(year) ||
-    !Number.isFinite(hours) ||
-    !Number.isFinite(minutes)
-  ) {
-    return null;
-  }
-
-  const endMs = new Date(
-    year,
-    month - 1,
-    day,
-    hours,
-    minutes,
-    Number.isFinite(seconds) ? seconds : 0,
-  ).getTime();
-
-  return Number.isNaN(endMs) ? null : endMs;
-}
-
-/** Session end timestamp (ms) from API — never Zoom SDK. */
+/** Session end timestamp (ms) from video_session UTC fields — never Zoom SDK / booking wall-clock. */
 export function getSessionEndMs(
   timing: SessionTiming | null | undefined,
 ): number | null {
@@ -75,20 +29,10 @@ export function getSessionEndMs(
     }
   }
 
-  if (!isSessionStarted(timing)) {
-    const bookingEndMs = parseBookingDateTime(
-      timing.appointment_date,
-      timing.appointment_end_time,
-    );
-    if (bookingEndMs != null) {
-      return bookingEndMs;
-    }
-  }
-
   return null;
 }
 
-/** Remaining session seconds: end - now (step 3). */
+/** Remaining session seconds: end - now. */
 export function getSessionRemainingSeconds(
   timing: SessionTiming | null | undefined,
 ): number {
@@ -133,10 +77,6 @@ export function formatSessionCountdown(totalSeconds: number): string {
 export function pickSessionTiming(
   bookingSession?: SessionTiming | null,
   startPayload?: Record<string, unknown> | null,
-  booking?: {
-    appointment_date?: string | null;
-    appointment_end_time?: string | null;
-  } | null,
 ): SessionTiming {
   const nested = startPayload?.video_session as SessionTiming | undefined;
   const source = nested ?? (startPayload as SessionTiming | undefined);
@@ -144,12 +84,12 @@ export function pickSessionTiming(
   return {
     status: (source?.status ?? bookingSession?.status) as SessionTiming['status'],
     started_at: source?.started_at ?? bookingSession?.started_at ?? null,
+    scheduled_start_at:
+      source?.scheduled_start_at ?? bookingSession?.scheduled_start_at ?? null,
     scheduled_end_at:
       source?.scheduled_end_at ?? bookingSession?.scheduled_end_at ?? null,
     duration_minutes:
       source?.duration_minutes ?? bookingSession?.duration_minutes ?? null,
-    appointment_date: booking?.appointment_date ?? null,
-    appointment_end_time: booking?.appointment_end_time ?? null,
   };
 }
 
@@ -165,10 +105,6 @@ export function hasSessionCountdown(
   }
 
   if (timing.scheduled_end_at) {
-    return true;
-  }
-
-  if (!isSessionStarted(timing) && timing.appointment_date && timing.appointment_end_time) {
     return true;
   }
 

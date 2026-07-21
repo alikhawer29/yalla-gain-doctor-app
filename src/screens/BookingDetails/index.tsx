@@ -11,8 +11,10 @@ import Text from "../../components/Text"
 import Touchable from "../../components/Touchable"
 import Wrapper from "../../components/Wrapper"
 import {
+    formatBookingLocalDate,
     formatLongDate,
-    formatTimeRange12h,
+    formatUtcToLocalDate,
+    formatUtcToLocalTimeRange12h,
     heightPixel,
     widthPixel,
 } from "../../utils/helper"
@@ -257,9 +259,9 @@ const BookingDetails = () => {
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Appointment Time:</Text>
                             <Text style={styles.value_text} color={colors.icon_gray}>
-                                {formatTimeRange12h(
-                                    data?.appointment_start_time,
-                                    data?.appointment_end_time,
+                                {formatUtcToLocalTimeRange12h(
+                                    data?.scheduled_start_at,
+                                    data?.scheduled_end_at,
                                 )}
                             </Text>
                         </View>
@@ -315,7 +317,7 @@ const BookingDetails = () => {
 
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Appointment Date:</Text>
-                            <Text style={styles.value_text} color={colors.icon_gray}>{formatLongDate(data?.appointment_date ?? '')}</Text>
+                            <Text style={styles.value_text} color={colors.icon_gray}>{formatBookingLocalDate(data)}</Text>
                         </View>
                     </Row>
                     <Row>
@@ -359,7 +361,10 @@ const BookingDetails = () => {
                             </>
                         )
                     }
-                    {data?.rescheduled_appointment_date && data?.rescheduled_appointment_start_time && data?.rescheduled_appointment_end_time && (
+                    {(data?.scheduled_start_at && data?.is_rescheduled) ||
+                    (data?.rescheduled_appointment_date &&
+                        data?.rescheduled_appointment_start_time &&
+                        data?.rescheduled_appointment_end_time) ? (
                         <>
                             <Text size={20} weight="semibold" style={{ marginVertical: heightPixel(5) }}>
                                 Rescheduled Time And Date
@@ -367,20 +372,23 @@ const BookingDetails = () => {
                             <Row>
                                 <View style={styles.half_width_box}>
                                     <Text weight="semibold">Session Date:</Text>
-                                    <Text style={styles.value_text} color={colors.icon_gray}>{formatLongDate(data?.rescheduled_appointment_date ?? '')}</Text>
+                                    <Text style={styles.value_text} color={colors.icon_gray}>
+                                        {formatUtcToLocalDate(data?.scheduled_start_at) ||
+                                            formatLongDate(data?.rescheduled_appointment_date ?? '')}
+                                    </Text>
                                 </View>
                                 <View style={styles.half_width_box}>
                                     <Text weight="semibold">Session Time:</Text>
                                     <Text style={styles.value_text} color={colors.icon_gray}>
-                                        {formatTimeRange12h(
-                                            data?.rescheduled_appointment_start_time,
-                                            data?.rescheduled_appointment_end_time,
+                                        {formatUtcToLocalTimeRange12h(
+                                            data?.scheduled_start_at,
+                                            data?.scheduled_end_at,
                                         )}
                                     </Text>
                                 </View>
                             </Row>
                         </>
-                    )}
+                    ) : null}
                     {(data?.prescription_text || data?.prescription_file) && !editMode && (
                         <>
                             <Text

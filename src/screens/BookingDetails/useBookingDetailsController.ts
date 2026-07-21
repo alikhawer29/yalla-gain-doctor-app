@@ -384,7 +384,7 @@ const useBookingDetailsController = () => {
         unknown
       >;
       const sessionCreds = parseZoomVideoSession(startPayload);
-      const sessionTiming = pickSessionTiming(videoSession, startPayload, booking);
+      const sessionTiming = pickSessionTiming(videoSession, startPayload);
 
       if (!sessionCreds) {
         setIsStartingSession(false);
@@ -419,9 +419,8 @@ const useBookingDetailsController = () => {
         session_status: sessionTiming.status ?? videoSession.status,
         duration_minutes: sessionTiming.duration_minutes,
         started_at: sessionTiming.started_at,
+        scheduled_start_at: sessionTiming.scheduled_start_at,
         scheduled_end_at: sessionTiming.scheduled_end_at,
-        appointment_date: sessionTiming.appointment_date,
-        appointment_end_time: sessionTiming.appointment_end_time,
       } as any);
 
       setTimeout(() => {

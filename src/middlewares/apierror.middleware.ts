@@ -8,11 +8,13 @@ const errorLogger = () => next => action => {
       action?.error?.message ||
       'Something went wrong';
 
-    // Skip toast while video session is still being provisioned on the server
+    // Skip toast while video session is still being provisioned on the server,
+    // or when Booking Details already shows the API message in the app modal.
     const lower = message?.toLowerCase() ?? '';
     if (
       lower.includes('meeting not created yet') ||
-      lower.includes('session not created')
+      lower.includes('session not created') ||
+      lower.includes('session not started yet')
     ) {
       return next(action);
     }

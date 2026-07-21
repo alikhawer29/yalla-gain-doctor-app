@@ -78,7 +78,7 @@ export const timeFormatter = (date: Date | string) => {
   return dayjs(date).format('hh:mm a');
 };
 
-/** "08:00:00" / "21:00:00" → "8:00 AM" / "9:00 PM" */
+/** "08:00:00" / "21:00:00" → "8:00 AM" / "9:00 PM" (naive clock, no TZ). */
 export const formatTime12h = (input?: string | null): string => {
   if (input == null || input === '') return '';
   const trimmed = String(input).trim();
@@ -101,6 +101,63 @@ export const formatTimeRange12h = (
   if (!a) return b;
   if (!b) return a;
   return `${a} - ${b}`;
+};
+
+/**
+ * UTC/ISO instant → device-local 12h time (e.g. "8:00 PM").
+ * Prefer `scheduled_start_at` / `start_at_utc` over raw `appointment_start_time`.
+ */
+export const formatUtcToLocalTime12h = (input?: string | null): string => {
+  if (input == null || input === '') return '';
+  const d = dayjs(String(input).trim());
+  return d.isValid() ? d.format('h:mm A') : '';
+};
+
+/** UTC/ISO instant → device-local long date (e.g. "July 21, 2026"). */
+export const formatUtcToLocalDate = (input?: string | null): string => {
+  if (input == null || input === '') return '';
+  const d = dayjs(String(input).trim());
+  return d.isValid() ? d.format('MMMM D, YYYY') : '';
+};
+
+export const formatUtcToLocalTimeRange12h = (
+  start?: string | null,
+  end?: string | null,
+): string => {
+  const a = formatUtcToLocalTime12h(start);
+  const b = formatUtcToLocalTime12h(end);
+  if (!a && !b) return '';
+  if (!a) return b;
+  if (!b) return a;
+  return `${a} - ${b}`;
+};
+
+/**
+ * Booking/card date from `scheduled_start_at` (device local).
+ * Falls back to legacy date strings only when scheduled ISO is missing.
+ */
+export const formatBookingLocalDate = (booking?: {
+  scheduled_start_at?: string | null;
+  is_rescheduled?: boolean;
+  rescheduled_appointment_date?: string | null;
+  appointment_date?: string | null;
+} | null): string => {
+  if (!booking) return '';
+  const fromUtc = formatUtcToLocalDate(booking.scheduled_start_at);
+  if (fromUtc) return fromUtc;
+  const legacy = booking.is_rescheduled
+    ? booking.rescheduled_appointment_date
+    : booking.appointment_date;
+  return formatLongDate(legacy ?? '');
+};
+
+/**
+ * UTC ISO → value for the time picker (`Date` parses as absolute; UI shows local wall clock).
+ */
+export const utcIsoToPickerValue = (utcIso?: string | null): string => {
+  if (!utcIso?.trim()) return '';
+  const d = new Date(utcIso);
+  return Number.isNaN(d.getTime()) ? '' : d.toISOString();
 };
 
 export const formatTimer = (s: number): string => {

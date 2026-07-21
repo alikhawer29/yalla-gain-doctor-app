@@ -12,6 +12,7 @@ import {
   normalizeDialingCode,
   toUploadAsset,
 } from '../../utils/helper';
+import { getDeviceTimezone } from '../../utils/device';
 import { navigateToMyProfileTab } from '../../utils/navigation';
 import { EDIT_PROFILE_SCHEMA } from '../../utils/validators';
 import usePicker from '../../hooks/usePicker';
@@ -146,6 +147,7 @@ const useEditProfileController = () => {
       payload.dialing_code = normalizeDialingCode(
         payload.dialing_code as string,
       );
+      payload.timezone = getDeviceTimezone();
 
       const formData = formHandler(payload);
       submit(formData);

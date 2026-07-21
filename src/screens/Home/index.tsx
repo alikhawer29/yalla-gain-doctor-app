@@ -9,7 +9,7 @@ import ProfileHeader from "../../components/ProfileHeader"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
-import { formatLongDate, heightPixel } from "../../utils/helper"
+import { formatBookingLocalDate, heightPixel } from "../../utils/helper"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import useServiceLogsController from "../ServiceLogs/useServiceLogsController"
 
@@ -61,9 +61,7 @@ const Home = () => {
                 data={serviceLogs}
                 renderItem={({ item }) => (
                     <ServiceLogCard
-                        date={formatLongDate(
-                            (item?.is_rescheduled ? item?.rescheduled_appointment_date : item?.appointment_date) ?? '',
-                        )}
+                        date={formatBookingLocalDate(item)}
                         bookingId={`#${item?.id}`}
                         amount={item?.service?.charges || 0}
                         status={item?.status}

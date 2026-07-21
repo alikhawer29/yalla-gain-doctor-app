@@ -6,7 +6,11 @@ import { LOGIN_TABS } from '../../../utils/data';
 import { formHandler, normalizeDialingCode } from '../../../utils/helper';
 import { navigate } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
-import { getDeviceType, getFcmDeviceToken } from '../../../utils/device';
+import {
+  getDeviceTimezone,
+  getDeviceType,
+  getFcmDeviceToken,
+} from '../../../utils/device';
 import { LOGIN_SCHEMA, USER_REGISTER_SCHEMA } from '../../../utils/validators';
 
 const PENDING_OTP_PHRASE = 'pending OTP verification';
@@ -66,6 +70,7 @@ const useAddEntryController = () => {
             password: data.password,
             device_type: getDeviceType(),
             device_token,
+            timezone: getDeviceTimezone(),
           }).unwrap();
         } catch (e: any) {
           const body = e?.data ?? {};
@@ -101,6 +106,7 @@ const useAddEntryController = () => {
           country_code: data.country_code,
           phone: data.phone,
           source: 'user',
+          timezone: getDeviceTimezone(),
         });
 
         const res: any = await signup(formData).unwrap();

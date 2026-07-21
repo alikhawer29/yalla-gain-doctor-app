@@ -12,6 +12,7 @@ import {
   normalizeDialingCode,
   toUploadAsset,
 } from '../../../utils/helper';
+import { getDeviceTimezone } from '../../../utils/device';
 import { navigateAndSimpleReset } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
 import { SIGNUP_SCHEMA } from '../../../utils/validators';
@@ -65,6 +66,7 @@ const useRegisterController = () => {
       payload.dialing_code = normalizeDialingCode(
         payload.dialing_code as string,
       );
+      payload.timezone = getDeviceTimezone();
       const formData = formHandler(payload);
 
       try {

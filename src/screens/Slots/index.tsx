@@ -14,7 +14,7 @@ import Wrapper from "../../components/Wrapper";
 import { useModal } from "../../contexts/ModalContext";
 import { useGetServiceSlotsQuery, useUpdateServiceSlotsMutation } from "../../redux/Apis/User";
 import colors from "../../utils/colors";
-import { heightPixel, timeToISOString, widthPixel } from "../../utils/helper";
+import { heightPixel, timeToISOString, utcIsoToPickerValue, widthPixel } from "../../utils/helper";
 import { AppStackParamList } from "../../interfaces";
 import { goBack, navigateBackToServiceDetails } from "../../utils/navigation";
 
@@ -393,8 +393,17 @@ const Slots = () => {
                         ...dayItem,
                         enabled: true,
                         slots: daySlots.map((item) => ({
-                            start_time: item?.start_time ? timeToISOString(item?.start_time) : "",
-                            end_time: item?.end_time ? timeToISOString(item?.end_time) : "",
+                            // Prefer UTC → device local. Legacy wall-clock only if UTC missing.
+                            start_time: item?.start_at_utc
+                                ? utcIsoToPickerValue(item.start_at_utc)
+                                : item?.start_time
+                                  ? timeToISOString(item.start_time)
+                                  : "",
+                            end_time: item?.end_at_utc
+                                ? utcIsoToPickerValue(item.end_at_utc)
+                                : item?.end_time
+                                  ? timeToISOString(item.end_time)
+                                  : "",
                         })),
                     };
                 }

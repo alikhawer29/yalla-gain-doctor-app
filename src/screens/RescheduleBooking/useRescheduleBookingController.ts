@@ -3,8 +3,9 @@ import { useEffect, useRef } from "react"
 import { useModal } from "../../contexts/ModalContext"
 import { useUpdateAppointmentStatusMutation } from "../../redux/Apis/User"
 import { RESCHEDULE_BOOOKING_SCHEMA } from "../../utils/validators"
+import { getDeviceTimezone } from "../../utils/device"
 import { goBack } from "../../utils/navigation"
-import { formatTime, formatTimer } from "../../utils/helper"
+import { formatTime } from "../../utils/helper"
 
 const initial = {
     rescheduled_appointment_date: "",
@@ -36,6 +37,7 @@ const useRescheduleBookingController = () => {
 
         payload.rescheduled_appointment_start_time = formatTime(payload.rescheduled_appointment_start_time)
         payload.rescheduled_appointment_end_time = formatTime(payload.rescheduled_appointment_end_time)
+        payload.timezone = getDeviceTimezone()
 
         update({ type: "reschedule", id: params?.id, body: payload })
     }

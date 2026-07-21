@@ -7,8 +7,9 @@ export function mapZoomApiMessage(message: unknown): string {
 
   const m = raw.toLowerCase();
 
+  // Keep backend timing copy (e.g. "Session not started yet. Session starts in 25 minutes.")
   if (m.includes('session not started yet')) {
-    return 'Appointment time has not arrived yet. You can start within 10 minutes before the scheduled slot.';
+    return raw;
   }
   if (m.includes('session has ended')) {
     return 'This session window has ended or the meeting was already ended.';

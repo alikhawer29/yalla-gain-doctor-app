@@ -1,7 +1,5 @@
 import { memo } from "react"
 import { View } from "react-native"
-import dayjs from 'dayjs'
-import customParseFormat from "dayjs/plugin/customParseFormat"
 import images from "../../../assets/images"
 import colors from "../../../utils/colors"
 import CardWrapper from "../../CardWrapper"
@@ -9,9 +7,7 @@ import Icon from "../../Icon"
 import Row from "../../Row"
 import StatusBadge from "../../StatusBadge"
 import Text from "../../Text"
-import { formatLongDate } from "../../../utils/helper"
-
-dayjs.extend(customParseFormat)
+import { formatBookingLocalDate } from "../../../utils/helper"
 
 const ServiceCard = ({ data, onPress }) => {
     return (
@@ -20,7 +16,7 @@ const ServiceCard = ({ data, onPress }) => {
                 <Row justify="space-between">
                     <Row align="center" gap={10}>
                         <Icon source={images.calendar} size={14} />
-                        <Text size={13}>{formatLongDate((data?.is_rescheduled ? data?.rescheduled_appointment_date : data?.appointment_date) ?? '')}</Text>
+                        <Text size={13}>{formatBookingLocalDate(data)}</Text>
                     </Row>
                     <StatusBadge status={data?.status === 'completed' ? 'Past' : data?.status} />
                 </Row>
