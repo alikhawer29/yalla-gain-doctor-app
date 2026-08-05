@@ -9,7 +9,7 @@
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>com.fnhapp.yallagain.doctor</string>
+	<string>com.yallagainapp.doctor</string>
 	<key>PROJECT_ID</key>
 	<string>yallagain-edf9b</string>
 	<key>STORAGE_BUCKET</key>
@@ -25,6 +25,6 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:448227018538:ios:c3f5b0750581f37e090053</string>
+	<string>1:448227018538:ios:3b3c2e7bcfe78218090053</string>
 </dict>
 </plist>

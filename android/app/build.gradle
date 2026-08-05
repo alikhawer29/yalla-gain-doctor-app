@@ -78,9 +78,9 @@ android {
     buildToolsVersion rootProject.ext.buildToolsVersion
     compileSdk rootProject.ext.compileSdkVersion
 
-    namespace "com.blitzapp.yallagain.doctor"
+    namespace "com.yallagainapp.doctor"
     defaultConfig {
-        applicationId "com.blitzapp.yallagain.doctor"
+        applicationId "com.yallagainapp.doctor"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
         versionCode 25 

@@ -10,7 +10,7 @@
 	<string>en</string>
 
 	<key>CFBundleDisplayName</key>
-	<string>YallaGain - Doctor</string>
+	<string>Yalla Gain - Doctor</string>
 
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
