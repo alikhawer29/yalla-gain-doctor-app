@@ -81,7 +81,7 @@ const RegisterForm = () => {
                             country={data?.country_code}
                             maxLength={getPhoneRules(data?.country_code).max}
                             onChangeCountry={e => {
-                                setFieldValue("country_code", e?.cca2)
+                                setFieldValue("country_code", e?.cca2?.toUpperCase())
                                 setFieldValue("dialing_code", normalizeDialingCode(e?.callingCode?.[0]))
                                 setFieldValue("phone", "")
                             }}

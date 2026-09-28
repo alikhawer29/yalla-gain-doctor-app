@@ -14,6 +14,7 @@ import {
     formatBookingLocalDate,
     formatLongDate,
     formatUtcToLocalDate,
+    formatPhoneDisplay,
     formatUtcToLocalTimeRange12h,
     heightPixel,
     widthPixel,
@@ -310,7 +311,9 @@ const BookingDetails = () => {
                         </View>
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Contact No:</Text>
-                            <Text style={styles.value_text} color={colors.icon_gray}>({data?.dialing_code}) {data?.phone}</Text>
+                            <Text style={styles.value_text} color={colors.icon_gray}>
+                                {formatPhoneDisplay(data?.dialing_code, data?.phone, data?.country_code)}
+                            </Text>
                         </View>
                     </Row>
                     <Row>

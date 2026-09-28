@@ -1,7 +1,6 @@
 import { StyleSheet } from 'react-native';
 import colors from '../../utils/colors';
 import { heightPixel, widthPixel } from '../../utils/helper';
-import fonts from '../../assets/fonts';
 
 const styles = StyleSheet.create({
   container: {
@@ -167,7 +166,6 @@ const styles = StyleSheet.create({
     minHeight: heightPixel(40),
     maxHeight: heightPixel(100),
     color: colors.white,
-    fontFamily: fonts.sfpro.regular,
     paddingTop: heightPixel(8),
     paddingBottom: heightPixel(8),
   },

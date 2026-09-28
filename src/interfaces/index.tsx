@@ -282,7 +282,10 @@ export interface ITrackingCard extends IProgressBar {
 }
 
 export interface INewsFeedCard {
+    id?: string | number
     title: string
+    content?: string
+    media?: any
     user?: any
     reaction_count: number
     comment_count: number

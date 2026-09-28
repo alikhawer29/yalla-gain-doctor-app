@@ -1,12 +1,14 @@
-import React, { useCallback, useEffect } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import {
     ActivityIndicator,
     FlatList,
+    Keyboard,
     KeyboardAvoidingView,
     Modal,
     Platform,
     Pressable,
     ScrollView,
+    Text as RNText,
     TextInput,
     View,
 } from 'react-native';
@@ -23,14 +25,16 @@ import Icon from '../../components/Icon';
 import Image from '../../components/Image';
 import Row from '../../components/Row';
 import Text from '../../components/Text';
+import EmojiPicker from '../../components/EmojiPicker';
 import Wrapper from '../../components/Wrapper';
 import Badge from '../../components/Badge';
 import Touchable from '../../components/Touchable';
 import colors from '../../utils/colors';
+import { EMOJI_FONT_FAMILY, insertEmojiAt, TextSelection } from '../../utils/emoji';
 import { IChatMessage } from '../../interfaces';
 import useChatDetailController from './useChatDetailController';
 import styles from './styles';
-import { heightPixel } from '../../utils/helper';
+import { font, heightPixel } from '../../utils/helper';
 import useKeyboard from '../../hooks/useKeyboard';
 import { downloadChatDocument } from '../../utils/chatFileDownload';
 import { fileEntryToRichDisplay } from './chatMediaHelpers';
@@ -59,6 +63,24 @@ const ChatDetail = () => {
             closeImageViewer,
         },
     } = useChatDetailController();
+
+    const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+    const selectionRef = useRef<TextSelection>({ start: 0, end: 0 });
+
+    const handleSelectEmoji = (emoji: string) => {
+        const result = insertEmojiAt(input, emoji, selectionRef.current);
+        onChangeInput(result.text);
+        selectionRef.current = result.selection;
+    };
+
+    const toggleEmojiPicker = () => {
+        if (showEmojiPicker) {
+            setShowEmojiPicker(false);
+            return;
+        }
+        Keyboard.dismiss();
+        setShowEmojiPicker(true);
+    };
 
     const scrollToLatest = useCallback(() => {
         if (messages.length === 0) return;
@@ -282,12 +304,30 @@ const ChatDetail = () => {
                             placeholder="Type message ..."
                             placeholderTextColor={colors.icon_gray}
                             value={input}
-                            onChangeText={onChangeInput}
+                            onChangeText={(text) => {
+                                onChangeInput(text);
+                                selectionRef.current = { start: text.length, end: text.length };
+                            }}
+                            onSelectionChange={(event) => {
+                                selectionRef.current = event.nativeEvent.selection;
+                            }}
+                            onFocus={() => setShowEmojiPicker(false)}
                             multiline
                             scrollEnabled
                             textAlignVertical="top"
                         />
                         <View style={styles.input_icons}>
+                            <Pressable onPress={toggleEmojiPicker}>
+                                <RNText
+                                    allowFontScaling={false}
+                                    style={{
+                                        fontSize: font(20),
+                                        fontFamily: EMOJI_FONT_FAMILY,
+                                    }}
+                                >
+                                    😊
+                                </RNText>
+                            </Pressable>
                             <Icon
                                 source={images.gallery}
                                 size={20}
@@ -296,10 +336,14 @@ const ChatDetail = () => {
                             />
                         </View>
                     </View>
+                    <EmojiPicker visible={showEmojiPicker} onSelect={handleSelectEmoji} />
                 </View>
                 <Touchable
                     style={styles.send_button}
-                    onPress={handleSendMessage}
+                    onPress={() => {
+                        setShowEmojiPicker(false);
+                        handleSendMessage();
+                    }}
                     disabled={
                         isSending || (!input.trim() && attachments.length === 0)
                     }

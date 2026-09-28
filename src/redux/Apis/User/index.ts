@@ -383,7 +383,7 @@ export const userApi = createApi({
     deleteFeed: builder.mutation({
       query: id => ({
         url: `post/${id}/delete`,
-        method: 'POST',
+        method: 'DELETE',
       }),
     }),
     reactFeed: builder.mutation({
@@ -410,7 +410,7 @@ export const userApi = createApi({
     deleteComment: builder.mutation({
       query: id => ({
         url: `comment/${id}/remove`,
-        method: 'POST',
+        method: 'DELETE',
       }),
     }),
     reportFeed: builder.mutation({

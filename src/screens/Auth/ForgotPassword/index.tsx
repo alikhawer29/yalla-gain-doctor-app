@@ -4,6 +4,8 @@ import Button from "../../../components/Button"
 import Input from "../../../components/Input"
 import Text from "../../../components/Text"
 import styles from "../styles"
+import { normalizeDialingCode } from "../../../utils/helper"
+import { getPhoneRules } from "../../../utils/phoneRules"
 import useForgotPasswordController from "./useForgotPasswordController"
 
 const ForgotPassword = () => {
@@ -57,7 +59,16 @@ const ForgotPassword = () => {
                                     value={data?.phone}
                                     error={touched?.phone ? errors?.phone : ""}
                                     onChangeText={handleChange("phone")}
-                                    onChangeCountry={e => setFieldValue("calling_code", e?.callingCode?.[0])}
+                                    country={data?.country_code}
+                                    maxLength={getPhoneRules(data?.country_code).max}
+                                    onChangeCountry={e => {
+                                        setFieldValue("country_code", e?.cca2?.toUpperCase())
+                                        setFieldValue("phone", "")
+                                        setFieldValue(
+                                            "dialing_code",
+                                            normalizeDialingCode(e?.callingCode?.[0]),
+                                        )
+                                    }}
                                 />
                             )
                         }

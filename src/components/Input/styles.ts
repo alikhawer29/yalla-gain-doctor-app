@@ -39,6 +39,10 @@ const styles = StyleSheet.create({
     focusedInputContainer: {
         borderColor: colors.primary,
     },
+    phone_flag: {
+        width: widthPixel(28),
+        height: heightPixel(20),
+    },
     error: {
         marginTop: heightPixel(4),
         marginLeft: widthPixel(15),

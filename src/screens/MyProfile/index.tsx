@@ -7,6 +7,7 @@ import Wrapper from "../../components/Wrapper"
 import { useAppSelector } from "../../hooks"
 import { selectUser } from "../../redux/Slices/AuthSlice"
 import colors from "../../utils/colors"
+import { formatPhoneDisplay } from "../../utils/helper"
 import { navigate } from "../../utils/navigation"
 import { ROUTES } from "../../utils/routes"
 import styles from "./styles"
@@ -43,7 +44,7 @@ const MyProfile = () => {
                 </View>
                 <View style={[styles.item, styles.item_width]}>
                     <Text color={colors.icon_gray}>Phone Number</Text>
-                    <Text weight="bold">({user?.dialing_code}) {user?.phone}</Text>
+                    <Text weight="bold">{formatPhoneDisplay(user?.dialing_code, user?.phone, user?.country_code)}</Text>
                 </View>
                 <View style={[styles.item, styles.item_width]}>
                     <Text color={colors.icon_gray} lines={1}>Email Address</Text>

@@ -12,6 +12,7 @@ import Text from '../../../components/Text';
 import colors from '../../../utils/colors';
 import { LOGIN_TABS } from '../../../utils/data';
 import { heightPixel, normalizeDialingCode } from '../../../utils/helper';
+import { getPhoneRules } from '../../../utils/phoneRules';
 import { navigate, navigateAndSimpleReset } from '../../../utils/navigation';
 import { ROUTES } from '../../../utils/routes';
 import useAddEntryController from './useAddEntryController';
@@ -108,12 +109,14 @@ const UserEntry = () => {
                   onChangeText={handleChange('phone')}
                   error={touched?.phone ? errors?.phone : ''}
                   country={data?.country_code}
+                  maxLength={getPhoneRules(data?.country_code).max}
                   onChangeCountry={e => {
-                    setFieldValue('country_code', e?.cca2);
+                    setFieldValue('country_code', e?.cca2?.toUpperCase());
                     setFieldValue(
                       'dialing_code',
                       normalizeDialingCode(e?.callingCode?.[0]),
                     );
+                    setFieldValue('phone', '');
                   }}
                 />
               </>
