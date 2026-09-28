@@ -194,6 +194,8 @@ export const userApi = createApi({
     'UaeBeneficiaries',
     'UaeTransactionLogs',
     'Notifications',
+    'Bookings',
+    'Services',
   ],
   baseQuery: fetchBaseQuery({
     baseUrl: DOCTOR_TRAINER_API_BASE_URL,
@@ -238,6 +240,7 @@ export const userApi = createApi({
         method: 'POST',
         body: payload?.body,
       }),
+      invalidatesTags: ['Services'],
     }),
     getMyServices: builder.query({
       query: params => ({
@@ -245,6 +248,7 @@ export const userApi = createApi({
         method: 'GET',
         params,
       }),
+      providesTags: ['Services'],
       keepUnusedDataFor: 0,
     }),
     deleteMyService: builder.mutation({
@@ -252,12 +256,14 @@ export const userApi = createApi({
         url: `service/${id}/delete`,
         method: 'DELETE',
       }),
+      invalidatesTags: ['Services'],
     }),
     getServiceSlots: builder.query({
       query: id => ({
         url: `my-service-slots/${id}`,
         method: 'GET',
       }),
+      providesTags: ['Services'],
       keepUnusedDataFor: 0,
     }),
     updateServiceSlots: builder.mutation({
@@ -266,6 +272,7 @@ export const userApi = createApi({
         method: 'POST',
         body: payload?.body,
       }),
+      invalidatesTags: ['Services'],
     }),
     deleteProfile: builder.mutation({
       query: () => ({
@@ -306,6 +313,7 @@ export const userApi = createApi({
         method: 'GET',
         params,
       }),
+      providesTags: ['Bookings'],
       keepUnusedDataFor: 0,
     }),
     getBookingById: builder.query({
@@ -313,6 +321,7 @@ export const userApi = createApi({
         url: `my-booking/${id}`,
         method: 'GET',
       }),
+      providesTags: ['Bookings'],
       keepUnusedDataFor: 0,
     }),
     updateAppointmentStatus: builder.mutation({
@@ -321,6 +330,7 @@ export const userApi = createApi({
         method: 'POST',
         body: payload.body,
       }),
+      invalidatesTags: ['Bookings'],
     }),
     updatePrescription: builder.mutation({
       query: payload => ({
@@ -328,18 +338,21 @@ export const userApi = createApi({
         method: 'POST',
         body: payload.body,
       }),
+      invalidatesTags: ['Bookings'],
     }),
     startZoomSession: builder.mutation({
       query: id => ({
         url: `my-booking/${id}/zoom/start-session`,
         method: 'POST',
       }),
+      invalidatesTags: ['Bookings'],
     }),
     endZoomMeeting: builder.mutation({
       query: id => ({
         url: `appointments/${id}/zoom/end`,
         method: 'POST',
       }),
+      invalidatesTags: ['Bookings'],
     }),
     getBookings: builder.query({
       query: params => ({
@@ -347,6 +360,7 @@ export const userApi = createApi({
         method: 'GET',
         params,
       }),
+      providesTags: ['Bookings'],
       keepUnusedDataFor: 0,
     }),
     getBookingHistory: builder.query({

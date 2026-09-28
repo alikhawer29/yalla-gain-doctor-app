@@ -80,7 +80,9 @@ const AppointmentRequests = () => {
                 ItemSeparatorComponent={() => <Seperator />}
                 refreshControl={<RefreshControl refreshing={isLoading} onRefresh={onReload} />}
                 contentContainerStyle={globalStyles.bottom_scrollable_space}
-                ListEmptyComponent={() => <Empty message="No Request Found" />}
+                ListEmptyComponent={() =>
+                    isLoading ? null : <Empty message="No Request Found" />
+                }
                 renderItem={({ item }) => (<ServiceCard data={item} onPress={() => onPressCard(item?.id)} />)}
                 style={{ marginTop: heightPixel(15) }}
             />

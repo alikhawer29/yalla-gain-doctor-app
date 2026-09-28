@@ -10,11 +10,13 @@ import { PersistGate } from 'redux-persist/integration/react';
 import AppWrapper from './src/components/AppWrapper';
 import DevNetworkLogger from './src/components/DevNetworkLogger';
 import ForceLogoutBootstrap from './src/components/ForceLogoutBootstrap';
+import ConsultationRealtimeBootstrap from './src/components/ConsultationRealtimeBootstrap';
 import { ModalProvider } from './src/contexts/ModalContext';
 import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
 import { persistor, store } from './src/redux/Store';
 import { setupForegroundPushHandlers } from './src/services/push/pushNotifications';
+import { flushPendingNotificationDeepLink } from './src/services/push/notificationDeepLink';
 import colors from './src/utils/colors';
 import { navigationRef } from './src/utils/navigation';
 
@@ -69,7 +71,14 @@ function App() {
               <ZoomVideoSdkProvider config={zoomSdkConfig}>
                 <ModalProvider>
                   <ForceLogoutBootstrap />
-                  <NavigationContainer ref={navigationRef} theme={navTheme}>
+                  <ConsultationRealtimeBootstrap />
+                  <NavigationContainer
+                    ref={navigationRef}
+                    theme={navTheme}
+                    onReady={() => {
+                      flushPendingNotificationDeepLink();
+                    }}
+                  >
                     <AppStackNavigator />
                     <Toast />
                   </NavigationContainer>

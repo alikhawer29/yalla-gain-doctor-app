@@ -8,6 +8,7 @@ import Icon from "../../components/Icon"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import { useGetNotificationsQuery, useReadNotificationMutation, useUnreadNotificationMutation } from "../../redux/Apis/User"
+import { navigateFromNotificationData } from "../../services/push/notificationDeepLink"
 import colors from "../../utils/colors"
 import styles from "./styles"
 
@@ -52,10 +53,32 @@ const Notification = () => {
         }
     }
 
+    const openNotification = (item: any) => {
+        if (!item?.read) {
+            void handleMark(item.id, false)
+        }
+        navigateFromNotificationData({
+            type: item?.type,
+            target_type: item?.target_type,
+            target_id: item?.target_id,
+            content_id: item?.content_id,
+            id: item?.content_id ?? item?.target_id,
+        })
+    }
+
     const renderItem = ({ item }: any) => {
         const isRead = !!item.read
         return (
-            <View style={[styles.card, !isRead && { backgroundColor: colors.primary + "20", borderColor: colors.primary }]}>
+            <TouchableOpacity
+                activeOpacity={0.85}
+                onPress={() => openNotification(item)}
+                style={[styles.card, !isRead && { backgroundColor: colors.primary + "20", borderColor: colors.primary }]}
+            >
+                {item?.title ? (
+                    <Text style={styles.title} color={colors.white} size={14} weight="semibold">
+                        {item.title}
+                    </Text>
+                ) : null}
                 <Text style={styles.title} color={colors.white} size={14}>
                     {item.message}
                 </Text>
@@ -74,7 +97,7 @@ const Notification = () => {
                         </Text>
                     </TouchableOpacity>
                 </View>
-            </View>
+            </TouchableOpacity>
         )
     }
 

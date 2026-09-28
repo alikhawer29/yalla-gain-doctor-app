@@ -4,7 +4,7 @@
 
 import '@react-native-firebase/app';
 import { getMessaging, setBackgroundMessageHandler } from '@react-native-firebase/messaging';
-import notifee from '@notifee/react-native';
+import notifee, { EventType } from '@notifee/react-native';
 import { AppRegistry } from 'react-native';
 import { startNetworkLogging } from 'react-native-network-logger';
 import App from './App';
@@ -14,6 +14,10 @@ import {
   ensureAndroidNotificationChannel,
 } from './src/services/push/fcmDisplay';
 import { invalidateNotificationsList } from './src/services/push/invalidateNotificationsList';
+import {
+  handleNotificationOpen,
+  normalizeNotificationData,
+} from './src/services/push/notificationDeepLink';
 import { handleForceLogoutRemoteMessage } from './src/services/auth/forceLogout';
 
 setBackgroundMessageHandler(getMessaging(), async remoteMessage => {
@@ -29,8 +33,11 @@ setBackgroundMessageHandler(getMessaging(), async remoteMessage => {
   invalidateNotificationsList();
 });
 
-notifee.onBackgroundEvent(async () => {
-  // Optional: handle action press when the app is in the background.
+notifee.onBackgroundEvent(async ({ type, detail }) => {
+  if (type !== EventType.PRESS) return;
+  handleNotificationOpen(
+    normalizeNotificationData(detail.notification?.data),
+  );
 });
 
 // Start network logging to monitor all API calls

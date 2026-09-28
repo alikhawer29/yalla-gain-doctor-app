@@ -16,6 +16,11 @@ import {
 } from './fcmDisplay';
 import { invalidateNotificationsList } from './invalidateNotificationsList';
 import { handleForceLogoutRemoteMessage, handleForceLogoutData } from '../auth/forceLogout';
+import {
+  flushPendingNotificationDeepLink,
+  handleNotificationOpen,
+  normalizeNotificationData,
+} from './notificationDeepLink';
 
 const messaging = getMessaging();
 
@@ -24,7 +29,11 @@ async function handleNotificationData(
 ): Promise<void> {
   if (!data || typeof data !== 'object') return;
   if (Object.keys(data).length === 0) return;
-  await handleForceLogoutData(data);
+
+  const force = await handleForceLogoutData(data);
+  if (force) return;
+
+  handleNotificationOpen(normalizeNotificationData(data));
 }
 
 /**
@@ -134,12 +143,14 @@ export async function setupForegroundPushHandlers(): Promise<() => void> {
     const wasBackground = /inactive|background/.test(appState);
     if (wasBackground && nextState === 'active') {
       invalidateNotificationsList();
+      flushPendingNotificationDeepLink();
     }
     appState = nextState;
   });
 
   /** Sync bell dot after opens from killed state (no background→active transition). */
   invalidateNotificationsList();
+  flushPendingNotificationDeepLink();
 
   return () => {
     unsubOnMessage();
