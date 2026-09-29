@@ -68,6 +68,18 @@
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Microphone for audio in sessions</string>
 
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.yallagainapp.doctor.stripe</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>yallagaindoctor</string>
+			</array>
+		</dict>
+	</array>
+
 	<!-- React Native -->
 	<key>RCTNewArchEnabled</key>
 	<true/>

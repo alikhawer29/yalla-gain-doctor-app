@@ -1,12 +1,12 @@
 package com.yallagainapp.doctor
 
+import android.content.pm.ActivityInfo
 import android.os.Bundle
 
 import com.facebook.react.ReactActivity
 import com.facebook.react.ReactActivityDelegate
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint.fabricEnabled
 import com.facebook.react.defaults.DefaultReactActivityDelegate
-import com.orientationturbo.OrientationTurbo
 
 class MainActivity : ReactActivity() {
 
@@ -24,7 +24,7 @@ class MainActivity : ReactActivity() {
       DefaultReactActivityDelegate(this, mainComponentName, fabricEnabled)
 
   override fun onCreate(savedInstanceState: Bundle?) {
-    OrientationTurbo.lockToPortrait(this)
+    requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_PORTRAIT
     // Prevent fragment restoration for react-native-screens
     // This fixes the "Screen fragments should never be restored" error
     // Pass null to prevent fragment restoration

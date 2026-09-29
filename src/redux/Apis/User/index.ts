@@ -109,8 +109,13 @@ export type UaeBeneficiary = {
   iban?: string;
   iban_last4?: string;
   currency?: string;
+  tax_id?: string;
+  line1?: string;
+  state?: string;
+  stripe_account_id?: string | null;
   is_default_for_payout?: boolean;
   payouts_enabled?: boolean;
+  currently_due?: string[];
   last_payout?: UaeLastPayout | null;
 };
 
@@ -127,6 +132,29 @@ export type CreateUaeBeneficiaryApiResponse = {
   message?: string;
   data?: UaeBeneficiary;
   status?: boolean;
+};
+
+export type UaeOnboardingLinkResponse = {
+  status?: boolean;
+  message?: string;
+  data?: {
+    url?: string;
+    expires_at?: number | null;
+    stripe_account_id?: string;
+  };
+};
+
+export type UaeOnboardingSyncResponse = {
+  status?: boolean;
+  message?: string;
+  data?: {
+    synced?: number;
+    beneficiaries?: UaeBeneficiary[];
+    stripe_account_id?: string | null;
+    payouts_enabled?: boolean;
+    currently_due?: string[];
+    details_submitted?: boolean;
+  };
 };
 
 export type WithdrawUaeApiResponse = {
@@ -663,6 +691,19 @@ export const userApi = createApi({
       }),
       invalidatesTags: ['UaeBeneficiaries', 'Wallet'],
     }),
+    createUaeOnboardingLink: builder.mutation<UaeOnboardingLinkResponse, void>({
+      query: () => ({
+        url: `stripe/uae/onboarding/link`,
+        method: 'POST',
+      }),
+    }),
+    syncUaeOnboarding: builder.mutation<UaeOnboardingSyncResponse, void>({
+      query: () => ({
+        url: `stripe/uae/onboarding/sync`,
+        method: 'POST',
+      }),
+      invalidatesTags: ['UaeBeneficiaries', 'Wallet'],
+    }),
     withdrawUaeBeneficiary: builder.mutation<
       WithdrawUaeApiResponse,
       { beneficiaryId: number; amount: number }
@@ -786,6 +827,8 @@ export const {
   useGetPaymentLogsQuery,
   useGetUaeBeneficiariesQuery,
   useCreateUaeBeneficiaryMutation,
+  useCreateUaeOnboardingLinkMutation,
+  useSyncUaeOnboardingMutation,
   useWithdrawUaeBeneficiaryMutation,
   useGetUaeTransactionLogsQuery,
   useGetHealthProgressQuery,

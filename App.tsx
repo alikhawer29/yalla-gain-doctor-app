@@ -11,6 +11,7 @@ import AppWrapper from './src/components/AppWrapper';
 import DevNetworkLogger from './src/components/DevNetworkLogger';
 import ForceLogoutBootstrap from './src/components/ForceLogoutBootstrap';
 import ConsultationRealtimeBootstrap from './src/components/ConsultationRealtimeBootstrap';
+import StripeUaeReturnBootstrap from './src/components/StripeUaeReturnBootstrap';
 import { ModalProvider } from './src/contexts/ModalContext';
 import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
@@ -72,6 +73,7 @@ function App() {
                 <ModalProvider>
                   <ForceLogoutBootstrap />
                   <ConsultationRealtimeBootstrap />
+                  <StripeUaeReturnBootstrap />
                   <NavigationContainer
                     ref={navigationRef}
                     theme={navTheme}
