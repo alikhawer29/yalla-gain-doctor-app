@@ -1,5 +1,5 @@
 import { RouteProp, useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
-import { useCallback, useEffect, useLayoutEffect } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { useModal } from "../../contexts/ModalContext";
 import { AppStackParamList } from "../../interfaces";
 import { useDeleteMyServiceMutation, useGetMyServicesQuery } from "../../redux/Apis/User";
@@ -13,30 +13,40 @@ const useServiceDetailsController = () => {
     const isFocused = useIsFocused()
     const navigation = useNavigation()
     const { params } = useRoute<ServiceDetailsRouteProp>()
+    const [removed, setRemoved] = useState(false)
+    const lastServiceRef = useRef<any>(null)
 
-    const { data, isFetching: isLoading, refetch } = useGetMyServicesQuery({ id: params?.id }, { skip: !params?.id })
+    const { data, isFetching, refetch } = useGetMyServicesQuery(
+        { id: params?.id },
+        { skip: !params?.id || removed },
+    )
     const [deleteService, { isLoading: isDeleteLoading }] = useDeleteMyServiceMutation()
 
     const { showOkModal, showYesNoModal } = useModal()
 
+    if (data?.data) {
+        lastServiceRef.current = data.data
+    }
+
     useEffect(() => {
-        if (isFocused) {
+        if (isFocused && !removed) {
             refetch()
         }
-    }, [isFocused])
+    }, [isFocused, removed, refetch])
 
     useLayoutEffect(() => {
         navigation.setOptions({
             title: params?.title || "Service Details"
         })
-    }, [params])
+    }, [navigation, params])
 
     const goToMyServices = useCallback(() => {
         navigateToMyServicesTab()
     }, [])
 
     const onRemove = useCallback(() => {
-        const serviceTitle = data?.data?.title ?? "this service"
+        const serviceTitle =
+            data?.data?.title ?? lastServiceRef.current?.title ?? "this service"
         showYesNoModal(
             {
                 title: "Remove?",
@@ -62,15 +72,14 @@ const useServiceDetailsController = () => {
                         })
                         return
                     }
-                    showOkModal(
-                        {
-                            type: "success",
-                            title: "Successfully",
-                            message: "Service Has Been Removed Successfully.",
-                        },
-                        goToMyServices,
-                        goToMyServices,
-                    )
+                    // Leave this screen immediately so skip/cache cannot flash a blank loader.
+                    setRemoved(true)
+                    goToMyServices()
+                    showOkModal({
+                        type: "success",
+                        title: "Successfully",
+                        message: "Service Has Been Removed Successfully.",
+                    })
                 } catch (e: any) {
                     const msg =
                         e?.data?.message ||
@@ -88,21 +97,25 @@ const useServiceDetailsController = () => {
     }, [data?.data?.title, deleteService, goToMyServices, params?.id, showOkModal, showYesNoModal])
 
     const onEdit = () => {
-        navigate(ROUTES.ADD_SERVICE, { service_id: params?.id, title: `Edit ${data?.data?.title}` })
+        navigate(ROUTES.ADD_SERVICE, {
+            service_id: params?.id,
+            title: `Edit ${data?.data?.title ?? lastServiceRef.current?.title ?? "Service"}`,
+        })
     }
 
     const onEditSlots = () => {
         navigate(ROUTES.SLOTS, {
             id: params?.id,
-            title: params?.title || data?.data?.title || 'Service Details',
+            title: params?.title || data?.data?.title || lastServiceRef.current?.title || 'Service Details',
             fromMyServices: params?.fromMyServices,
         })
     }
 
     return {
         values: {
-            data: data?.data || null,
-            isLoading,
+            data: data?.data || lastServiceRef.current || null,
+            // Never show full-screen loader after delete / while navigating away.
+            isLoading: Boolean(isFetching && !removed && !data?.data && !lastServiceRef.current),
             isDeleteLoading,
         },
         functions: {

@@ -1,13 +1,18 @@
 import { useCallback, useMemo } from 'react';
-import { useGetUaeBeneficiariesQuery } from '../../redux/Apis/User';
+import { useRefreshOnScreenFocus } from '../../hooks/useRefreshOnScreenFocus';
+import {
+  useGetUaeBeneficiariesQuery,
+  type UaeBeneficiary,
+} from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
 import { parseUaeBeneficiariesList } from '../../utils/walletUae';
-import type { UaeBeneficiary } from '../../redux/Apis/User';
 
 const useBeneficiariesController = () => {
   const { data, isLoading, isFetching, isError, refetch } =
     useGetUaeBeneficiariesQuery();
+
+  useRefreshOnScreenFocus(refetch);
 
   const beneficiaries = useMemo(
     () => parseUaeBeneficiariesList(data),

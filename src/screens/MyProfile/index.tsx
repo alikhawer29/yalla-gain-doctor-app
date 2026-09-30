@@ -110,11 +110,17 @@ const MyProfile = () => {
                 }
 
             </View>
-            <Button text="Edit Profile" style={styles.item} onPress={() => navigate(ROUTES.EDIT_PROFILE)} />
-            <Row justify="space-between">
-                <Button font_size={14} text="Change Password" type="outlined" style={styles.button} onPress={() => navigate(ROUTES.CHANGE_PASSWORD)} />
-                <Button font_size={14} loading={isProfileDeleteLoading} text="Delete Account" type="custom" style={[styles.button, styles.danger_button]} onPress={onPressDeleteAccount} />
-            </Row>
+            <View style={styles.actions}>
+                <Button text="Edit Profile" onPress={() => navigate(ROUTES.EDIT_PROFILE)} />
+                <Button text="Change Password" type="outlined" onPress={() => navigate(ROUTES.CHANGE_PASSWORD)} />
+                <Button
+                    loading={isProfileDeleteLoading}
+                    text="Delete Account"
+                    type="custom"
+                    style={styles.danger_button}
+                    onPress={onPressDeleteAccount}
+                />
+            </View>
         </Wrapper>
     )
 }

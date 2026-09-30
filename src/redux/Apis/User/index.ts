@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
-import { RootState } from '../../Store';
 import { DOCTOR_TRAINER_API_BASE_URL } from '../../../utils/data';
+import { queryRefetchDefaults } from '../../queryLifecycle';
+import { RootState } from '../../Store';
 
 export type HealthProgressBmiPoint = {
   month: number;
@@ -217,6 +218,7 @@ export type UaeTransactionLogsApiResponse = {
 
 export const userApi = createApi({
   reducerPath: 'userApi',
+  ...queryRefetchDefaults,
   tagTypes: [
     'Wallet',
     'UaeBeneficiaries',
@@ -268,7 +270,13 @@ export const userApi = createApi({
         method: 'POST',
         body: payload?.body,
       }),
-      invalidatesTags: ['Services'],
+      invalidatesTags: (_result, _error, payload) =>
+        payload?.id
+          ? [
+              { type: 'Services', id: 'LIST' },
+              { type: 'Services', id: payload.id },
+            ]
+          : [{ type: 'Services', id: 'LIST' }],
     }),
     getMyServices: builder.query({
       query: params => ({
@@ -276,7 +284,10 @@ export const userApi = createApi({
         method: 'GET',
         params,
       }),
-      providesTags: ['Services'],
+      providesTags: (_result, _error, params) =>
+        params?.id
+          ? [{ type: 'Services', id: params.id }]
+          : [{ type: 'Services', id: 'LIST' }],
       keepUnusedDataFor: 0,
     }),
     deleteMyService: builder.mutation({
@@ -284,14 +295,16 @@ export const userApi = createApi({
         url: `service/${id}/delete`,
         method: 'DELETE',
       }),
-      invalidatesTags: ['Services'],
+      // Only refresh the list. Do not invalidate the deleted detail query —
+      // SoftDeletes makes GET my-services/{id} return ModelNotFoundException.
+      invalidatesTags: [{ type: 'Services', id: 'LIST' }],
     }),
     getServiceSlots: builder.query({
       query: id => ({
         url: `my-service-slots/${id}`,
         method: 'GET',
       }),
-      providesTags: ['Services'],
+      providesTags: (_result, _error, id) => [{ type: 'Services', id }],
       keepUnusedDataFor: 0,
     }),
     updateServiceSlots: builder.mutation({
@@ -300,7 +313,10 @@ export const userApi = createApi({
         method: 'POST',
         body: payload?.body,
       }),
-      invalidatesTags: ['Services'],
+      invalidatesTags: (_result, _error, payload) => [
+        { type: 'Services', id: 'LIST' },
+        { type: 'Services', id: payload?.id },
+      ],
     }),
     deleteProfile: builder.mutation({
       query: () => ({

@@ -1,4 +1,5 @@
 import useSearch from "../../hooks/useSearch"
+import { useRefreshOnScreenFocus } from "../../hooks/useRefreshOnScreenFocus"
 import { useGetServiceCategoriesQuery } from "../../redux/Apis/User"
 
 const useCategoriesController = () => {
@@ -8,6 +9,8 @@ const useCategoriesController = () => {
     const { data, refetch, isLoading } = useGetServiceCategoriesQuery(
         debouncedSearch.trim() ? { search: debouncedSearch.trim() } : {},
     )
+
+    useRefreshOnScreenFocus(refetch)
 
     return {
         values: {

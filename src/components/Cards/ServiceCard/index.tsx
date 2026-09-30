@@ -7,9 +7,10 @@ import Icon from "../../Icon"
 import Row from "../../Row"
 import StatusBadge from "../../StatusBadge"
 import Text from "../../Text"
-import { formatBookingLocalDate } from "../../../utils/helper"
+import { formatBookingLocalDate, getBookingChargesAmount } from "../../../utils/helper"
 
 const ServiceCard = ({ data, onPress }) => {
+    const charges = getBookingChargesAmount(data)
     return (
         <CardWrapper height={108} color={colors.blackish_gray} border_radius={10} padding={15} onPress={onPress}>
             <View style={{ justifyContent: "space-between", height: "100%", width: "100%" }}>
@@ -23,7 +24,7 @@ const ServiceCard = ({ data, onPress }) => {
                 <Text weight="semibold">Booking Id :<Text weight="semibold" color={colors.icon_gray}> #{data?.id}</Text></Text>
                 <Row>
                     <Row style={{ flex: 0.5 }} align="center" gap={5}>
-                        <Text weight="semibold">Charges :<Text weight="semibold" color={colors.icon_gray}> {data?.amount_paid}</Text><Text size={12} weight="semibold" color={colors.icon_gray}> Coins</Text></Text>
+                        <Text weight="semibold">Charges :<Text weight="semibold" color={colors.icon_gray}> {charges}</Text><Text size={12} weight="semibold" color={colors.icon_gray}> Coins</Text></Text>
                         <Icon source={images.coin} size={14} />
                     </Row>
                     <Row style={{ flex: 0.5 }} align="center" gap={5}>

@@ -24,8 +24,9 @@ const styles = StyleSheet.create({
     item: {
         marginBottom: heightPixel(20)
     },
-    button: {
-        width: "48%"
+    actions: {
+        gap: heightPixel(12),
+        marginBottom: heightPixel(20),
     },
     danger_button: {
         borderColor: colors.danger,

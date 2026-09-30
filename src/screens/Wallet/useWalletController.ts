@@ -1,7 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
+import { useRefreshOnScreenFocus } from '../../hooks/useRefreshOnScreenFocus';
+import { useGetWalletQuery } from '../../redux/Apis/User';
 import { navigate } from '../../utils/navigation';
 import { ROUTES } from '../../utils/routes';
-import { useGetWalletQuery } from '../../redux/Apis/User';
 import {
   getAvailableBalanceAed,
   pickWalletPayload,
@@ -14,6 +15,8 @@ const useWalletController = () => {
     refetch,
   } = useGetWalletQuery(undefined);
   const [refreshing, setRefreshing] = useState(false);
+
+  useRefreshOnScreenFocus(refetch);
 
   const walletData = useMemo(() => pickWalletPayload(walletRaw), [walletRaw]);
   const availableAed = useMemo(

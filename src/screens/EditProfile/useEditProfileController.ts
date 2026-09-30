@@ -38,6 +38,7 @@ const mapCertificates = (items: any[] | undefined) => {
     ];
   }
   return items.map(item => ({
+    id: item?.id ?? null,
     institute_name: item?.institute_name ?? '',
     certificate_title: item?.certificate_title ?? '',
     certificate_picture: item?.certificate_picture ?? null,
@@ -114,25 +115,22 @@ const useEditProfileController = () => {
       if (Array.isArray(payload.certificates)) {
         payload.certificates = payload.certificates.map((cert: any) => {
           const picture = cert?.certificate_picture;
+          const id = cert?.id != null && cert?.id !== '' ? cert.id : undefined;
+          const base = {
+            ...(id != null ? { id } : {}),
+            institute_name: cert?.institute_name ?? '',
+            certificate_title: cert?.certificate_title ?? '',
+          };
 
-          if (typeof picture === 'string' && isRemoteUploadUri(picture)) {
-            const { certificate_picture: _removed, ...rest } = cert;
-            return rest;
-          }
-
+          // Keep existing remote cert image on server — only upload newly picked files.
           if (isDevicePickedAsset(picture)) {
             return {
-              ...cert,
+              ...base,
               certificate_picture: toUploadAsset(picture),
             };
           }
 
-          if (picture != null) {
-            const { certificate_picture: _removed, ...rest } = cert;
-            return rest;
-          }
-
-          return cert;
+          return base;
         });
       }
 

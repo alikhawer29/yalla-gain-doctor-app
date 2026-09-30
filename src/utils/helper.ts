@@ -153,6 +153,31 @@ export const formatBookingLocalDate = (booking?: {
 };
 
 /**
+ * Booking charge shown to doctor/trainer (session value / earning base).
+ * Prefer session_value over amount_paid so plan-included bookings are not "0".
+ */
+export const getBookingChargesAmount = (booking?: {
+  session_value?: number | string | null;
+  subscription_session_value?: number | string | null;
+  amount_paid?: number | string | null;
+  service?: { charges?: number | string | null } | null;
+} | null): number => {
+  if (!booking) return 0;
+  const candidates = [
+    booking.session_value,
+    booking.subscription_session_value,
+    booking.amount_paid,
+    booking.service?.charges,
+  ];
+  for (const value of candidates) {
+    if (value == null || value === '') continue;
+    const num = Number(value);
+    if (!Number.isNaN(num)) return num;
+  }
+  return 0;
+};
+
+/**
  * UTC ISO → wall-clock `HH:mm:ss` in the given IANA timezone (default: device).
  */
 export const utcIsoToWallClock = (

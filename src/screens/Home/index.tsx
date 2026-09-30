@@ -9,7 +9,7 @@ import ProfileHeader from "../../components/ProfileHeader"
 import Text from "../../components/Text"
 import Wrapper from "../../components/Wrapper"
 import colors from "../../utils/colors"
-import { formatBookingLocalDate, heightPixel } from "../../utils/helper"
+import { formatBookingLocalDate, getBookingChargesAmount, heightPixel } from "../../utils/helper"
 import { NAVIGATORS, ROUTES } from "../../utils/routes"
 import useServiceLogsController from "../ServiceLogs/useServiceLogsController"
 
@@ -63,7 +63,7 @@ const Home = () => {
                     <ServiceLogCard
                         date={formatBookingLocalDate(item)}
                         bookingId={`#${item?.id}`}
-                        amount={item?.service?.charges || 0}
+                        amount={getBookingChargesAmount(item)}
                         status={item?.status}
                         onPress={() => onPressCard(item?.id)}
                     />

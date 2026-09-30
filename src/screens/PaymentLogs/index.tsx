@@ -186,7 +186,7 @@ const PaymentLogs = () => {
             return (
                 <View style={styles.card}>
                     <View style={styles.cardRow}>
-                        <Coin label="Booking Id" value={`#${item.booking_id}`} />
+                        <Coin label="Booking Id" value={`#${item.id}`} />
                     </View>
                     <View style={styles.cardRow}>
                         <CoinWithIcon

@@ -1,9 +1,11 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { RootState } from '../../Store';
 import { DOCTOR_TRAINER_API_BASE_URL } from '../../../utils/data';
+import { queryRefetchDefaults } from '../../queryLifecycle';
 
 export const chatApi = createApi({
   reducerPath: 'chatApi',
+  ...queryRefetchDefaults,
   baseQuery: fetchBaseQuery({
     baseUrl: DOCTOR_TRAINER_API_BASE_URL,
     prepareHeaders: (headers, { getState }) => {

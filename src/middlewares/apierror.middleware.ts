@@ -5,6 +5,12 @@ const NO_INTERNET_MESSAGE =
   'No internet connection. Please check your network and try again.';
 
 const GENERIC_ERROR_MESSAGE = 'Something went wrong';
+const RATE_LIMIT_MESSAGE =
+  'Too many requests. Please wait a moment and try again.';
+
+/** Avoid spamming the same rate-limit toast when many calls fail at once. */
+let lastRateLimitToastAt = 0;
+const RATE_LIMIT_TOAST_COOLDOWN_MS = 15000;
 
 const isAbortError = action => {
   if (action?.payload?.status === 'TIMEOUT_ERROR') {
@@ -121,9 +127,41 @@ const shouldSkipToastMessage = message => {
   );
 };
 
+const isUnauthenticatedRejection = action => {
+  if (action?.payload?.status !== 401) {
+    return false;
+  }
+  const message = String(
+    action?.payload?.data?.message || action?.payload?.message || '',
+  ).toLowerCase();
+  return message.includes('unauthenticated') || message === '';
+};
+
+const isRateLimitRejection = (action, message) => {
+  if (action?.payload?.status === 429) {
+    return true;
+  }
+  const lower = String(message || '').toLowerCase();
+  return (
+    lower.includes('too many attempts') ||
+    lower.includes('too many requests') ||
+    lower.includes('too many request')
+  );
+};
+
 const errorLogger = () => next => action => {
   if (isRejectedWithValue(action)) {
     if (isSilentRejection(action)) {
+      return next(action);
+    }
+
+    if (isUnauthenticatedRejection(action)) {
+      void import('../services/auth/forceLogout').then(({ performForceLogout }) =>
+        performForceLogout({
+          title: 'Session Ended',
+          message: 'Please log in again to continue.',
+        }),
+      );
       return next(action);
     }
 
@@ -132,6 +170,19 @@ const errorLogger = () => next => action => {
     // Skip toast while video session is still being provisioned on the server,
     // or when Booking Details already shows the API message in the app modal.
     if (shouldSkipToastMessage(message)) {
+      return next(action);
+    }
+
+    if (isRateLimitRejection(action, message)) {
+      const now = Date.now();
+      if (now - lastRateLimitToastAt >= RATE_LIMIT_TOAST_COOLDOWN_MS) {
+        lastRateLimitToastAt = now;
+        Toast.show({
+          text1: 'Please wait',
+          text2: RATE_LIMIT_MESSAGE,
+          type: 'info',
+        });
+      }
       return next(action);
     }
 

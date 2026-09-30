@@ -15,6 +15,7 @@ import StripeUaeReturnBootstrap from './src/components/StripeUaeReturnBootstrap'
 import { ModalProvider } from './src/contexts/ModalContext';
 import { ZoomVideoSdkProvider } from '@zoom/react-native-videosdk';
 import AppStackNavigator from './src/navigation/AppStackNavigator';
+import { notifyNavigationQueryFocus } from './src/redux/queryLifecycle';
 import { persistor, store } from './src/redux/Store';
 import { setupForegroundPushHandlers } from './src/services/push/pushNotifications';
 import { flushPendingNotificationDeepLink } from './src/services/push/notificationDeepLink';
@@ -79,6 +80,9 @@ function App() {
                     theme={navTheme}
                     onReady={() => {
                       flushPendingNotificationDeepLink();
+                    }}
+                    onStateChange={() => {
+                      notifyNavigationQueryFocus();
                     }}
                   >
                     <AppStackNavigator />

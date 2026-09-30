@@ -4,6 +4,7 @@ import {
     DOCTOR_TRAINER_API_BASE_URL,
     YALLA_API_BASE_URL,
 } from '../../../utils/data'
+import { queryRefetchDefaults } from '../../queryLifecycle'
 
 const prepareAuthHeaders = (headers: Headers) => {
     headers.set('Accept', `application/json`)
@@ -35,6 +36,7 @@ const baseQuery: BaseQueryFn<string | FetchArgs, unknown, unknown> = (
 
 export const authApi = createApi({
     reducerPath: 'authApi',
+    ...queryRefetchDefaults,
     baseQuery,
     endpoints: (builder) => ({
         signup: builder.mutation({

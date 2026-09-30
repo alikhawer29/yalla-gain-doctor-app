@@ -12,7 +12,15 @@ const Tab = createBottomTabNavigator();
 
 const BottomTabNavigator = () => {
     return (
-        <Tab.Navigator screenOptions={{ headerShown: false, animation: "fade" }} tabBar={props => <BottomBar {...props} />}>
+        <Tab.Navigator
+            screenOptions={{
+                headerShown: false,
+                animation: "fade",
+                // Unmount inactive tabs so revisit remounts + fresh RTK fetch
+                unmountOnBlur: true,
+            }}
+            tabBar={props => <BottomBar {...props} />}
+        >
             <Tab.Screen name={NAVIGATORS.HOME_STACK} component={HomeStackNavigator} options={{ tabBarIcon: images.tab_home }} />
             <Tab.Screen name={NAVIGATORS.MY_SERVICES_STACK} component={MyServicesStackNavigator} options={{ tabBarIcon: images.tab_gallery }} />
             <Tab.Screen name={NAVIGATORS.WALLET_STACK} component={WalletStackNavigator} options={{ tabBarIcon: images.helpdesk.wallet }} />

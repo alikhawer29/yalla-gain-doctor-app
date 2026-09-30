@@ -16,6 +16,7 @@ import {
     formatUtcToLocalDate,
     formatPhoneDisplay,
     formatUtcToLocalTimeRange12h,
+    getBookingChargesAmount,
     heightPixel,
     widthPixel,
 } from "../../utils/helper"
@@ -268,7 +269,7 @@ const BookingDetails = () => {
                         </View>
                         <View style={styles.half_width_box}>
                             <Text weight="semibold">Service Charges:</Text>
-                            <Text style={styles.value_text} color={colors.icon_gray}>{data?.amount_paid} Yalla Coins</Text>
+                            <Text style={styles.value_text} color={colors.icon_gray}>{getBookingChargesAmount(data)} Yalla Coins</Text>
                         </View>
                     </Row>
                     <Row>

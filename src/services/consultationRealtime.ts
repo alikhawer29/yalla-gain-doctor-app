@@ -7,7 +7,12 @@ let bound = false;
 function invalidateConsultationCaches(): void {
   try {
     store.dispatch(
-      userApi.util.invalidateTags(['Bookings', 'Services', 'Notifications']),
+      userApi.util.invalidateTags([
+        'Bookings',
+        'Notifications',
+        // List only — avoid refetching a soft-deleted service detail by id.
+        { type: 'Services', id: 'LIST' },
+      ]),
     );
   } catch {
     // ignore
